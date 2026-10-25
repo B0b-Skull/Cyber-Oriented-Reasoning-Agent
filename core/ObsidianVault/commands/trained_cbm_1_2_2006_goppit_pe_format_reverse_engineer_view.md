@@ -9,7 +9,7 @@ tags:
   - tls
   - trained
 source_file: CBM_1_2_2006_Goppit_PE_Format_Reverse_Engineer_View.pdf
-updated: 2026-10-23 22:54:42
+updated: 2026-10-25 22:54:42
 ---
 
 # Trained Command Playbook: `CBM_1_2_2006_Goppit_PE_Format_Reverse_Engineer_View.pdf`

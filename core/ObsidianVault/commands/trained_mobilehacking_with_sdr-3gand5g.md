@@ -15,7 +15,7 @@ tags:
   - trained
   - ttyusb1
 source_file: MobileHacking_with_SDR-3Gand5G.pdf
-updated: 2026-10-24 00:59:18
+updated: 2026-10-25 00:59:18
 ---
 
 # Trained Command Playbook: `MobileHacking_with_SDR-3Gand5G.pdf`

@@ -9,7 +9,7 @@ tags:
   - trained
 source_file: CBM_1_2_2006_Goppit_PE_Format_Reverse_Engineer_View.pdf
 doc_type: pdf
-updated: 2026-10-24 01:05:55
+updated: 2026-10-25 01:05:55
 ---
 
 # Trained Knowledge & Architecture: `CBM_1_2_2006_Goppit_PE_Format_Reverse_Engineer_View.pdf`

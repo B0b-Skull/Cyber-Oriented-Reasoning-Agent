@@ -13,7 +13,7 @@ tags:
   - trained
   - wmic
 source_file: Triage-Scripts.txt
-updated: 2026-10-24 01:00:41
+updated: 2026-10-25 01:00:41
 ---
 
 # Trained Command Playbook: `Triage-Scripts.txt`

@@ -25,7 +25,7 @@ tags:
   - serial
   - trained
 source_file: windows_command_line_Administration.pdf
-updated: 2026-10-24 01:16:25
+updated: 2026-10-25 01:16:25
 ---
 
 # Trained Command Playbook: `windows_command_line_Administration.pdf`

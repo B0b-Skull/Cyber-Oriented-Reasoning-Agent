@@ -11,7 +11,7 @@ tags:
   - trained
   - vlan
 source_file: BPF syntax.pdf
-updated: 2026-10-23 22:54:36
+updated: 2026-10-25 22:54:36
 ---
 
 # Trained Command Playbook: `BPF syntax.pdf`

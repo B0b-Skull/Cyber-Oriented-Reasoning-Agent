@@ -14,7 +14,7 @@ tags:
   - ssh
   - trained
 source_file: Upgrading shells to fully interactive TTYs.pdf
-updated: 2026-10-24 01:01:08
+updated: 2026-10-25 01:01:08
 ---
 
 # Trained Command Playbook: `Upgrading shells to fully interactive TTYs.pdf`

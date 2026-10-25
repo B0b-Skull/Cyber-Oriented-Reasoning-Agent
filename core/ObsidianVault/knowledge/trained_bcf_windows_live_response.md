@@ -20,7 +20,7 @@ tags:
   - wevtutil
 source_file: BCF_Windows Live Response.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:53
+updated: 2026-10-25 00:56:53
 ---
 
 # Trained Knowledge & Architecture: `BCF_Windows Live Response.pdf`

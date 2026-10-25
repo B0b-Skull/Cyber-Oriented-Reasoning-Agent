@@ -8,7 +8,7 @@ tags:
   - trained
   - vlan
 source_file: metro case studies.pdf
-updated: 2026-10-24 00:58:57
+updated: 2026-10-25 00:58:57
 ---
 
 # Trained Command Playbook: `metro case studies.pdf`

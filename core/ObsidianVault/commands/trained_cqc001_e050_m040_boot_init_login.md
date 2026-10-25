@@ -8,7 +8,7 @@ tags:
   - pdf
   - trained
 source_file: CQC001_E050_M040_Boot_Init_Login.pdf
-updated: 2026-10-23 22:55:20
+updated: 2026-10-25 22:55:20
 ---
 
 # Trained Command Playbook: `CQC001_E050_M040_Boot_Init_Login.pdf`

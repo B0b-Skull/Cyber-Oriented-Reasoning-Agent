@@ -7,7 +7,7 @@ tags:
   - serial
   - trained
 source_file: _OS Internals__Kernel & Hardware.pdf
-updated: 2026-10-24 00:56:06
+updated: 2026-10-25 00:56:06
 ---
 
 # Trained Command Playbook: `_OS Internals__Kernel & Hardware.pdf`

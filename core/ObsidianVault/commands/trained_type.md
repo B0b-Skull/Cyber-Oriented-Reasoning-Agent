@@ -7,7 +7,7 @@ tags:
   - pdf
   - trained
 source_file: Type.pdf
-updated: 2026-10-24 01:00:41
+updated: 2026-10-25 01:00:41
 ---
 
 # Trained Command Playbook: `Type.pdf`

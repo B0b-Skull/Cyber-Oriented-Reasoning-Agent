@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: Overview of GSM GPRS and UMTS Mobile Communications by CISCO.pdf
 doc_type: pdf
-updated: 2026-10-24 00:59:59
+updated: 2026-10-25 00:59:59
 ---
 
 # Trained Knowledge & Architecture: `Overview of GSM GPRS and UMTS Mobile Communications by CISCO.pdf`

@@ -13,7 +13,7 @@ tags:
   - trained
 source_file: BCF_CNE Basics.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:31
+updated: 2026-10-25 00:56:31
 ---
 
 # Trained Knowledge & Architecture: `BCF_CNE Basics.pdf`

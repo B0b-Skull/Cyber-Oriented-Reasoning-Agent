@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: FORFILES.txt
 doc_type: text
-updated: 2026-10-24 00:58:24
+updated: 2026-10-25 00:58:24
 ---
 
 # Trained Knowledge & Architecture: `FORFILES.txt`

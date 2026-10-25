@@ -9,7 +9,7 @@ tags:
   - pdf
   - trained
 source_file: Tasklist.pdf
-updated: 2026-10-24 01:00:39
+updated: 2026-10-25 01:00:39
 ---
 
 # Trained Command Playbook: `Tasklist.pdf`

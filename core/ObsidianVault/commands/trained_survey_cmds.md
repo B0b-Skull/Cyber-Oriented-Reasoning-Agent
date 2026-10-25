@@ -14,7 +14,7 @@ tags:
   - text
   - trained
 source_file: Survey CMDs.txt
-updated: 2026-10-24 01:00:37
+updated: 2026-10-25 01:00:37
 ---
 
 # Trained Command Playbook: `Survey CMDs.txt`
@@ -67,7 +67,7 @@ updated: 2026-10-24 01:00:37
 | `s_init_unknown` | **`Passive_Enum`** | Local Host State, Memory/Artifact Forensics, Process, Registry & Socket Survey | `ip` | `s_passive_topology_mapped` | `ip route show` |
 | `s_oob_serial_enumerated` | **`Defense_Evasion_Firewall`** | Host Firewall, Audit Policy, LOLBin & Integrity Control Adjustment | `echo` | `s_firewall_or_acl_unlocked` | `echo $0` |
 | `s_active_services_enumerated` | **`Credential_Access`** | Credential, Account, Kerberos Ticket, Hash Cracking & Certificate Operations | `ls` | `s_credentials_or_certs_acquired` | `ls -Rltu /etc/rc.d/init.d` |
-| `s_init_unknown` | **`Passive_Enum`** | Local Host State, Memory/Artifact Forensics, Process, Registry & Socket Survey | `find` | `s_passive_topology_mapped` | `find / -type f -newermt 2017-01-20` |
+| `s_init_unknown` | **`Passive_Enum`** | Local Host State, Memory/Artifact Forensics, Process, Registry & Socket Survey | `find` | `s_passive_topology_mapped` | `find / -type f -newermt 2026-10-25` |
 | `s_oob_serial_enumerated` | **`Defense_Evasion_Firewall`** | Host Firewall, Audit Policy, LOLBin & Integrity Control Adjustment | `cat` | `s_firewall_or_acl_unlocked` | `cat /etc/passwd` |
 
 ## Verified Executable Commands (Grouped by Capability Layer)
@@ -101,9 +101,9 @@ hostid
 modinfo -c
 vmstat
 hostname
-find / -type f -newermt 2017-01-20
-find / -type f -newermt 2017-01-20 | xargs ls -lt
-find / -type f -newermt 2017-01-20 | xargs ls -ltr
+find / -type f -newermt 2026-10-25
+find / -type f -newermt 2026-10-25 | xargs ls -lt
+find / -type f -newermt 2026-10-25 | xargs ls -ltr
 find ~/ -mtime $(echo $(date +%s) - $(date +%s -d"Dec 31, 2009 23:59:59") | bc -l | awk '{print $1 / 86400}' | bc -l)
 find . -mtime $(date +%s -d"Aug 10, 2013 23:59:59") -mtime $(date +%s -d"Aug 1, 2013 23:59:59")
 find . -maxdepth 1 -mmin -$(echo $(date +%s) - $(date +%s -d"Sep 9, 2015 15:03:00") | bc -l | awk '{print $1 / 60}' ) -mmin +$(echo $(date +%s) - $(date +%s -d"Sep 9, 2015 16:21:00") | bc -l | awk '{print $1 / 60}' ) -exec ls -ld --time-style=full-iso {} \;

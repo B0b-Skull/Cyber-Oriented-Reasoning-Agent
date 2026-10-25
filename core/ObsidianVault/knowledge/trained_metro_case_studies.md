@@ -9,7 +9,7 @@ tags:
   - vlan
 source_file: metro case studies.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:57
+updated: 2026-10-25 00:58:57
 ---
 
 # Trained Knowledge & Architecture: `metro case studies.pdf`

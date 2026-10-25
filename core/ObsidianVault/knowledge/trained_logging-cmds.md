@@ -12,7 +12,7 @@ tags:
   - trained
 source_file: Logging-CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:58:52
+updated: 2026-10-25 00:58:52
 ---
 
 # Trained Knowledge & Architecture: `Logging-CMDs.txt`

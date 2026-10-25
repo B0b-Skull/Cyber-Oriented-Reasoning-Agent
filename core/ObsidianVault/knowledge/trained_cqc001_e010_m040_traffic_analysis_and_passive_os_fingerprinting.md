@@ -15,7 +15,7 @@ tags:
   - vlan
 source_file: CQC001_E010_M040_Traffic_Analysis_and_Passive_OS_Fingerprinting.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:25
+updated: 2026-10-25 00:57:25
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E010_M040_Traffic_Analysis_and_Passive_OS_Fingerprinting.pdf`

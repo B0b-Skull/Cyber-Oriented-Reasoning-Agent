@@ -8,7 +8,7 @@ tags:
   - powershell
   - trained
 source_file: CQC001_E040_M005_PowerShell_Versions.pdf
-updated: 2026-10-23 22:55:15
+updated: 2026-10-25 22:55:15
 ---
 
 # Trained Command Playbook: `CQC001_E040_M005_PowerShell_Versions.pdf`

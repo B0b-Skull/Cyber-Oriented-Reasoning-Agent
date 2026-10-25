@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: CQC001_E030_M010_Well_Known_SIDs.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:35
+updated: 2026-10-25 00:57:35
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E030_M010_Well_Known_SIDs.pdf`

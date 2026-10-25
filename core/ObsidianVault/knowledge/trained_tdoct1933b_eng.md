@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: tdoct1933b_eng.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:41
+updated: 2026-10-25 01:00:41
 ---
 
 # Trained Knowledge & Architecture: `tdoct1933b_eng.pdf`

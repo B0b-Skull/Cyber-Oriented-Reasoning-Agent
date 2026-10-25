@@ -6,7 +6,7 @@ tags:
   - pdf
   - trained
 source_file: CQC001_E020_M030_Boot_and_Logon_Resource_-_Windows_7_-_2008.pdf
-updated: 2026-10-23 22:54:58
+updated: 2026-10-25 22:54:58
 ---
 
 # Trained Command Playbook: `CQC001_E020_M030_Boot_and_Logon_Resource_-_Windows_7_-_2008.pdf`

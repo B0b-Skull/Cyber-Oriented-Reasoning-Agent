@@ -21,7 +21,7 @@ tags:
   - wevtutil
 source_file: Windows+PowerShell+Logging+Cheat+Sheet+ver+June+2016+v2.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:12
+updated: 2026-10-25 01:01:12
 ---
 
 # Trained Knowledge & Architecture: `Windows+PowerShell+Logging+Cheat+Sheet+ver+June+2016+v2.pdf`

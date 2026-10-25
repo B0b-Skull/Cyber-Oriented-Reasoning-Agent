@@ -10,7 +10,7 @@ tags:
   - text
   - trained
 source_file: DS CMDs.txt
-updated: 2026-10-24 00:58:21
+updated: 2026-10-25 00:58:21
 ---
 
 # Trained Command Playbook: `DS CMDs.txt`

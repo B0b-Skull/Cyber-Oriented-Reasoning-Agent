@@ -8,7 +8,7 @@ tags:
   - text
   - trained
 source_file: BcdEdit CMDs.txt
-updated: 2026-10-24 00:56:14
+updated: 2026-10-25 00:56:14
 ---
 
 # Trained Command Playbook: `BcdEdit CMDs.txt`

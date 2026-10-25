@@ -26,7 +26,7 @@ tags:
   - trained
 source_file: UNIX and Linux System Administration Handbook.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:02
+updated: 2026-10-25 01:01:02
 ---
 
 # Trained Knowledge & Architecture: `UNIX and Linux System Administration Handbook.pdf`

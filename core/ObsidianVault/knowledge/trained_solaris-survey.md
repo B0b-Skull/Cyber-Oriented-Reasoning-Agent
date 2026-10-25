@@ -16,7 +16,7 @@ tags:
   - trained
 source_file: Solaris-Survey.txt
 doc_type: text
-updated: 2026-10-24 01:00:33
+updated: 2026-10-25 01:00:33
 ---
 
 # Trained Knowledge & Architecture: `Solaris-Survey.txt`

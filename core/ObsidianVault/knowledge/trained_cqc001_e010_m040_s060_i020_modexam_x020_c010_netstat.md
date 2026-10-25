@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: CQC001_E010_M040_S060_I020_ModExam_X020_C010_netstat.txt
 doc_type: text
-updated: 2026-10-24 00:57:25
+updated: 2026-10-25 00:57:25
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E010_M040_S060_I020_ModExam_X020_C010_netstat.txt`

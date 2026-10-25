@@ -11,7 +11,7 @@ tags:
   - vlan
 source_file: BPF syntax.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:01
+updated: 2026-10-25 00:57:01
 ---
 
 # Trained Knowledge & Architecture: `BPF syntax.pdf`

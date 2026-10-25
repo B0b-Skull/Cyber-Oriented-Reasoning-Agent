@@ -24,7 +24,7 @@ tags:
   - trained
 source_file: Cyber Forensics Intro Guide_updated_table.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:20
+updated: 2026-10-25 00:58:20
 ---
 
 # Trained Knowledge & Architecture: `Cyber Forensics Intro Guide_updated_table.pdf`

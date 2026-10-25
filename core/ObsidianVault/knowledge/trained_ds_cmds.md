@@ -11,7 +11,7 @@ tags:
   - trained
 source_file: DS CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:58:21
+updated: 2026-10-25 00:58:21
 ---
 
 # Trained Knowledge & Architecture: `DS CMDs.txt`

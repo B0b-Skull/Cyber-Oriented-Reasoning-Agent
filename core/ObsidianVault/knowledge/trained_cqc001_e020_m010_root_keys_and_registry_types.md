@@ -11,7 +11,7 @@ tags:
   - trained
 source_file: CQC001_E020_M010_Root_Keys_and_Registry_Types.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:31
+updated: 2026-10-25 00:57:31
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E020_M010_Root_Keys_and_Registry_Types.pdf`

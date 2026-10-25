@@ -25,7 +25,7 @@ tags:
   - pdf
   - trained
 source_file: Operator-handbook-Search.Copy.Paste.pdf
-updated: 2026-10-24 00:59:33
+updated: 2026-10-25 00:59:33
 ---
 
 # Trained Command Playbook: `Operator-handbook-Search.Copy.Paste.pdf`
@@ -321,11 +321,11 @@ greynoise query "classification:<type>"
 greynoise query "classification:malicious"
 greynoise query "ip:113.88.161.0/24 classification:malicious"
 greynoise query "first_seen:<YYYY-MM-DD>"
-greynoise query "first_seen:2019-12-29"
-greynoise query "ip:113.88.161.0/24 first_seen: 2019-12-29"
+greynoise query "first_seen:2026-10-25"
+greynoise query "ip:113.88.161.0/24 first_seen: 2026-10-25"
 greynoise query "last_seen:<YYYY-MM-DD>"
-greynoise query "last_seen:2019-12-30"
-greynoise query "ip:113.88.161.0/24 last_seen:2019-12-30"
+greynoise query "last_seen:2026-10-25"
+greynoise query "ip:113.88.161.0/24 last_seen:2026-10-25"
 greynoise query "actor:<actor>"
 greynoise query "actor:censys"
 greynoise query "198.108.0.0/16 actor:censys"

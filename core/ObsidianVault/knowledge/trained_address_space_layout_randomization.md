@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: Address_Space_Layout_Randomization.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:07
+updated: 2026-10-25 00:56:07
 ---
 
 # Trained Knowledge & Architecture: `Address_Space_Layout_Randomization.pdf`
@@ -66,8 +66,8 @@ Pageexec, “Protecting against Pointer Subterfuge (Redux),” Dailydave mailing
 - 12. H. Shacham, M. Page, B. Pfaff, E. Goh, N. Modadugu, D. Boneh, “On the Effectiveness of Address-Space
 - 13. Tuxedo-es, “Microsoft Windows Vista: Measuring the security enhancements,” June 2006,
 - 14. Tuxedo-es, “Microsoft Windows Vista beta-2 build 5384: Vista-Probe 0.1 results,” June 2006,
-- 15. Tuxedo-es, “Vista Probe 0.1 release,” June 2006, http://www.tuxedo-es.org/blog/2006/06/15/
-- 16. Tuxedo-es, “Vista Probe 0.2 release,” July 2006, http://www.tuxedo-es.org/blog/2006/07/06/
+- 15. Tuxedo-es, “Vista Probe 0.1 release,” June 2006, http://www.tuxedo-es.org/blog/2026-10-25/
+- 16. Tuxedo-es, “Vista Probe 0.2 release,” July 2006, http://www.tuxedo-es.org/blog/2026-10-25/
 - 17. Tuxedo-es, “Vista Probe 0.2 test case sources,” http://pearls.tuxedo-es.org/win32/vista-probe-
 - 18. Wehnus, “Whentrust,” http://www.wehntrust.com/.
 - 19. O. Whitehouse, “Vista address space randomization data,” Feb. 2007, available via email.

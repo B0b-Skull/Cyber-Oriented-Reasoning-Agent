@@ -10,7 +10,7 @@ tags:
   - trained
 source_file: CQC001_E030_M030_S040_I020_ModExam_X030_C010_transcript.txt
 doc_type: text
-updated: 2026-10-24 00:57:38
+updated: 2026-10-25 00:57:38
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E030_M030_S040_I020_ModExam_X030_C010_transcript.txt`

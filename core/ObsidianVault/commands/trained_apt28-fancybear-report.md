@@ -17,7 +17,7 @@ tags:
   - sysinternals
   - trained
 source_file: APT28-FANCYBEAR-REPORT.pdf
-updated: 2026-10-24 00:56:13
+updated: 2026-10-25 00:56:13
 ---
 
 # Trained Command Playbook: `APT28-FANCYBEAR-REPORT.pdf`

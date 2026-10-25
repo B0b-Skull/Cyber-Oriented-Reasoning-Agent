@@ -11,7 +11,7 @@ tags:
   - trained
 source_file: PowerUp.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:08
+updated: 2026-10-25 01:00:08
 ---
 
 # Trained Knowledge & Architecture: `PowerUp.pdf`

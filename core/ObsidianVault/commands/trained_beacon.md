@@ -14,7 +14,7 @@ tags:
   - reconnaissance
   - trained
 source_file: Beacon.pdf
-updated: 2026-10-24 00:56:56
+updated: 2026-10-25 00:56:56
 ---
 
 # Trained Command Playbook: `Beacon.pdf`

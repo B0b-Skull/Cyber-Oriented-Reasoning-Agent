@@ -15,7 +15,7 @@ tags:
   - trained
   - wmic
 source_file: wp-windows-management-instrumentation.pdf
-updated: 2026-10-24 01:01:14
+updated: 2026-10-25 01:01:14
 ---
 
 # Trained Command Playbook: `wp-windows-management-instrumentation.pdf`

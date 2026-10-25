@@ -16,7 +16,7 @@ tags:
   - sysinternals
   - trained
 source_file: CQC001_E020_M060_Networking_and_Name_Resolution.pdf
-updated: 2026-10-24 00:57:34
+updated: 2026-10-25 00:57:34
 ---
 
 # Trained Command Playbook: `CQC001_E020_M060_Networking_and_Name_Resolution.pdf`

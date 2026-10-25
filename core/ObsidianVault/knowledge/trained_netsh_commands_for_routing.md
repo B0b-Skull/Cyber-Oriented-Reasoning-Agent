@@ -10,7 +10,7 @@ tags:
   - trained
 source_file: Netsh commands for Routing.pdf
 doc_type: pdf
-updated: 2026-10-24 00:59:23
+updated: 2026-10-25 00:59:23
 ---
 
 # Trained Knowledge & Architecture: `Netsh commands for Routing.pdf`

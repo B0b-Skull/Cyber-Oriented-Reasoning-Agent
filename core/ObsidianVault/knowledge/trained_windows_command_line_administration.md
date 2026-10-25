@@ -26,7 +26,7 @@ tags:
   - trained
 source_file: windows_command_line_Administration.pdf
 doc_type: pdf
-updated: 2026-10-24 01:16:25
+updated: 2026-10-25 01:16:25
 ---
 
 # Trained Knowledge & Architecture: `windows_command_line_Administration.pdf`

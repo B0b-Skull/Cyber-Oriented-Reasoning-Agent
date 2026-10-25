@@ -9,7 +9,7 @@ tags:
   - trained
 source_file: Registry CMDs.txt
 doc_type: text
-updated: 2026-10-24 01:00:18
+updated: 2026-10-25 01:00:18
 ---
 
 # Trained Knowledge & Architecture: `Registry CMDs.txt`

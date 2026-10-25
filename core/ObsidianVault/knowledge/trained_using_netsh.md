@@ -10,7 +10,7 @@ tags:
   - trained
 source_file: Using Netsh.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:10
+updated: 2026-10-25 01:01:10
 ---
 
 # Trained Knowledge & Architecture: `Using Netsh.pdf`

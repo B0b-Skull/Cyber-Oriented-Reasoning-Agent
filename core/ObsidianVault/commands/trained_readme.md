@@ -9,7 +9,7 @@ tags:
   - text
   - trained
 source_file: README.md
-updated: 2026-10-24 01:00:16
+updated: 2026-10-25 01:00:16
 ---
 
 # Trained Command Playbook: `README.md`

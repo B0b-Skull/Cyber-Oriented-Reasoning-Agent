@@ -13,7 +13,7 @@ tags:
   - text
   - trained
 source_file: IPtables-Snort-CMDs.txt
-updated: 2026-10-24 00:58:43
+updated: 2026-10-25 00:58:43
 ---
 
 # Trained Command Playbook: `IPtables-Snort-CMDs.txt`

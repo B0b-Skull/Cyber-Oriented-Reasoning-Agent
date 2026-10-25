@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: CQC001_E010_M050_RFC792.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:28
+updated: 2026-10-25 00:57:28
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E010_M050_RFC792.pdf`

@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: WiFi_Handbook_1.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:12
+updated: 2026-10-25 01:01:12
 ---
 
 # Trained Knowledge & Architecture: `WiFi_Handbook_1.pdf`

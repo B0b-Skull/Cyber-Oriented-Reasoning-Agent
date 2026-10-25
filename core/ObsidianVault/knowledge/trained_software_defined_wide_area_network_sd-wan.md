@@ -10,7 +10,7 @@ tags:
   - vlan
 source_file: Software Defined Wide Area Network (SD-WAN).pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:31
+updated: 2026-10-25 01:00:31
 ---
 
 # Trained Knowledge & Architecture: `Software Defined Wide Area Network (SD-WAN).pdf`

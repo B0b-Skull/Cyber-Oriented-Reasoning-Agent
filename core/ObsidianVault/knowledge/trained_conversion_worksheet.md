@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: Conversion_Worksheet.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:12
+updated: 2026-10-25 00:57:12
 ---
 
 # Trained Knowledge & Architecture: `Conversion_Worksheet.pdf`

@@ -12,7 +12,7 @@ tags:
   - wmic
 source_file: Net CMDs 1.txt
 doc_type: text
-updated: 2026-10-24 00:59:23
+updated: 2026-10-25 00:59:23
 ---
 
 # Trained Knowledge & Architecture: `Net CMDs 1.txt`

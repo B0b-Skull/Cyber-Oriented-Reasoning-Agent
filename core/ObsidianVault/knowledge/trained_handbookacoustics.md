@@ -12,7 +12,7 @@ tags:
   - trained
 source_file: HandbookAcoustics.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:34
+updated: 2026-10-25 00:58:34
 ---
 
 # Trained Knowledge & Architecture: `HandbookAcoustics.pdf`

@@ -13,7 +13,7 @@ tags:
   - trained
   - vlan
 source_file: Metro Ethernet Training_Part_1.pdf
-updated: 2026-10-24 00:59:10
+updated: 2026-10-25 00:59:10
 ---
 
 # Trained Command Playbook: `Metro Ethernet Training_Part_1.pdf`

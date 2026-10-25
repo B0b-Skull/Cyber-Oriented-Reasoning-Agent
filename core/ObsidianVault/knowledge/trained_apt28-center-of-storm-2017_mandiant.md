@@ -15,7 +15,7 @@ tags:
   - trained
 source_file: APT28-Center-of-Storm-2017_MANDIANT.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:10
+updated: 2026-10-25 00:56:10
 ---
 
 # Trained Knowledge & Architecture: `APT28-Center-of-Storm-2017_MANDIANT.pdf`

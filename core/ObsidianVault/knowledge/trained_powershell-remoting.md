@@ -12,7 +12,7 @@ tags:
   - trained
 source_file: PowerShell-Remoting.txt
 doc_type: text
-updated: 2026-10-24 01:00:07
+updated: 2026-10-25 01:00:07
 ---
 
 # Trained Knowledge & Architecture: `PowerShell-Remoting.txt`

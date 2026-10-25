@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: Movelatr-SourceCode.txt
 doc_type: text
-updated: 2026-10-24 00:59:21
+updated: 2026-10-25 00:59:21
 ---
 
 # Trained Knowledge & Architecture: `Movelatr-SourceCode.txt`

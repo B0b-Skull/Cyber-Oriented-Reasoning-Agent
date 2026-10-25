@@ -15,7 +15,7 @@ tags:
   - trained
 source_file: Upgrading shells to fully interactive TTYs.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:08
+updated: 2026-10-25 01:01:08
 ---
 
 # Trained Knowledge & Architecture: `Upgrading shells to fully interactive TTYs.pdf`

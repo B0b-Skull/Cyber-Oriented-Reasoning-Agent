@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: BEC703  -CELLULAR MOBILE COMMUNICATION.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:01
+updated: 2026-10-25 00:57:01
 ---
 
 # Trained Knowledge & Architecture: `BEC703  -CELLULAR MOBILE COMMUNICATION.pdf`

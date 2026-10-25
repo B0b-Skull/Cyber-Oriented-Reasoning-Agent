@@ -8,7 +8,7 @@ tags:
   - pdf
   - trained
 source_file: Systeminfo.pdf
-updated: 2026-10-24 01:00:38
+updated: 2026-10-25 01:00:38
 ---
 
 # Trained Command Playbook: `Systeminfo.pdf`

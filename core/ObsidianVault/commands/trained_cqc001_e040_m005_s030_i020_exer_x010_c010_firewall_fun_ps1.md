@@ -7,7 +7,7 @@ tags:
   - text
   - trained
 source_file: CQC001_E040_M005_S030_I020_Exer_X010_C010_Firewall_Fun.ps1.txt
-updated: 2026-10-24 00:57:51
+updated: 2026-10-25 00:57:51
 ---
 
 # Trained Command Playbook: `CQC001_E040_M005_S030_I020_Exer_X010_C010_Firewall_Fun.ps1.txt`

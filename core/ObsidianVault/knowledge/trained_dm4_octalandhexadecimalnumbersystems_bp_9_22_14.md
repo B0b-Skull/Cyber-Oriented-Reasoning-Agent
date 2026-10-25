@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: DM4_OctalandHexadecimalNumberSystems_BP_9_22_14.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:21
+updated: 2026-10-25 00:58:21
 ---
 
 # Trained Knowledge & Architecture: `DM4_OctalandHexadecimalNumberSystems_BP_9_22_14.pdf`

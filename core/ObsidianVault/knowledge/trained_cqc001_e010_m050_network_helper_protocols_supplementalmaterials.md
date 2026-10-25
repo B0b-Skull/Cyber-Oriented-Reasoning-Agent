@@ -9,7 +9,7 @@ tags:
   - trained
 source_file: CQC001_E010_M050_Network_Helper_Protocols_SupplementalMaterials.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:27
+updated: 2026-10-25 00:57:27
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E010_M050_Network_Helper_Protocols_SupplementalMaterials.pdf`

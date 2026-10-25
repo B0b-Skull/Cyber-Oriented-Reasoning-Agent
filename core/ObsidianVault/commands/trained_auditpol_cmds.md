@@ -12,7 +12,7 @@ tags:
   - wevtutil
   - wmic
 source_file: AuditPol CMDs.txt
-updated: 2026-10-24 00:56:13
+updated: 2026-10-25 00:56:13
 ---
 
 # Trained Command Playbook: `AuditPol CMDs.txt`

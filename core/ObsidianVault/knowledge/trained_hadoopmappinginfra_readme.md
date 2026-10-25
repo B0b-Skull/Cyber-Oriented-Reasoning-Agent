@@ -10,7 +10,7 @@ tags:
   - trained
 source_file: HadoopMappingInfra_ReadMe.md
 doc_type: text
-updated: 2026-10-24 00:58:24
+updated: 2026-10-25 00:58:24
 ---
 
 # Trained Knowledge & Architecture: `HadoopMappingInfra_ReadMe.md`

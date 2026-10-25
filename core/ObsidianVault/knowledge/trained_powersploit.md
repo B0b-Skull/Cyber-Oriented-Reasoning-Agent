@@ -16,7 +16,7 @@ tags:
   - trained
 source_file: PowerSploit.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:07
+updated: 2026-10-25 01:00:07
 ---
 
 # Trained Knowledge & Architecture: `PowerSploit.pdf`

@@ -11,7 +11,7 @@ tags:
   - trained
 source_file: UsersAndPermissions.txt
 doc_type: text
-updated: 2026-10-24 01:01:08
+updated: 2026-10-25 01:01:08
 ---
 
 # Trained Knowledge & Architecture: `UsersAndPermissions.txt`

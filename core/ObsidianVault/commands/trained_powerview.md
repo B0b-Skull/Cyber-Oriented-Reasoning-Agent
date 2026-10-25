@@ -14,7 +14,7 @@ tags:
   - powershell
   - trained
 source_file: PowerView.pdf
-updated: 2026-10-24 01:00:09
+updated: 2026-10-25 01:00:09
 ---
 
 # Trained Command Playbook: `PowerView.pdf`

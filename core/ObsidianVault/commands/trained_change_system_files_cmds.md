@@ -14,7 +14,7 @@ tags:
   - trained
   - wmic
 source_file: Change System Files CMDs.txt
-updated: 2026-10-24 00:57:11
+updated: 2026-10-25 00:57:11
 ---
 
 # Trained Command Playbook: `Change System Files CMDs.txt`

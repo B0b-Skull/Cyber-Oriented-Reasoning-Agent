@@ -11,7 +11,7 @@ tags:
   - sysinternals
   - trained
 source_file: CQC001_E020_M040_Windows_Processes.pdf
-updated: 2026-10-24 00:57:32
+updated: 2026-10-25 00:57:32
 ---
 
 # Trained Command Playbook: `CQC001_E020_M040_Windows_Processes.pdf`

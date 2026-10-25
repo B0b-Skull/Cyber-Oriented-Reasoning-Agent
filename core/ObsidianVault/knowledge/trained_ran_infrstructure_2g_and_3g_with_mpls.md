@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: RAN Infrstructure 2G and 3G with MPLS.jpg
 doc_type: image_diagram
-updated: 2026-10-24 01:00:16
+updated: 2026-10-25 01:00:16
 ---
 
 # Trained Knowledge & Architecture: `RAN Infrstructure 2G and 3G with MPLS.jpg`

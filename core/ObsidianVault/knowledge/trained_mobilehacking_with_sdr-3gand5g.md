@@ -16,7 +16,7 @@ tags:
   - ttyusb1
 source_file: MobileHacking_with_SDR-3Gand5G.pdf
 doc_type: pdf
-updated: 2026-10-24 00:59:18
+updated: 2026-10-25 00:59:18
 ---
 
 # Trained Knowledge & Architecture: `MobileHacking_with_SDR-3Gand5G.pdf`

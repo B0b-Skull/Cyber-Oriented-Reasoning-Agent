@@ -11,7 +11,7 @@ tags:
   - text
   - trained
 source_file: Logging-CMDs.txt
-updated: 2026-10-24 00:58:52
+updated: 2026-10-25 00:58:52
 ---
 
 # Trained Command Playbook: `Logging-CMDs.txt`

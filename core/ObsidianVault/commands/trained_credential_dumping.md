@@ -23,7 +23,7 @@ tags:
   - sysinternals
   - trained
 source_file: credential_dumping.pdf
-updated: 2026-10-24 00:58:07
+updated: 2026-10-25 00:58:07
 ---
 
 # Trained Command Playbook: `credential_dumping.pdf`

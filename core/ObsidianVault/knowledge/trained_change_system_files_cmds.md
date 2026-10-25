@@ -15,7 +15,7 @@ tags:
   - wmic
 source_file: Change System Files CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:57:11
+updated: 2026-10-25 00:57:11
 ---
 
 # Trained Knowledge & Architecture: `Change System Files CMDs.txt`

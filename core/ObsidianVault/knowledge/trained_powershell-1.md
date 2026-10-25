@@ -14,7 +14,7 @@ tags:
   - trained
 source_file: PowerShell-1.txt
 doc_type: text
-updated: 2026-10-24 01:00:06
+updated: 2026-10-25 01:00:06
 ---
 
 # Trained Knowledge & Architecture: `PowerShell-1.txt`

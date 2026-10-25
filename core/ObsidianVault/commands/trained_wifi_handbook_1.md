@@ -7,7 +7,7 @@ tags:
   - pdf
   - trained
 source_file: WiFi_Handbook_1.pdf
-updated: 2026-10-23 23:10:51
+updated: 2026-10-25 23:10:51
 ---
 
 # Trained Command Playbook: `WiFi_Handbook_1.pdf`

@@ -23,7 +23,7 @@ tags:
   - ttyusb0
   - ttyusb1
 source_file: linux-user.pdf
-updated: 2026-10-24 00:58:51
+updated: 2026-10-25 00:58:51
 ---
 
 # Trained Command Playbook: `linux-user.pdf`

@@ -20,7 +20,7 @@ tags:
   - trained
   - wevtutil
 source_file: Windows+PowerShell+Logging+Cheat+Sheet+ver+June+2016+v2.pdf
-updated: 2026-10-24 01:01:12
+updated: 2026-10-25 01:01:12
 ---
 
 # Trained Command Playbook: `Windows+PowerShell+Logging+Cheat+Sheet+ver+June+2016+v2.pdf`

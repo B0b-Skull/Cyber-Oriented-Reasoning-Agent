@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: CQC001_E030_M040_Windows_Firewall.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:38
+updated: 2026-10-25 00:57:38
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E030_M040_Windows_Firewall.pdf`

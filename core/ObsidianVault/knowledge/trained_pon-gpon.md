@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: PON-GPON.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:05
+updated: 2026-10-25 01:00:05
 ---
 
 # Trained Knowledge & Architecture: `PON-GPON.pdf`

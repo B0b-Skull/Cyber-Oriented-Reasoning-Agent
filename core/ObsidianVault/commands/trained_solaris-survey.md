@@ -15,7 +15,7 @@ tags:
   - text
   - trained
 source_file: Solaris-Survey.txt
-updated: 2026-10-24 01:00:33
+updated: 2026-10-25 01:00:33
 ---
 
 # Trained Command Playbook: `Solaris-Survey.txt`

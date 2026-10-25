@@ -12,7 +12,7 @@ tags:
   - ssh
   - trained
 source_file: CQC001_E060_M030_transcript.pdf
-updated: 2026-10-24 00:58:03
+updated: 2026-10-25 00:58:03
 ---
 
 # Trained Command Playbook: `CQC001_E060_M030_transcript.pdf`

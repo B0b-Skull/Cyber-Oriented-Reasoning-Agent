@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: CQC001_E020_M030_Boot_and_Logon_Resource_-_Windows_XP_-_2003.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:31
+updated: 2026-10-25 00:57:31
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E020_M030_Boot_and_Logon_Resource_-_Windows_XP_-_2003.pdf`

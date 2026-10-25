@@ -11,7 +11,7 @@ tags:
   - privilege_escalation
   - trained
 source_file: CQC001_E030_M020_transcript.pdf
-updated: 2026-10-24 00:57:35
+updated: 2026-10-25 00:57:35
 ---
 
 # Trained Command Playbook: `CQC001_E030_M020_transcript.pdf`

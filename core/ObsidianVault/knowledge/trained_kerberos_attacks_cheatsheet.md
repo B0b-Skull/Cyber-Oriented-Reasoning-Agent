@@ -17,7 +17,7 @@ tags:
   - trained
 source_file: kerberos_attacks_cheatsheet.md
 doc_type: text
-updated: 2026-10-24 00:58:45
+updated: 2026-10-25 00:58:45
 ---
 
 # Trained Knowledge & Architecture: `kerberos_attacks_cheatsheet.md`

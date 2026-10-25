@@ -15,7 +15,7 @@ tags:
   - trained
 source_file: Beacon.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:56
+updated: 2026-10-25 00:56:56
 ---
 
 # Trained Knowledge & Architecture: `Beacon.pdf`

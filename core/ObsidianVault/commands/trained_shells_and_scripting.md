@@ -10,7 +10,7 @@ tags:
   - pdf
   - trained
 source_file: Shells_and_Scripting.pdf
-updated: 2026-10-24 01:00:25
+updated: 2026-10-25 01:00:25
 ---
 
 # Trained Command Playbook: `Shells_and_Scripting.pdf`

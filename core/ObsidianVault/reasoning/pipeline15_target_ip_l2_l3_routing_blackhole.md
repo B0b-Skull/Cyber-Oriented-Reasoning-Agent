@@ -4,12 +4,12 @@ category: reasoning
 engine: neuro_symbolic_pipeline_15
 summary: 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `ip neigh show <TARGET_IP>`, RL Next `sudo ip route replace <REMOTE_SUBNET> via <GATEWAY_IP> && sudo sysctl -w net.ipv4.ip_forward=1` (Q*=+36.8), K-Means Cluster `C2_CROSS_SUBNET_L3_PIVOT`, Top Cause `asymmetric_missing_return_route_or_nat` (28%)
 tags: [reasoning, neuro_symbolic_pipeline_15, pipeline-15, associative, bayesian, dempster-shafer, causal, temporal-fluents, cbr, geometric, vsa, somatic-marker, sygus, cegar, mdp, continual-learning, meta-learning, reinforcement-learning, pca-kmeans, target_ip]
-updated: 2026-10-26 14:50:17
+updated: 2026-10-25 14:50:17
 ---
 # pipeline15_target_ip_l2_l3_routing_blackhole
 
 > **Engine:** `neuro_symbolic_pipeline_15` | **Summary:** 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `ip neigh show <TARGET_IP>`, RL Next `sudo ip route replace <REMOTE_SUBNET> via <GATEWAY_IP> && sudo sysctl -w net.ipv4.ip_forward=1` (Q*=+36.8), K-Means Cluster `C2_CROSS_SUBNET_L3_PIVOT`, Top Cause `asymmetric_missing_return_route_or_nat` (28%)  
-> **Backlink:** [[00_MEMORY_INDEX]] | **Updated:** `2026-10-26 14:50:17`
+> **Backlink:** [[00_MEMORY_INDEX]] | **Updated:** `2026-10-25 14:50:17`
 
 ## 15-Engine Neuro-Symbolic, RL World-Model & PCA/K-Means++ Synthesis for `<TARGET_IP>` (`[STREAMLINED_15_ENGINE_CORE]`)
 ### Layer 5 Streamlined Executive Digest (6-Line LLM Fast-Read)

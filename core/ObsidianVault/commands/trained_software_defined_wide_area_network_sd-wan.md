@@ -11,7 +11,7 @@ tags:
   - trained
   - vlan
 source_file: Software Defined Wide Area Network (SD-WAN).pdf
-updated: 2026-10-23 23:06:43
+updated: 2026-10-25 23:06:43
 ---
 
 # Trained Command Playbook: `Software Defined Wide Area Network (SD-WAN).pdf`

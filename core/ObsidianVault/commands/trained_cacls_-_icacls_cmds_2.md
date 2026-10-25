@@ -11,7 +11,7 @@ tags:
   - text
   - trained
 source_file: Cacls - Icacls CMDs 2.txt
-updated: 2026-10-24 00:57:01
+updated: 2026-10-25 00:57:01
 ---
 
 # Trained Command Playbook: `Cacls - Icacls CMDs 2.txt`

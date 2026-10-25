@@ -14,7 +14,7 @@ tags:
   - powershell
   - trained
 source_file: APT28-Center-of-Storm-2017_MANDIANT.pdf
-updated: 2026-10-23 22:53:47
+updated: 2026-10-25 22:53:47
 ---
 
 # Trained Command Playbook: `APT28-Center-of-Storm-2017_MANDIANT.pdf`

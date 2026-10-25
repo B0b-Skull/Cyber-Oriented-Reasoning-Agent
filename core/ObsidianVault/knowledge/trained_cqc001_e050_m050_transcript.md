@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: CQC001_E050_M050_transcript.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:02
+updated: 2026-10-25 00:58:02
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E050_M050_transcript.pdf`

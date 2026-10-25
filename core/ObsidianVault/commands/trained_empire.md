@@ -15,7 +15,7 @@ tags:
   - powershell
   - trained
 source_file: Empire.pdf
-updated: 2026-10-24 00:58:23
+updated: 2026-10-25 00:58:23
 ---
 
 # Trained Command Playbook: `Empire.pdf`

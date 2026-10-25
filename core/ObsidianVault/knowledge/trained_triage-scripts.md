@@ -14,7 +14,7 @@ tags:
   - wmic
 source_file: Triage-Scripts.txt
 doc_type: text
-updated: 2026-10-24 01:00:41
+updated: 2026-10-25 01:00:41
 ---
 
 # Trained Knowledge & Architecture: `Triage-Scripts.txt`

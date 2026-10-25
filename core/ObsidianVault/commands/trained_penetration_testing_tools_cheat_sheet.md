@@ -25,7 +25,7 @@ tags:
   - privilege_escalation
   - trained
 source_file: Penetration Testing Tools Cheat Sheet.html
-updated: 2026-10-24 01:00:01
+updated: 2026-10-25 01:00:01
 ---
 
 # Trained Command Playbook: `Penetration Testing Tools Cheat Sheet.html`

@@ -4,12 +4,12 @@ category: reasoning
 engine: rl_network_policy
 summary: Engine 19 TD(lambda) RL Policy (5200 eps, Avg Return +40.1, 34.86 ms)
 tags: [reasoning, rl_network_policy, reinforcement-learning, td-lambda, network-topology, next-step-policy]
-updated: 2026-10-26 14:50:17
+updated: 2026-10-25 14:50:17
 ---
 # rl_network_policy_playbooks
 
 > **Engine:** `rl_network_policy` | **Summary:** Engine 19 TD(lambda) RL Policy (5200 eps, Avg Return +40.1, 34.86 ms)  
-> **Backlink:** [[00_MEMORY_INDEX]] | **Updated:** `2026-10-26 14:50:17`
+> **Backlink:** [[00_MEMORY_INDEX]] | **Updated:** `2026-10-25 14:50:17`
 
 ### Engine 19: Converged Trajectory RL (`TD(lambda)` + UCB1) & Live Network World-Model Playbooks
 - **Total Digital-Twin RL Episodes Trained**: **`5200`** (`52` live CLI transitions | Avg Return = **`+40.08`**)

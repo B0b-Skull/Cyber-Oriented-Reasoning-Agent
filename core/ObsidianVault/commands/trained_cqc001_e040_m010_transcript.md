@@ -13,7 +13,7 @@ tags:
   - trained
   - wmic
 source_file: CQC001_E040_M010_transcript.pdf
-updated: 2026-10-24 00:57:54
+updated: 2026-10-25 00:57:54
 ---
 
 # Trained Command Playbook: `CQC001_E040_M010_transcript.pdf`

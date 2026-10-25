@@ -25,7 +25,7 @@ tags:
   - responder
   - trained
 source_file: UNIX and Linux System Administration Handbook.pdf
-updated: 2026-10-24 01:01:02
+updated: 2026-10-25 01:01:02
 ---
 
 # Trained Command Playbook: `UNIX and Linux System Administration Handbook.pdf`
@@ -468,7 +468,7 @@ sudo qshape deferred
 sudo tcpdump host bull
 sudo tcpdump src net 172.24.1.0/24 and dst port 80
 snmpwalk -c secret813community -v1 tuva
-sudo chage -m 2 -M 90 -E 2010-07-31 -W 14 ben
+sudo chage -m 2 -M 90 -E 2026-10-25 -W 14 ben
 sudo ./john /etc/shadow
 tar -zxvf ossec-hids-latest.tar.gz
 sudo ./install.sh

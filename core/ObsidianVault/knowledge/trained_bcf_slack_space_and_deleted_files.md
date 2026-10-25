@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: BCF_Slack Space and Deleted Files.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:49
+updated: 2026-10-25 00:56:49
 ---
 
 # Trained Knowledge & Architecture: `BCF_Slack Space and Deleted Files.pdf`

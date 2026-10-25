@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: CQC001_E040_M005_PowerShell_Versions.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:51
+updated: 2026-10-25 00:57:51
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E040_M005_PowerShell_Versions.pdf`

@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: Introduction to OTN.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:42
+updated: 2026-10-25 00:58:42
 ---
 
 # Trained Knowledge & Architecture: `Introduction to OTN.pdf`

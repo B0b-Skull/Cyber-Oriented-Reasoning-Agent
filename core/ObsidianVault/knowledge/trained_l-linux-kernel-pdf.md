@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: l-linux-kernel-pdf.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:46
+updated: 2026-10-25 00:58:46
 ---
 
 # Trained Knowledge & Architecture: `l-linux-kernel-pdf.pdf`

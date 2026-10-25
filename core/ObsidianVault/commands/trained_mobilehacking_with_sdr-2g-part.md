@@ -11,7 +11,7 @@ tags:
   - trained
   - wireshark
 source_file: MobileHacking_with_SDR-2G-part.pdf
-updated: 2026-10-24 00:59:14
+updated: 2026-10-25 00:59:14
 ---
 
 # Trained Command Playbook: `MobileHacking_with_SDR-2G-part.pdf`

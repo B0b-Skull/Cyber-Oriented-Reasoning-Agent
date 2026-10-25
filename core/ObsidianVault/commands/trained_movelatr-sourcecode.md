@@ -7,7 +7,7 @@ tags:
   - text
   - trained
 source_file: Movelatr-SourceCode.txt
-updated: 2026-10-24 00:59:21
+updated: 2026-10-25 00:59:21
 ---
 
 # Trained Command Playbook: `Movelatr-SourceCode.txt`

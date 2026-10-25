@@ -8,7 +8,7 @@ tags:
   - trained
   - z3
 source_file: CQC001_E010_M050_DHCP_Fingerprints.txt
-updated: 2026-10-24 00:57:27
+updated: 2026-10-25 00:57:27
 ---
 
 # Trained Command Playbook: `CQC001_E010_M050_DHCP_Fingerprints.txt`

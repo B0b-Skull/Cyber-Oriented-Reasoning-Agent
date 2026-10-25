@@ -9,7 +9,7 @@ tags:
   - trained
 source_file: PS Get-CIM.txt
 doc_type: text
-updated: 2026-10-24 01:00:10
+updated: 2026-10-25 01:00:10
 ---
 
 # Trained Knowledge & Architecture: `PS Get-CIM.txt`

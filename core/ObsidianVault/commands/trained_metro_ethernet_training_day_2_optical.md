@@ -6,7 +6,7 @@ tags:
   - pdf
   - trained
 source_file: Metro Ethernet Training_Day_2_Optical.pdf
-updated: 2026-10-23 22:58:08
+updated: 2026-10-25 22:58:08
 ---
 
 # Trained Command Playbook: `Metro Ethernet Training_Day_2_Optical.pdf`

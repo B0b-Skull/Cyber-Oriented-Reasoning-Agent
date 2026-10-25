@@ -15,7 +15,7 @@ tags:
   - trained
 source_file: Survey CMDs.txt
 doc_type: text
-updated: 2026-10-24 01:00:37
+updated: 2026-10-25 01:00:37
 ---
 
 # Trained Knowledge & Architecture: `Survey CMDs.txt`

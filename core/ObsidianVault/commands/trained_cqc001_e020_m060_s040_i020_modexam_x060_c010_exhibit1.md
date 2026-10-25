@@ -7,7 +7,7 @@ tags:
   - trained
   - wmic
 source_file: CQC001_E020_M060_S040_I020_ModExam_X060_C010_exhibit1.pdf
-updated: 2026-10-24 00:57:34
+updated: 2026-10-25 00:57:34
 ---
 
 # Trained Command Playbook: `CQC001_E020_M060_S040_I020_ModExam_X060_C010_exhibit1.pdf`

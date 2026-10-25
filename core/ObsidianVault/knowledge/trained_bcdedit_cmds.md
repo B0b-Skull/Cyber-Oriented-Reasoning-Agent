@@ -9,7 +9,7 @@ tags:
   - trained
 source_file: BcdEdit CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:56:14
+updated: 2026-10-25 00:56:14
 ---
 
 # Trained Knowledge & Architecture: `BcdEdit CMDs.txt`

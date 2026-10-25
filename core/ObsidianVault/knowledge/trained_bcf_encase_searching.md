@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: BCF_EnCase Searching.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:46
+updated: 2026-10-25 00:56:46
 ---
 
 # Trained Knowledge & Architecture: `BCF_EnCase Searching.pdf`

@@ -3,7 +3,7 @@ title: tio_serial_playbook
 category: commands
 summary: Non-interactive tio 3.9 Lua --script patterns for logging into and running commands on /dev/ttyUSB0 without Python scripts
 tags: [tio, serial, ttyusb0, console, login]
-updated: 2026-10-22
+updated: 2026-10-25
 ---
 # `tio` Serial Console Playbook (`/dev/ttyUSB0`)
 

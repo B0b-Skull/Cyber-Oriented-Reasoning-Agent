@@ -9,7 +9,7 @@ tags:
   - wmic
 source_file: WMIC QuickStart.txt
 doc_type: text
-updated: 2026-10-24 01:01:12
+updated: 2026-10-25 01:01:12
 ---
 
 # Trained Knowledge & Architecture: `WMIC QuickStart.txt`

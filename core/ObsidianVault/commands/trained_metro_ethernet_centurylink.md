@@ -7,7 +7,7 @@ tags:
   - pdf
   - trained
 source_file: Metro Ethernet CenturyLink.pdf
-updated: 2026-10-23 22:57:31
+updated: 2026-10-25 22:57:31
 ---
 
 # Trained Command Playbook: `Metro Ethernet CenturyLink.pdf`

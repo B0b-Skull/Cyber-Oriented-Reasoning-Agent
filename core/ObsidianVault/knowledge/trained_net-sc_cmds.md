@@ -11,7 +11,7 @@ tags:
   - trained
 source_file: Net-SC CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:59:23
+updated: 2026-10-25 00:59:23
 ---
 
 # Trained Knowledge & Architecture: `Net-SC CMDs.txt`

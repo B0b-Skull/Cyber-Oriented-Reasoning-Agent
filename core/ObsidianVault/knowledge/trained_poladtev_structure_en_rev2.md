@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: PolAdtEv_Structure_en_rev2.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:01
+updated: 2026-10-25 01:00:01
 ---
 
 # Trained Knowledge & Architecture: `PolAdtEv_Structure_en_rev2.pdf`

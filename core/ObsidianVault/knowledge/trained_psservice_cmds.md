@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: PsService CMDs.txt
 doc_type: text
-updated: 2026-10-24 01:00:11
+updated: 2026-10-25 01:00:11
 ---
 
 # Trained Knowledge & Architecture: `PsService CMDs.txt`

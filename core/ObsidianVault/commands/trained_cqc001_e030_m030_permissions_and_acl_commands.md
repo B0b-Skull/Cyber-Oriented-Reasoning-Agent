@@ -13,7 +13,7 @@ tags:
   - privilege_escalation
   - trained
 source_file: CQC001_E030_M030_Permissions_and_ACL_Commands.pdf
-updated: 2026-10-24 00:57:38
+updated: 2026-10-25 00:57:38
 ---
 
 # Trained Command Playbook: `CQC001_E030_M030_Permissions_and_ACL_Commands.pdf`

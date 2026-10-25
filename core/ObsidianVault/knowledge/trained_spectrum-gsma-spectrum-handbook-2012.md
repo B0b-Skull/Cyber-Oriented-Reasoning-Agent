@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: Spectrum-GSMA-Spectrum-Handbook-2012.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:35
+updated: 2026-10-25 01:00:35
 ---
 
 # Trained Knowledge & Architecture: `Spectrum-GSMA-Spectrum-Handbook-2012.pdf`

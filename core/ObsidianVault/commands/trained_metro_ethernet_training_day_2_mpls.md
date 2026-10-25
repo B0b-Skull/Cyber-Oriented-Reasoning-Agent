@@ -9,7 +9,7 @@ tags:
   - pdf
   - trained
 source_file: Metro Ethernet Training_Day_2_MPLS.pdf
-updated: 2026-10-24 00:59:01
+updated: 2026-10-25 00:59:01
 ---
 
 # Trained Command Playbook: `Metro Ethernet Training_Day_2_MPLS.pdf`

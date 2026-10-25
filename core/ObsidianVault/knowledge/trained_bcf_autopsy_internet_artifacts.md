@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: BCF_Autopsy Internet Artifacts.pdf
 doc_type: pdf
-updated: 2026-10-24 00:56:22
+updated: 2026-10-25 00:56:22
 ---
 
 # Trained Knowledge & Architecture: `BCF_Autopsy Internet Artifacts.pdf`

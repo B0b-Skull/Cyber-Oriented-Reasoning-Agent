@@ -8,7 +8,7 @@ tags:
   - text
   - trained
 source_file: capture.sh.txt
-updated: 2026-10-23 22:54:36
+updated: 2026-10-25 22:54:36
 ---
 
 # Trained Command Playbook: `capture.sh.txt`

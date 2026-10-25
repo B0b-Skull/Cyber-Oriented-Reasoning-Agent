@@ -8,7 +8,7 @@ tags:
   - text
   - trained
 source_file: Solaris-Network-Enum-Script.txt
-updated: 2026-10-24 01:00:32
+updated: 2026-10-25 01:00:32
 ---
 
 # Trained Command Playbook: `Solaris-Network-Enum-Script.txt`

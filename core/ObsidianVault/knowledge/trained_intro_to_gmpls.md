@@ -9,7 +9,7 @@ tags:
   - volatility
 source_file: Intro to GMPLS.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:39
+updated: 2026-10-25 00:58:39
 ---
 
 # Trained Knowledge & Architecture: `Intro to GMPLS.pdf`

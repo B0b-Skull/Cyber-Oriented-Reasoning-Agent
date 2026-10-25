@@ -10,7 +10,7 @@ tags:
   - trained
 source_file: JStebelton_BPF-Syntax.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:43
+updated: 2026-10-25 00:58:43
 ---
 
 # Trained Knowledge & Architecture: `JStebelton_BPF-Syntax.pdf`

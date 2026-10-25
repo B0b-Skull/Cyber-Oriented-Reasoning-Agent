@@ -10,7 +10,7 @@ tags:
   - trained
   - wmic
 source_file: BCF_Windows Process Investigation.pdf
-updated: 2026-10-24 00:56:56
+updated: 2026-10-25 00:56:56
 ---
 
 # Trained Command Playbook: `BCF_Windows Process Investigation.pdf`

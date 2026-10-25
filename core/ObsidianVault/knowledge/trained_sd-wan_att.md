@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: SD-WAN ATT.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:24
+updated: 2026-10-25 01:00:24
 ---
 
 # Trained Knowledge & Architecture: `SD-WAN ATT.pdf`

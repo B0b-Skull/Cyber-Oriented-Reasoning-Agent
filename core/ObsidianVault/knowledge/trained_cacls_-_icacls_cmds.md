@@ -10,7 +10,7 @@ tags:
   - trained
 source_file: Cacls - Icacls CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:57:01
+updated: 2026-10-25 00:57:01
 ---
 
 # Trained Knowledge & Architecture: `Cacls - Icacls CMDs.txt`

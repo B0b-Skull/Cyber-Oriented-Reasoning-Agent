@@ -8,7 +8,7 @@ tags:
   - trained
   - volatility
 source_file: Intro to GMPLS.pdf
-updated: 2026-10-24 00:58:39
+updated: 2026-10-25 00:58:39
 ---
 
 # Trained Command Playbook: `Intro to GMPLS.pdf`

@@ -6,7 +6,7 @@ tags:
   - trained
 source_file: CQC001_E020_M060_S040_I020_ModExam_X060_C010_exhibit2.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:35
+updated: 2026-10-25 00:57:35
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E020_M060_S040_I020_ModExam_X060_C010_exhibit2.pdf`

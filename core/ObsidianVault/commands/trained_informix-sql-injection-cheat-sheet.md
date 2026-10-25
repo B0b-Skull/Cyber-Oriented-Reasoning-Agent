@@ -7,7 +7,7 @@ tags:
   - nmap
   - trained
 source_file: informix-sql-injection-cheat-sheet.html
-updated: 2026-10-24 00:58:35
+updated: 2026-10-25 00:58:35
 ---
 
 # Trained Command Playbook: `informix-sql-injection-cheat-sheet.html`

@@ -19,7 +19,7 @@ tags:
   - trained
   - wevtutil
 source_file: BCF_Windows Live Response.pdf
-updated: 2026-10-24 00:56:53
+updated: 2026-10-25 00:56:53
 ---
 
 # Trained Command Playbook: `BCF_Windows Live Response.pdf`

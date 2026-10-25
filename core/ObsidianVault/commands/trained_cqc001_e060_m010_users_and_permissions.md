@@ -8,7 +8,7 @@ tags:
   - privilege_escalation
   - trained
 source_file: CQC001_E060_M010_Users_and_Permissions.pdf
-updated: 2026-10-24 00:58:02
+updated: 2026-10-25 00:58:02
 ---
 
 # Trained Command Playbook: `CQC001_E060_M010_Users_and_Permissions.pdf`

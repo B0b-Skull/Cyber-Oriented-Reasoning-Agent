@@ -9,7 +9,7 @@ tags:
   - trained
 source_file: Hot Potato – Windows Privilege Escalation.pdf
 doc_type: pdf
-updated: 2026-10-23 22:55:46
+updated: 2026-10-25 22:55:46
 ---
 
 # Trained Knowledge & Architecture: `Hot Potato – Windows Privilege Escalation.pdf`

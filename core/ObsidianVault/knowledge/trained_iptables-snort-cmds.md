@@ -14,7 +14,7 @@ tags:
   - trained
 source_file: IPtables-Snort-CMDs.txt
 doc_type: text
-updated: 2026-10-24 00:58:43
+updated: 2026-10-25 00:58:43
 ---
 
 # Trained Knowledge & Architecture: `IPtables-Snort-CMDs.txt`

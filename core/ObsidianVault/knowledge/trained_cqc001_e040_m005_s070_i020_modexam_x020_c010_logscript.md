@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: CQC001_E040_M005_S070_I020_ModExam_X020_C010_LogScript.txt
 doc_type: text
-updated: 2026-10-24 00:57:52
+updated: 2026-10-25 00:57:52
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E040_M005_S070_I020_ModExam_X020_C010_LogScript.txt`

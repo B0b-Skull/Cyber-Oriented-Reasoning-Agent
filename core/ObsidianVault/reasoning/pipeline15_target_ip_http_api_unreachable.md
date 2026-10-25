@@ -4,12 +4,12 @@ category: reasoning
 engine: neuro_symbolic_pipeline_15
 summary: 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `tio -b 115200 --mute --script-run once --script 'write("ip -4 addr; ss -tulpn; iptables -L -n\r"); while read(4096, 500) > 0 do end; exit(0)' /dev/ttyUSB0`, RL Next `tio --script 'write("id\r\nip -br addr\r\nss -tulpn\r\n"); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0` (Q*=+30.4), K-Means Cluster `C1_OOB_SERIAL_LOOPBACK_APPLIANCE`, Top Cause `service_on_nonstandard_port_or_tls` (30%)
 tags: [reasoning, neuro_symbolic_pipeline_15, pipeline-15, associative, bayesian, dempster-shafer, causal, temporal-fluents, cbr, geometric, vsa, somatic-marker, sygus, cegar, mdp, continual-learning, meta-learning, reinforcement-learning, pca-kmeans, target_ip]
-updated: 2026-10-26 14:50:17
+updated: 2026-10-25 14:50:17
 ---
 # pipeline15_target_ip_http_api_unreachable
 
 > **Engine:** `neuro_symbolic_pipeline_15` | **Summary:** 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `tio -b 115200 --mute --script-run once --script 'write("ip -4 addr; ss -tulpn; iptables -L -n\r"); while read(4096, 500) > 0 do end; exit(0)' /dev/ttyUSB0`, RL Next `tio --script 'write("id\r\nip -br addr\r\nss -tulpn\r\n"); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0` (Q*=+30.4), K-Means Cluster `C1_OOB_SERIAL_LOOPBACK_APPLIANCE`, Top Cause `service_on_nonstandard_port_or_tls` (30%)  
-> **Backlink:** [[00_MEMORY_INDEX]] | **Updated:** `2026-10-26 14:50:17`
+> **Backlink:** [[00_MEMORY_INDEX]] | **Updated:** `2026-10-25 14:50:17`
 
 ## 15-Engine Neuro-Symbolic, RL World-Model & PCA/K-Means++ Synthesis for `<TARGET_IP>` (`[STREAMLINED_15_ENGINE_CORE]`)
 ### Layer 5 Streamlined Executive Digest (6-Line LLM Fast-Read)

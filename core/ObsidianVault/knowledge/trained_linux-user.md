@@ -24,7 +24,7 @@ tags:
   - ttyusb1
 source_file: linux-user.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:51
+updated: 2026-10-25 00:58:51
 ---
 
 # Trained Knowledge & Architecture: `linux-user.pdf`

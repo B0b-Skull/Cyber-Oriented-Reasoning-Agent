@@ -7,7 +7,7 @@ tags:
   - pdf
   - trained
 source_file: Address_Space_Layout_Randomization.pdf
-updated: 2026-10-24 00:56:07
+updated: 2026-10-25 00:56:07
 ---
 
 # Trained Command Playbook: `Address_Space_Layout_Randomization.pdf`

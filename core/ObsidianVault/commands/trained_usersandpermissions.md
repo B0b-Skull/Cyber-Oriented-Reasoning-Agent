@@ -10,7 +10,7 @@ tags:
   - text
   - trained
 source_file: UsersAndPermissions.txt
-updated: 2026-10-24 01:01:08
+updated: 2026-10-25 01:01:08
 ---
 
 # Trained Command Playbook: `UsersAndPermissions.txt`

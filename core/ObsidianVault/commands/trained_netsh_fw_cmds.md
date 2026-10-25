@@ -7,7 +7,7 @@ tags:
   - text
   - trained
 source_file: Netsh FW CMDs.txt
-updated: 2026-10-24 00:59:23
+updated: 2026-10-25 00:59:23
 ---
 
 # Trained Command Playbook: `Netsh FW CMDs.txt`

@@ -9,7 +9,7 @@ tags:
   - tio
   - trained
 source_file: LTE_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0100.pdf
-updated: 2026-10-24 00:58:53
+updated: 2026-10-25 00:58:53
 ---
 
 # Trained Command Playbook: `LTE_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0100.pdf`

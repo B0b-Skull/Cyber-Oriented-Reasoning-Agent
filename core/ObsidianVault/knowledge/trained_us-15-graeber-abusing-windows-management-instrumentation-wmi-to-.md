@@ -18,7 +18,7 @@ tags:
   - wmic
 source_file: us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent Asynchronous-And-Fileless-Backdoor-wp.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:08
+updated: 2026-10-25 01:01:08
 ---
 
 # Trained Knowledge & Architecture: `us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent Asynchronous-And-Fileless-Backdoor-wp.pdf`

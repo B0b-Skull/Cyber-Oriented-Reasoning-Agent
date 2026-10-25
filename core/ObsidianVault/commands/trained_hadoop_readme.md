@@ -9,7 +9,7 @@ tags:
   - text
   - trained
 source_file: Hadoop_README.md
-updated: 2026-10-24 00:58:24
+updated: 2026-10-25 00:58:24
 ---
 
 # Trained Command Playbook: `Hadoop_README.md`

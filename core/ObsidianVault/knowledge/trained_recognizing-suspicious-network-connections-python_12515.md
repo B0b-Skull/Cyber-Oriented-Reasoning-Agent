@@ -16,7 +16,7 @@ tags:
   - trained
 source_file: recognizing-suspicious-network-connections-python_12515.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:17
+updated: 2026-10-25 01:00:17
 ---
 
 # Trained Knowledge & Architecture: `recognizing-suspicious-network-connections-python_12515.pdf`

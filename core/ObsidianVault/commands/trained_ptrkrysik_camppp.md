@@ -9,7 +9,7 @@ tags:
   - trained
   - wireshark
 source_file: ptrkrysik_camppp.pdf
-updated: 2026-10-24 01:00:14
+updated: 2026-10-25 01:00:14
 ---
 
 # Trained Command Playbook: `ptrkrysik_camppp.pdf`

@@ -16,7 +16,7 @@ tags:
   - wevtutil
   - wmic
 source_file: CQC001_E020_M010_Sysinternals_Tools.pdf
-updated: 2026-10-24 00:57:31
+updated: 2026-10-25 00:57:31
 ---
 
 # Trained Command Playbook: `CQC001_E020_M010_Sysinternals_Tools.pdf`

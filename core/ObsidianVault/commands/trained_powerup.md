@@ -10,7 +10,7 @@ tags:
   - privilege_escalation
   - trained
 source_file: PowerUp.pdf
-updated: 2026-10-24 01:00:08
+updated: 2026-10-25 01:00:08
 ---
 
 # Trained Command Playbook: `PowerUp.pdf`

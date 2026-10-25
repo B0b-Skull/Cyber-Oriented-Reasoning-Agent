@@ -10,7 +10,7 @@ tags:
   - snort
   - trained
 source_file: CQC001_E060_M030_iptables_and_Snort.pdf
-updated: 2026-10-23 22:55:22
+updated: 2026-10-25 22:55:22
 ---
 
 # Trained Command Playbook: `CQC001_E060_M030_iptables_and_Snort.pdf`

@@ -10,7 +10,7 @@ tags:
   - wireshark
 source_file: ptrkrysik_camppp.pdf
 doc_type: pdf
-updated: 2026-10-24 01:00:14
+updated: 2026-10-25 01:00:14
 ---
 
 # Trained Knowledge & Architecture: `ptrkrysik_camppp.pdf`

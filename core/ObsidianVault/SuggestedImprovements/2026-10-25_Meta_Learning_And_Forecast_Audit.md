@@ -1,13 +1,13 @@
 ---
 type: meta-learning-audit
-date: 2026-10-26
+date: 2026-10-25
 brier_score: 0.1052
 ece_pct: 4.7
 top_engine: mdp_tactical
 status: ACTIVE
 ---
 
-# Meta-Learning & Next-Tool Forecast Calibration Audit (2026-10-26)
+# Meta-Learning & Next-Tool Forecast Calibration Audit (2026-10-25)
 
 > [!IMPORTANT]
 > Automatically synthesized by **Engine 17 (`meta_learner.py`)** to audit reasoning accuracy, calibrate tool-forecasting weights, and prune redundant diagnostic steps.

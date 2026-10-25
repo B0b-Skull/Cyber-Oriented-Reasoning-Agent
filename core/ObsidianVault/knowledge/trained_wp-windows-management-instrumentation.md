@@ -16,7 +16,7 @@ tags:
   - wmic
 source_file: wp-windows-management-instrumentation.pdf
 doc_type: pdf
-updated: 2026-10-24 01:01:14
+updated: 2026-10-25 01:01:14
 ---
 
 # Trained Knowledge & Architecture: `wp-windows-management-instrumentation.pdf`

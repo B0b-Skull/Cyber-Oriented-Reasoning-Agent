@@ -12,7 +12,7 @@ tags:
   - reconnaissance
   - trained
 source_file: CQC001_E040_M005_WMI_QR_PowerShell_4.0.pdf
-updated: 2026-10-24 00:57:53
+updated: 2026-10-25 00:57:53
 ---
 
 # Trained Command Playbook: `CQC001_E040_M005_WMI_QR_PowerShell_4.0.pdf`

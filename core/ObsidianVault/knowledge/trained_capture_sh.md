@@ -8,7 +8,7 @@ tags:
   - trained
 source_file: capture.sh.txt
 doc_type: text
-updated: 2026-10-24 00:57:03
+updated: 2026-10-25 00:57:03
 ---
 
 # Trained Knowledge & Architecture: `capture.sh.txt`

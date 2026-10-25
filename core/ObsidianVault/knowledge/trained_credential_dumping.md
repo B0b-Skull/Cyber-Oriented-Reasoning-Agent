@@ -24,7 +24,7 @@ tags:
   - trained
 source_file: credential_dumping.pdf
 doc_type: pdf
-updated: 2026-10-24 00:58:07
+updated: 2026-10-25 00:58:07
 ---
 
 # Trained Knowledge & Architecture: `credential_dumping.pdf`

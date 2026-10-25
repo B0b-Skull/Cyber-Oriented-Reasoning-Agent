@@ -7,7 +7,7 @@ tags:
   - text
   - trained
 source_file: PowerShell CMDs.txt
-updated: 2026-10-24 01:00:06
+updated: 2026-10-25 01:00:06
 ---
 
 # Trained Command Playbook: `PowerShell CMDs.txt`

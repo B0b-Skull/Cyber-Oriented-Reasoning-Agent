@@ -17,7 +17,7 @@ tags:
   - trained
   - wmic
 source_file: Basic Survey Commands.txt
-updated: 2026-10-24 00:56:13
+updated: 2026-10-25 00:56:13
 ---
 
 # Trained Command Playbook: `Basic Survey Commands.txt`

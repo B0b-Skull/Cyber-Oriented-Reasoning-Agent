@@ -12,7 +12,7 @@ tags:
   - wireshark
 source_file: MobileHacking_with_SDR-2G-part.pdf
 doc_type: pdf
-updated: 2026-10-24 00:59:14
+updated: 2026-10-25 00:59:14
 ---
 
 # Trained Knowledge & Architecture: `MobileHacking_with_SDR-2G-part.pdf`

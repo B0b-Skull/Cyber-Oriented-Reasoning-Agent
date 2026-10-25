@@ -8,7 +8,7 @@ tags:
   - pdf
   - trained
 source_file: Win32_ComputerSystem class (Windows).pdf
-updated: 2026-10-23 23:11:19
+updated: 2026-10-25 23:11:19
 ---
 
 # Trained Command Playbook: `Win32_ComputerSystem class (Windows).pdf`

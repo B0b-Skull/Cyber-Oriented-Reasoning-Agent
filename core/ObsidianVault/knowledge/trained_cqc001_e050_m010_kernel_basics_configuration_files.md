@@ -7,7 +7,7 @@ tags:
   - trained
 source_file: CQC001_E050_M010_Kernel_Basics_Configuration_Files.pdf
 doc_type: pdf
-updated: 2026-10-24 00:57:57
+updated: 2026-10-25 00:57:57
 ---
 
 # Trained Knowledge & Architecture: `CQC001_E050_M010_Kernel_Basics_Configuration_Files.pdf`

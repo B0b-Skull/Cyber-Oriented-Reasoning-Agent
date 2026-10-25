@@ -10,7 +10,7 @@ tags:
   - text
   - trained
 source_file: Net-SC CMDs.txt
-updated: 2026-10-24 00:59:23
+updated: 2026-10-25 00:59:23
 ---
 
 # Trained Command Playbook: `Net-SC CMDs.txt`
