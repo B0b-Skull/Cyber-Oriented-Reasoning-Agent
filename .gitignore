@@ -1,0 +1,26 @@
+# Exclude large GGUF LLM weights and runtime binaries/data from Git
+models/*.gguf
+models/*.bin
+models/*.safetensors
+models/*.part
+core/models/*.gguf
+core/models/*.bin
+core/models/*.safetensors
+core/models/*.part
+core/bin/
+core/open-webui-data/
+core/Reasoning/.venv/
+core/Reasoning/wheelhouse/
+core/Reasoning/data/shadow_archive/*.log
+core/Reasoning/data/associative_graphs/*.json
+core/Reasoning/data/vsa_spaces/*.json
+core/Reasoning/data/dempster_shafer/*.json
+core/Reasoning/data/sessions/*.json
+core/Reasoning/data/mdp_policies/*.json
+core/Log/*.log
+core/Log/*.pid
+core/Log/*.model
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store

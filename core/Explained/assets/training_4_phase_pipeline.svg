@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 680" width="100%" height="100%" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgTrain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#172033"/>
+    </linearGradient>
+    <linearGradient id="p1Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="p2Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+    <linearGradient id="p3Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="p4Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#c084fc"/>
+    </marker>
+    <marker id="arrOrange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <rect width="1240" height="680" rx="16" fill="url(#bgTrain)" stroke="#334155" stroke-width="2"/>
+  <text x="620" y="42" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">The 4-Phase Document, OCR &amp; Network Diagram Training Pipeline</text>
+  <text x="620" y="66" text-anchor="middle" fill="#94a3b8" font-size="13.5">How CORA Learns Commands, Workflows &amp; Topologies from Training/ Without Context Overload or Engine Corruption</text>
+
+  <!-- PHASE 1 -->
+  <rect x="35" y="96" width="270" height="440" rx="12" fill="#0f2942" stroke="#38bdf8" stroke-width="2"/>
+  <rect x="35" y="96" width="270" height="48" rx="12" fill="url(#p1Grad)"/>
+  <text x="170" y="126" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="800">PHASE 1: MULTI-MODAL INGEST</text>
+
+  <rect x="52" y="162" width="236" height="92" rx="8" fill="#163554" stroke="#7dd3fc" stroke-width="1.2"/>
+  <text x="64" y="184" fill="#38bdf8" font-size="12.5" font-weight="700">1A. Document &amp; PDF Parsers</text>
+  <text x="64" y="204" fill="#e2e8f0" font-size="11.5">• .md, .txt, .rst, .html, .docx</text>
+  <text x="64" y="222" fill="#e2e8f0" font-size="11.5">• .pdf (PyMuPDF / pypdf + images)</text>
+  <text x="64" y="240" fill="#e2e8f0" font-size="11.5">• .sh, .ps1, .py, .json, .yaml, .log</text>
+
+  <rect x="52" y="270" width="236" height="114" rx="8" fill="#163554" stroke="#7dd3fc" stroke-width="1.2"/>
+  <text x="64" y="292" fill="#38bdf8" font-size="12.5" font-weight="700">1B. OCR &amp; Diagram Analyzer</text>
+  <text x="64" y="312" fill="#e2e8f0" font-size="11.5">• Neural OCR (RapidOCR / Tesseract)</text>
+  <text x="64" y="330" fill="#e2e8f0" font-size="11.5">  reads text inside .png/.jpg/.webp</text>
+  <text x="64" y="348" fill="#e2e8f0" font-size="11.5">• Extracts IPs, CIDR subnets, ports,</text>
+  <text x="64" y="366" fill="#e2e8f0" font-size="11.5">  host boxes &amp; topology arrows</text>
+
+  <rect x="52" y="400" width="236" height="116" rx="8" fill="#0c1e33" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="64" y="422" fill="#fde047" font-size="12.5" font-weight="700">1C. Zero-Overload Chunking</text>
+  <text x="64" y="442" fill="#e2e8f0" font-size="11.5">• Splits large docs into isolated</text>
+  <text x="64" y="460" fill="#e2e8f0" font-size="11.5">  6,000-char chunks per LLM pass</text>
+  <text x="64" y="478" fill="#e2e8f0" font-size="11.5">• SHA-256 Manifest skips unchanged</text>
+  <text x="64" y="496" fill="#e2e8f0" font-size="11.5">  files on future runs</text>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="305" y1="315" x2="333" y2="315" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrBlue)"/>
+
+  <!-- PHASE 2 -->
+  <rect x="335" y="96" width="275" height="440" rx="12" fill="#23123b" stroke="#c084fc" stroke-width="2"/>
+  <rect x="335" y="96" width="275" height="48" rx="12" fill="url(#p2Grad)"/>
+  <text x="472" y="126" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="800">PHASE 2: 3-BUCKET DISTILLATION</text>
+
+  <rect x="352" y="162" width="241" height="106" rx="8" fill="#321854" stroke="#e879f9" stroke-width="1.2"/>
+  <text x="364" y="184" fill="#f5d0fe" font-size="12.5" font-weight="700">Bucket 1: Command Playbooks</text>
+  <text x="364" y="204" fill="#e2e8f0" font-size="11.5">• Exact CLI syntax &amp; required flags</text>
+  <text x="364" y="222" fill="#e2e8f0" font-size="11.5">• Non-interactive parameters</text>
+  <text x="364" y="240" fill="#e2e8f0" font-size="11.5">• Target protocols &amp; [[WikiLinks]]</text>
+
+  <rect x="352" y="284" width="241" height="106" rx="8" fill="#321854" stroke="#e879f9" stroke-width="1.2"/>
+  <text x="364" y="306" fill="#f5d0fe" font-size="12.5" font-weight="700">Bucket 2: Processes &amp; Topologies</text>
+  <text x="364" y="326" fill="#e2e8f0" font-size="11.5">• Step-by-step decision workflows</text>
+  <text x="364" y="344" fill="#e2e8f0" font-size="11.5">• Network diagram nodes, VLANs,</text>
+  <text x="364" y="362" fill="#e2e8f0" font-size="11.5">  gateways, subnets &amp; serial links</text>
+
+  <rect x="352" y="406" width="241" height="110" rx="8" fill="#321854" stroke="#e879f9" stroke-width="1.2"/>
+  <text x="364" y="428" fill="#f5d0fe" font-size="12.5" font-weight="700">Bucket 3: Symbolic Solver Rules</text>
+  <text x="364" y="448" fill="#e2e8f0" font-size="11.5">• Error Symptom -&gt; Fix Command</text>
+  <text x="364" y="466" fill="#e2e8f0" font-size="11.5">  pairs for Engine 11 (CBR)</text>
+  <text x="364" y="484" fill="#e2e8f0" font-size="11.5">• Precondition -&gt; Action -&gt; Post</text>
+  <text x="364" y="502" fill="#e2e8f0" font-size="11.5">  blocks for Engine 14 (MAP-Elites)</text>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="610" y1="315" x2="638" y2="315" stroke="#c084fc" stroke-width="2.5" marker-end="url(#arrPurple)"/>
+
+  <!-- PHASE 3 -->
+  <rect x="640" y="96" width="265" height="440" rx="12" fill="#2e1d09" stroke="#f59e0b" stroke-width="2"/>
+  <rect x="640" y="96" width="265" height="48" rx="12" fill="url(#p3Grad)"/>
+  <text x="772" y="126" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="800">PHASE 3: CEGAR GATEKEEPER</text>
+
+  <rect x="657" y="162" width="231" height="145" rx="8" fill="#42280b" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="669" y="186" fill="#fde047" font-size="12.5" font-weight="700">Engine 12 Pre-Save Verification</text>
+  <text x="669" y="208" fill="#e2e8f0" font-size="11.5">• Runs bash -n syntax check on</text>
+  <text x="669" y="226" fill="#e2e8f0" font-size="11.5">  every extracted command</text>
+  <text x="669" y="244" fill="#e2e8f0" font-size="11.5">• Checks for hanging flags (tio/ping)</text>
+  <text x="669" y="262" fill="#e2e8f0" font-size="11.5">• Validates IPv4/CIDR notation</text>
+  <text x="669" y="286" fill="#6ee7b7" font-size="11" font-weight="700">Result: Zero Solver Corruption</text>
+
+  <rect x="657" y="325" width="231" height="190" rx="8" fill="#42280b" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="669" y="349" fill="#fde047" font-size="12.5" font-weight="700">Entity &amp; Graph Normalization</text>
+  <text x="669" y="371" fill="#e2e8f0" font-size="11.5">• Extracts clean canonical tags</text>
+  <text x="669" y="389" fill="#e2e8f0" font-size="11.5">  (IPs, protocols, CVEs, tools)</text>
+  <text x="669" y="407" fill="#e2e8f0" font-size="11.5">• Prevents generic word noise in</text>
+  <text x="669" y="425" fill="#e2e8f0" font-size="11.5">  Engine 1 Bipartite Vault Graph</text>
+  <text x="669" y="449" fill="#e2e8f0" font-size="11.5">• Deduplicates against existing</text>
+  <text x="669" y="467" fill="#e2e8f0" font-size="11.5">  Vault notes &amp; solver rules</text>
+  <text x="669" y="495" fill="#6ee7b7" font-size="11" font-weight="700">Result: High-Signal PageRank</text>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="905" y1="315" x2="933" y2="315" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrOrange)"/>
+
+  <!-- PHASE 4 -->
+  <rect x="935" y="96" width="270" height="440" rx="12" fill="#062e22" stroke="#10b981" stroke-width="2"/>
+  <rect x="935" y="96" width="270" height="48" rx="12" fill="url(#p4Grad)"/>
+  <text x="1070" y="126" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="800">PHASE 4: TIERED VAULT &amp; ENGINES</text>
+
+  <rect x="952" y="162" width="236" height="112" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.2"/>
+  <text x="964" y="184" fill="#6ee7b7" font-size="12.5" font-weight="700">Obsidian Cold Storage (Tier-2)</text>
+  <text x="964" y="204" fill="#ecfdf5" font-size="11.5">• ObsidianVault/commands/trained_*</text>
+  <text x="964" y="222" fill="#ecfdf5" font-size="11.5">• ObsidianVault/knowledge/trained_*</text>
+  <text x="964" y="240" fill="#ecfdf5" font-size="11.5">• ObsidianVault/00_TRAINED_INDEX.md</text>
+  <text x="964" y="260" fill="#fde047" font-size="11" font-weight="600">00_MEMORY_INDEX stays ultra-compact!</text>
+
+  <rect x="952" y="290" width="236" height="112" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.2"/>
+  <text x="964" y="312" fill="#6ee7b7" font-size="12.5" font-weight="700">14-Engine Rule Injection</text>
+  <text x="964" y="332" fill="#ecfdf5" font-size="11.5">• Reasoning/data/trained_rules.json</text>
+  <text x="964" y="350" fill="#ecfdf5" font-size="11.5">• Live-loaded by Engine 1, Engine 2,</text>
+  <text x="964" y="368" fill="#ecfdf5" font-size="11.5">  Engine 6, Engine 11 &amp; Engine 14</text>
+  <text x="964" y="388" fill="#fde047" font-size="11" font-weight="600">0 MB Extra GPU VRAM Used!</text>
+
+  <rect x="952" y="418" width="236" height="98" rx="8" fill="#022c22" stroke="#10b981" stroke-width="1.5"/>
+  <text x="964" y="440" fill="#34d399" font-size="12.5" font-weight="700">On-Demand Page-In During Chat</text>
+  <text x="964" y="460" fill="#ecfdf5" font-size="11.5">• Context VM &amp; /relentless page in</text>
+  <text x="964" y="478" fill="#ecfdf5" font-size="11.5">  ONLY top 2-3 matching trained notes</text>
+  <text x="964" y="496" fill="#ecfdf5" font-size="11.5">  per turn (Zero Context Overflow)</text>
+
+  <!-- Bottom Summary Banner -->
+  <rect x="35" y="558" width="1170" height="92" rx="12" fill="#1e293b" stroke="#64748b" stroke-width="1.8"/>
+  <text x="620" y="588" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="700">How to Trigger the Training Pipeline Anytime</text>
+  <text x="620" y="614" text-anchor="middle" fill="#38bdf8" font-size="13.5" font-weight="600">CLI Switch: ./run_cora_NIX.sh -train Training   |   Standalone: ./Training/train_llm_NIX.sh Training   |   In-CLI: You&gt; /train Training</text>
+  <text x="620" y="636" text-anchor="middle" fill="#cbd5e1" font-size="12.5">Supports: .md, .txt, .pdf, .docx, .html, .sh, .ps1, .py, .json, .yaml, .csv, .log + OCR &amp; Network Diagram Images (.png, .jpg, .webp, .svg)</text>
+</svg>

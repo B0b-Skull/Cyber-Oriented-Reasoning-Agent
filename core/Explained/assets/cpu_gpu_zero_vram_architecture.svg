@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" width="100%" height="100%" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <marker id="arrLoop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="540" rx="16" fill="url(#bg3)" stroke="#334155" stroke-width="2"/>
+  <text x="600" y="42" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">Zero-VRAM Hardware Split &amp; The /relentless Self-Correcting Loop</text>
+  <text x="600" y="66" text-anchor="middle" fill="#94a3b8" font-size="13.5">Why Separating Neural Generation (GPU) from Symbolic Reasoning (CPU) Maximizes Both Speed and Accuracy</text>
+
+  <!-- Left Panel: GPU Domain -->
+  <rect x="45" y="95" width="525" height="395" rx="14" fill="#062e22" stroke="#10b981" stroke-width="2.2"/>
+  <rect x="45" y="95" width="525" height="48" rx="14" fill="#047857"/>
+  <text x="307" y="125" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="800">GPU VRAM DOMAIN (100% Dedicated to Local LLM)</text>
+
+  <rect x="75" y="165" width="465" height="95" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+  <text x="307" y="193" text-anchor="middle" fill="#6ee7b7" font-size="15" font-weight="700">Active GGUF Model Weights &amp; KV Context Cache</text>
+  <text x="95" y="218" fill="#ecfdf5" font-size="12.5">• Qwen3.8-27B-Uncensored (Default) or Qwen3.5-9B (Fast)</text>
+  <text x="95" y="240" fill="#ecfdf5" font-size="12.5">• Static System Prompt Prefix = 100% KV-Cache Hit Rate</text>
+
+  <rect x="75" y="280" width="465" height="90" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+  <text x="307" y="308" text-anchor="middle" fill="#6ee7b7" font-size="15" font-weight="700">What the Local LLM Does Best</text>
+  <text x="95" y="332" fill="#ecfdf5" font-size="12.5">• Natural language comprehension &amp; intent translation</text>
+  <text x="95" y="352" fill="#ecfdf5" font-size="12.5">• Synthesizing human-readable reports &amp; JSON tool calls</text>
+
+  <rect x="75" y="390" width="465" height="75" rx="10" fill="#022c22" stroke="#10b981" stroke-width="1.5"/>
+  <text x="307" y="418" text-anchor="middle" fill="#fde047" font-size="14" font-weight="700">Reasoning Engine VRAM Overhead: 0 MB</text>
+  <text x="307" y="442" text-anchor="middle" fill="#a7f3d0" font-size="12">Every MB of GPU VRAM is preserved for model layers &amp; context length</text>
+
+  <!-- Right Panel: CPU & RAM Domain -->
+  <rect x="630" y="95" width="525" height="395" rx="14" fill="#0f2942" stroke="#38bdf8" stroke-width="2.2"/>
+  <rect x="630" y="95" width="525" height="48" rx="14" fill="#0284c7"/>
+  <text x="892" y="125" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="800">CPU &amp; SYSTEM RAM DOMAIN (14 Reasoning Engines)</text>
+
+  <rect x="660" y="165" width="465" height="95" rx="10" fill="#1e3a5f" stroke="#7dd3fc" stroke-width="1.5"/>
+  <text x="892" y="193" text-anchor="middle" fill="#7dd3fc" font-size="15" font-weight="700">14 Deterministic &amp; Mathematical Engines (~168 ms)</text>
+  <text x="680" y="218" fill="#f0f9ff" font-size="12.5">• Z3 SMT Prover, Clingo ASP Solver, Bayesian &amp; Dempster-Shafer</text>
+  <text x="680" y="240" fill="#f0f9ff" font-size="12.5">• 16,384-D / 32,768-D VSA, MAP-Elites Evolution, CEGAR, SyGuS</text>
+
+  <rect x="660" y="280" width="465" height="90" rx="10" fill="#1e3a5f" stroke="#7dd3fc" stroke-width="1.5"/>
+  <text x="892" y="308" text-anchor="middle" fill="#7dd3fc" font-size="15" font-weight="700">Zero-Loss Context VM &amp; Obsidian Vault</text>
+  <text x="680" y="332" fill="#f0f9ff" font-size="12.5">• Lossless Shadow Archive + L1 Symbolic State Register</text>
+  <text x="680" y="352" fill="#f0f9ff" font-size="12.5">• Persistent Attempt Ledger (ObsidianVault/projects/goal_*.md)</text>
+
+  <rect x="660" y="390" width="465" height="75" rx="10" fill="#0c192c" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="892" y="418" text-anchor="middle" fill="#fde047" font-size="14" font-weight="700">Auto-Scales Across 4 Hardware Tiers</text>
+  <text x="892" y="442" text-anchor="middle" fill="#bae6fd" font-size="12">Laptop (6 GB VRAM) -&gt; Dual Xeon + 512 GB RAM + 48 GB RTX A6000</text>
+
+  <!-- Bidirectional Bridge Arrows -->
+  <line x1="572" y1="235" x2="628" y2="235" stroke="#38bdf8" stroke-width="3" marker-end="url(#arrLoop)"/>
+  <line x1="628" y1="325" x2="572" y2="325" stroke="#38bdf8" stroke-width="3" marker-end="url(#arrLoop)"/>
+  <text x="600" y="222" text-anchor="middle" fill="#7dd3fc" font-size="11" font-weight="700">Tool Calls</text>
+  <text x="600" y="348" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="700">Verified Plan</text>
+</svg>

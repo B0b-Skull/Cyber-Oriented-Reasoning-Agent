@@ -1,0 +1,8 @@
+{
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "knowledge",
+  "showUnsupportedFiles": false,
+  "strictLineBreaks": false,
+  "readableLineLength": true
+}

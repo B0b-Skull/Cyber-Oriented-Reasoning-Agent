@@ -1,0 +1,23 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: local-open-webui
+    network_mode: host
+    environment:
+      - HOST=127.0.0.1
+      - PORT=3000
+      - ENABLE_OLLAMA_API=false
+      - OPENAI_API_BASE_URL=http://127.0.0.1:8080/v1
+      - OPENAI_API_KEY=sk-local-llama-cpp
+      - WEBUI_AUTH=false
+      - DEFAULT_MODELS=${ACTIVE_MODEL_ALIAS:-Qwen3.8-27B-Uncensored-Q3_K_M}
+      - TASK_MODEL=${ACTIVE_MODEL_ALIAS:-Qwen3.8-27B-Uncensored-Q3_K_M}
+      - ENABLE_AUTOCOMPLETE_GENERATION=false
+      - ENABLE_TAGS_GENERATION=false
+      - ENABLE_SEARCH_QUERY_GENERATION=false
+      - ENABLE_FOLLOW_UP_GENERATION=false
+      - ENABLE_WEB_SEARCH=false
+      - OFFLINE_MODE=true
+    volumes:
+      - ./open-webui-data:/app/backend/data
+    restart: unless-stopped

@@ -1,0 +1,17 @@
+{
+  "cases": [
+    {
+      "case_id": "CBR-AUTO-101",
+      "binary": "ping",
+      "exit_code": 2,
+      "error_pattern": "ping:\\ connect:\\ Network\\ is\\ unreachable",
+      "stderr_pattern": "ping:\\ connect:\\ Network\\ is\\ unreachable",
+      "symptom": "Auto-learned failure on `ping` (ping: connect: Network is unreachable)",
+      "root_cause": "Auto-learned failure on `ping -c 1 -W 1 <TARGET_IP>` (ping: connect: Network is unreachable)",
+      "verified_fix": "ip -4 -br addr show",
+      "verified_remediation": "ip -4 -br addr show",
+      "verification_probe": "ip -4 -br addr show",
+      "learned_at_utc": "2026-10-27T16:03:12.814492+00:00"
+    }
+  ]
+}

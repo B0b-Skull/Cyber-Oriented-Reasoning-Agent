@@ -1,0 +1,25 @@
+{
+  "mode": "AUTO",
+  "hardware_tier": "ULTRA_SERVER_DATACENTER",
+  "continual_pass2_max_candidates": 16,
+  "continual_audit_window": 500,
+  "is_currently_running": false,
+  "last_fast_refinement_utc": "2026-10-27T18:29:10.501890+00:00",
+  "last_consolidation_utc": "2026-10-27T15:35:19.242871+00:00",
+  "last_meta_audit_utc": null,
+  "last_ablation_sweep_utc": null,
+  "online_commands_observed": 174,
+  "online_cbr_rules_learned": 1,
+  "consolidation_cycles_completed": 1,
+  "dirichlet_forgetting_lambda": 0.96,
+  "pending_failure_context": null,
+  "memory_tiers_status": {
+    "1_working_memory": "ACTIVE (ZeroLossContextVM + SpeculativeLookaheadCache < 1 ms)",
+    "2_episodic_memory": "ACTIVE (temporal_fluents + shadow_archive + ObsidianVault/reasoning/)",
+    "3_semantic_memory": "ACTIVE (1,024-D VSA Somatic Markers + Bipartite Vault Graph)",
+    "4_procedural_memory": "ACTIVE (H-MDP 5,039 Transitions + RL Policy Table + CBR Library)",
+    "5_experimental_memory": "ACTIVE (Hedge Meta-Arbiter + SuggestedImprovements/)"
+  },
+  "updated_at_utc": "2026-10-28T03:57:14.435299+00:00",
+  "recent_command_history": []
+}

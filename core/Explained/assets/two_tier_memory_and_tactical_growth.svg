@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 780" width="100%" height="100%" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="projGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="gateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="vaultGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="tacticGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#c084fc"/>
+    </marker>
+  </defs>
+
+  <!-- Outer Frame -->
+  <rect width="1240" height="780" rx="16" fill="url(#bgGrad)" stroke="#334155" stroke-width="2"/>
+
+  <!-- Title Banner -->
+  <text x="620" y="42" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">Two-Tier Memory Isolation &amp; Continual Tactical Growth Architecture (v4.5.0-15Engine-Core)</text>
+  <text x="620" y="68" text-anchor="middle" fill="#94a3b8" font-size="13.5">Traps dirty local network IPs &amp; test downloads inside Projects/&lt;name&gt;/ while continuously growing universal tactics &amp; 15-Engine policies</text>
+
+  <!-- Top Center: CORA Agent CLI Execution -->
+  <rect x="330" y="88" width="580" height="74" rx="12" fill="#172554" stroke="#60a5fa" stroke-width="2"/>
+  <text x="620" y="116" text-anchor="middle" fill="#ffffff" font-size="15.5" font-weight="700">CORA SYSTEM AGENT CLI (`core/agent-cli.py` + `Qwen3.8-27B` / `Qwen3.5-9B`)</text>
+  <text x="620" y="138" text-anchor="middle" fill="#bfdbfe" font-size="12.5">Executes `run_shell_command`, `scan_target`, `project_tracker`, `vault_save_note`, `write_file`, `neuro_symbolic_reason`</text>
+  <text x="620" y="154" text-anchor="middle" fill="#93c5fd" font-size="11.5">Bottom-Pinned Hardware HUD (`DECSTBM 1..rows-1`) + 15-Engine CPU Sidecar (`0 MB Extra GPU VRAM`, `~9.1 ms`)</text>
+
+  <!-- Arrows from Agent CLI to Left (Projects/) and Center Gate -->
+  <path d="M 450 162 L 245 210" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)"/>
+  <path d="M 620 162 L 620 210" stroke="#fbbf24" stroke-width="2.5" fill="none" marker-end="url(#arrowGold)"/>
+  <path d="M 790 162 L 985 210" stroke="#34d399" stroke-width="2.5" fill="none" marker-end="url(#arrowGreen)"/>
+
+  <!-- LEFT COLUMN: Tier-2 Isolated Project Workspace (Projects/<name>/) -->
+  <rect x="35" y="216" width="420" height="450" rx="14" fill="#0c1e35" stroke="#0284c7" stroke-width="2.5"/>
+  <rect x="35" y="216" width="420" height="54" rx="14" fill="url(#projGrad)"/>
+  <text x="245" y="242" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">TIER-2: ISOLATED PROJECT WORKSPACE</text>
+  <text x="245" y="261" text-anchor="middle" fill="#e0f2fe" font-size="12">`CORA/Projects/&lt;project_name&gt;/` (or `active_session/`)</text>
+
+  <text x="55" y="294" fill="#7dd3fc" font-size="13" font-weight="700">Containment of Local Network &amp; Test Artifacts:</text>
+
+  <rect x="55" y="308" width="380" height="56" rx="8" fill="#112a46" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="68" y="328" fill="#f8fafc" font-size="12.5" font-weight="700">1. `Projects/&lt;name&gt;/memory.md` (Project Memory)</text>
+  <text x="68" y="348" fill="#cbd5e1" font-size="11.5">Stores project plan, verified target IPs, `/goal` Attempt Ledger &amp; index.</text>
+
+  <rect x="55" y="374" width="380" height="56" rx="8" fill="#112a46" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="68" y="394" fill="#f8fafc" font-size="12.5" font-weight="700">2. `Projects/&lt;name&gt;/downloads/` &amp; `artifacts/`</text>
+  <text x="68" y="414" fill="#cbd5e1" font-size="11.5">All `curl -o`, `wget -O`, `/tmp/*` redirects, API dumps &amp; test scripts.</text>
+
+  <rect x="55" y="440" width="380" height="56" rx="8" fill="#112a46" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="68" y="460" fill="#f8fafc" font-size="12.5" font-weight="700">3. `Projects/&lt;name&gt;/targets/` (Local Topology &amp; Scans)</text>
+  <text x="68" y="480" fill="#cbd5e1" font-size="11.5">`scan_target` reports &amp; live host `local_network_topology.md` (NIC/ARP).</text>
+
+  <rect x="55" y="506" width="380" height="56" rx="8" fill="#112a46" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="68" y="526" fill="#f8fafc" font-size="12.5" font-weight="700">4. `Projects/&lt;name&gt;/notes/` &amp; `reasoning/`</text>
+  <text x="68" y="546" fill="#cbd5e1" font-size="11.5">Session `vault_save_note` findings &amp; `pipeline15_*` target diagnostics.</text>
+
+  <rect x="55" y="576" width="380" height="72" rx="8" fill="#1e1b4b" stroke="#f43f5e" stroke-width="1.5"/>
+  <text x="245" y="600" text-anchor="middle" fill="#fda4af" font-size="12.5" font-weight="700">ZERO LEAKAGE TO LONG-TERM OBSIDIAN VAULT</text>
+  <text x="245" y="620" text-anchor="middle" fill="#fecdd3" font-size="11.5">Deleting or archiving `Projects/&lt;name&gt;/` removes 100% of</text>
+  <text x="245" y="636" text-anchor="middle" fill="#fecdd3" font-size="11.5">dirty local IPs, MACs, hostnames, and temporary test files.</text>
+
+  <!-- CENTER COLUMN: Symbolic Abstraction & Isolation Firewall -->
+  <rect x="485" y="216" width="270" height="450" rx="14" fill="#271a07" stroke="#f59e0b" stroke-width="2.5"/>
+  <rect x="485" y="216" width="270" height="54" rx="14" fill="url(#gateGrad)"/>
+  <text x="620" y="242" text-anchor="middle" fill="#ffffff" font-size="14.5" font-weight="700">ISOLATION &amp; ABSTRACTION</text>
+  <text x="620" y="261" text-anchor="middle" fill="#fef3c7" font-size="11.5">Sanitization &amp; Parameterization Gate</text>
+
+  <rect x="502" y="288" width="236" height="105" rx="8" fill="#3b2506" stroke="#d97706" stroke-width="1.5"/>
+  <text x="620" y="310" text-anchor="middle" fill="#fde68a" font-size="12.5" font-weight="700">IP &amp; Path Parameterizer</text>
+  <text x="620" y="330" text-anchor="middle" fill="#fef3c7" font-size="11">`_parameterize_tactical_template()`</text>
+  <text x="514" y="352" fill="#cbd5e1" font-size="11">• `172.24.x.y`  -&gt; `&lt;TARGET_IP&gt;`</text>
+  <text x="514" y="369" fill="#cbd5e1" font-size="11">• `10.x.y.0/24` -&gt; `&lt;REMOTE_SUBNET&gt;`</text>
+  <text x="514" y="386" fill="#cbd5e1" font-size="11">• `/home/user/..` -&gt; `$PROJECT_DIR`</text>
+
+  <rect x="502" y="408" width="236" height="110" rx="8" fill="#3b2506" stroke="#d97706" stroke-width="1.5"/>
+  <text x="620" y="430" text-anchor="middle" fill="#fde68a" font-size="12.5" font-weight="700">12-Bit Symbolic World-Model</text>
+  <text x="620" y="450" text-anchor="middle" fill="#fef3c7" font-size="11">`encode_symbolic_rl_state()`</text>
+  <text x="514" y="472" fill="#cbd5e1" font-size="11">• Converts raw CLI output into</text>
+  <text x="514" y="489" fill="#cbd5e1" font-size="11">  topology-invariant OSI bits:</text>
+  <text x="514" y="506" fill="#fde68a" font-size="11" font-weight="600">  `S_&lt;Cluster&gt;::&lt;OSI_Stage&gt;`</text>
+
+  <rect x="502" y="534" width="236" height="114" rx="8" fill="#3b2506" stroke="#d97706" stroke-width="1.5"/>
+  <text x="620" y="556" text-anchor="middle" fill="#fde68a" font-size="12.5" font-weight="700">Unified Hybrid Search</text>
+  <text x="620" y="576" text-anchor="middle" fill="#fef3c7" font-size="11">`vault_search` &amp; `vault_read_note`</text>
+  <text x="514" y="598" fill="#cbd5e1" font-size="11">• Reads active `Projects/&lt;name&gt;/`</text>
+  <text x="514" y="615" fill="#cbd5e1" font-size="11">  AND `ObsidianVault/` playbooks</text>
+  <text x="514" y="632" fill="#cbd5e1" font-size="11">  together during inference.</text>
+
+  <!-- Arrow from Center Gate to Right Bottom (Continual Tactical Growth) -->
+  <path d="M 755 460 L 785 460" stroke="#c084fc" stroke-width="2.5" fill="none" marker-end="url(#arrowPurple)"/>
+
+  <!-- RIGHT COLUMN TOP: Tier-1 Long-Term Universal ObsidianVault -->
+  <rect x="785" y="216" width="420" height="205" rx="14" fill="#06281e" stroke="#10b981" stroke-width="2.5"/>
+  <rect x="785" y="216" width="420" height="50" rx="14" fill="url(#vaultGrad)"/>
+  <text x="995" y="240" text-anchor="middle" fill="#ffffff" font-size="14.5" font-weight="700">TIER-1: UNIVERSAL LONG-TERM VAULT</text>
+  <text x="995" y="258" text-anchor="middle" fill="#d1fae5" font-size="11.5">`CORA/core/ObsidianVault/` (100% Clean &amp; Portable)</text>
+
+  <text x="805" y="290" fill="#6ee7b7" font-size="12" font-weight="700">Updated ONLY by `/train` (`Training/`) &amp; `/remember`:</text>
+  <text x="805" y="314" fill="#e2e8f0" font-size="11.5">• `00_MEMORY_INDEX.md` &amp; `00_TRAINED_INDEX.md` (86 WikiLinks)</text>
+  <text x="805" y="336" fill="#e2e8f0" font-size="11.5">• `knowledge/trained_*.md` (200 Handbooks / 344 Vault Notes)</text>
+  <text x="805" y="358" fill="#e2e8f0" font-size="11.5">• `commands/` (`curl_playbook`, `tio_serial_playbook`, CLI guides)</text>
+  <text x="805" y="380" fill="#e2e8f0" font-size="11.5">• `reasoning/` (`rl_network_policy_playbooks`, `spectral_pca_manifold`)</text>
+  <text x="805" y="404" fill="#34d399" font-size="11.5" font-weight="700">✓ Zero Local Host IPs, Zero Usernames, Zero Session Clutter</text>
+
+  <!-- RIGHT COLUMN BOTTOM: Continual Tactical & Process Growth (Reasoning/data/) -->
+  <rect x="785" y="436" width="420" height="230" rx="14" fill="#1e1038" stroke="#a855f7" stroke-width="2.5"/>
+  <rect x="785" y="436" width="420" height="50" rx="14" fill="url(#tacticGrad)"/>
+  <text x="995" y="460" text-anchor="middle" fill="#ffffff" font-size="14.5" font-weight="700">CONTINUAL TACTICAL &amp; PROCESS GROWTH</text>
+  <text x="995" y="478" text-anchor="middle" fill="#f3e8ff" font-size="11.5">`CORA/core/Reasoning/data/` (Abstracted Mathematical Policies)</text>
+
+  <text x="805" y="510" fill="#d8b4fe" font-size="12" font-weight="700">Grows Smarter on Every Command Without Storing Target IPs:</text>
+  <text x="805" y="534" fill="#e2e8f0" font-size="11.5">• <tspan fill="#f0abfc" font-weight="700">Engine 11 H-MDP (`mdp_transitions.json`):</tspan> Updates Dirichlet</text>
+  <text x="818" y="551" fill="#cbd5e1" font-size="11">  `alpha_success / alpha_fail` &amp; Bellman `Q*(s,a)` across 5,039 tactics.</text>
+  <text x="805" y="572" fill="#e2e8f0" font-size="11.5">• <tspan fill="#f0abfc" font-weight="700">Engine 14 Trajectory RL (`rl_policy_table.json`):</tspan> Updates `TD(λ)`</text>
+  <text x="818" y="589" fill="#cbd5e1" font-size="11">  Pessimistic `Q_LCB` across 12-bit OSI stages (`L1 -&gt; L2 -&gt; L3 -&gt; L4 -&gt; L7`).</text>
+  <text x="805" y="610" fill="#e2e8f0" font-size="11.5">• <tspan fill="#f0abfc" font-weight="700">Engine 12 Continual CBR (`learned_cbr_cases.json`):</tspan> Synthesizes</text>
+  <text x="818" y="627" fill="#cbd5e1" font-size="11">  parameterized `&lt;TARGET_IP&gt;` failure -&gt; remediation rules automatically.</text>
+  <text x="805" y="648" fill="#e2e8f0" font-size="11.5">• <tspan fill="#f0abfc" font-weight="700">Engine 5 &amp; 13 Somatic + Hedge Weights:</tspan> Calibrates engine trust.</text>
+
+  <!-- Footer Summary Bar -->
+  <rect x="35" y="684" width="1170" height="72" rx="10" fill="#0f172a" stroke="#475569" stroke-width="1.5"/>
+  <text x="620" y="710" text-anchor="middle" fill="#38bdf8" font-size="13.5" font-weight="700">PORTABLE REPLICATION GUARANTEE (`CORA` &amp; `setup_cora_NIX.sh` / `setup_cora_WIN.ps1`)</text>
+  <text x="620" y="731" text-anchor="middle" fill="#cbd5e1" font-size="12">When copied to a new laptop or server, 100% of your trained handbooks (`208` docs), primitives (`4,936`), and learned H-MDP/RL tactical policies (`5,039` transitions)</text>
+  <text x="620" y="748" text-anchor="middle" fill="#cbd5e1" font-size="12">transfer intact, while `Projects/` keeps all local host IPs, target scans, and downloaded test files strictly isolated to the local project workspace.</text>
+</svg>

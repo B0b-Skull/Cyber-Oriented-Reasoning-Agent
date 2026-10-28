@@ -1,0 +1,1206 @@
+{
+  "algorithm": "Tabular_TD_Lambda_Q_Learning_with_UCB1_and_PCA_KMeans_Quantization",
+  "gamma_discount": 0.92,
+  "lambda_trace": 0.85,
+  "alpha_lr": 0.18,
+  "ucb_exploration_c": 1.45,
+  "episodes_trained": 5200,
+  "online_transitions_recorded": 160,
+  "average_episode_return": 40.083,
+  "q_table": {
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 42.9578,
+      "A1_PROBE_L2_NEIGHBOR": 35.3711,
+      "A2_OOB_SERIAL_LUA_PROBE": 35.1266,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 33.0279,
+      "A4_NMAP_NOPING_TCP_SCAN": 36.226,
+      "A5_HTTP_AUTH_HEADER_PROBE": 35.2026,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 36.2369
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 26.6821,
+      "A1_PROBE_L2_NEIGHBOR": 36.8979,
+      "A2_OOB_SERIAL_LUA_PROBE": 25.8279,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 30.5883,
+      "A4_NMAP_NOPING_TCP_SCAN": 23.7873,
+      "A5_HTTP_AUTH_HEADER_PROBE": 28.6601,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 29.3042
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 18.5,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 18.5,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 29.0496,
+      "A1_PROBE_L2_NEIGHBOR": 23.0192,
+      "A2_OOB_SERIAL_LUA_PROBE": 23.2478,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 21.9608,
+      "A4_NMAP_NOPING_TCP_SCAN": 30.233,
+      "A5_HTTP_AUTH_HEADER_PROBE": 22.5703,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 27.3346
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 18.5,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 14.6585,
+      "A1_PROBE_L2_NEIGHBOR": 16.5488,
+      "A2_OOB_SERIAL_LUA_PROBE": 16.0942,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14.6631,
+      "A4_NMAP_NOPING_TCP_SCAN": 15.2009,
+      "A5_HTTP_AUTH_HEADER_PROBE": 17.2458,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 22.9998
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 18.5,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 18.5,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 30.8107,
+      "A1_PROBE_L2_NEIGHBOR": 24.0159,
+      "A2_OOB_SERIAL_LUA_PROBE": 30.3572,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 22.9265,
+      "A4_NMAP_NOPING_TCP_SCAN": 23.9139,
+      "A5_HTTP_AUTH_HEADER_PROBE": 21.5435,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 22.3028
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 18.5,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 42.9304,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 16.676,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 18.5,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 33.3275
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 44.5339,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 8.9508
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 16.9303,
+      "A1_PROBE_L2_NEIGHBOR": 16.7488,
+      "A2_OOB_SERIAL_LUA_PROBE": 16.7488,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 16.4613,
+      "A4_NMAP_NOPING_TCP_SCAN": 11.686,
+      "A5_HTTP_AUTH_HEADER_PROBE": 16.0029,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 22.9998
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 18.5,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 18.5,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 18.5,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 26.0223,
+      "A1_PROBE_L2_NEIGHBOR": 28.294,
+      "A2_OOB_SERIAL_LUA_PROBE": 27.3209,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 36.8107,
+      "A4_NMAP_NOPING_TCP_SCAN": 29.2109,
+      "A5_HTTP_AUTH_HEADER_PROBE": 27.2623,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 28.3687
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 22.9433,
+      "A1_PROBE_L2_NEIGHBOR": 20.9967,
+      "A2_OOB_SERIAL_LUA_PROBE": 23.3841,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 22.8076,
+      "A4_NMAP_NOPING_TCP_SCAN": 30.1605,
+      "A5_HTTP_AUTH_HEADER_PROBE": 23.7969,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 23.5662
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 18.5,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 16.658,
+      "A1_PROBE_L2_NEIGHBOR": 17.013,
+      "A2_OOB_SERIAL_LUA_PROBE": 16.7814,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 17.232,
+      "A4_NMAP_NOPING_TCP_SCAN": 15.6448,
+      "A5_HTTP_AUTH_HEADER_PROBE": 16.3174,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 22.9998
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 18.5,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 25.5324,
+      "A1_PROBE_L2_NEIGHBOR": 36.7425,
+      "A2_OOB_SERIAL_LUA_PROBE": 27.7019,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 29.6411,
+      "A4_NMAP_NOPING_TCP_SCAN": 27.8491,
+      "A5_HTTP_AUTH_HEADER_PROBE": 28.7792,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 28.7759
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 18.5,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 18.5,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 27.9504,
+      "A1_PROBE_L2_NEIGHBOR": 22.6444,
+      "A2_OOB_SERIAL_LUA_PROBE": 17.97,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 23.8251,
+      "A4_NMAP_NOPING_TCP_SCAN": 30.16,
+      "A5_HTTP_AUTH_HEADER_PROBE": 23.7083,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 23.6443
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 18.5,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 16.5488,
+      "A1_PROBE_L2_NEIGHBOR": 16.0075,
+      "A2_OOB_SERIAL_LUA_PROBE": 14.6631,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 16.3049,
+      "A4_NMAP_NOPING_TCP_SCAN": 16.5376,
+      "A5_HTTP_AUTH_HEADER_PROBE": 16.8722,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 22.9998
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 18.5,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 18.5,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 14.6596,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 18.5,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 18.5,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 23.0287,
+      "A1_PROBE_L2_NEIGHBOR": 28.6476,
+      "A2_OOB_SERIAL_LUA_PROBE": 27.8277,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 30.1924,
+      "A4_NMAP_NOPING_TCP_SCAN": 36.8765,
+      "A5_HTTP_AUTH_HEADER_PROBE": 28.3243,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 27.0816
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 23.5408,
+      "A1_PROBE_L2_NEIGHBOR": 23.9566,
+      "A2_OOB_SERIAL_LUA_PROBE": 22.3057,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 23.3797,
+      "A4_NMAP_NOPING_TCP_SCAN": 22.192,
+      "A5_HTTP_AUTH_HEADER_PROBE": 30.1678,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 23.1018
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 17.3018,
+      "A1_PROBE_L2_NEIGHBOR": 17.4327,
+      "A2_OOB_SERIAL_LUA_PROBE": 16.298,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14.0053,
+      "A4_NMAP_NOPING_TCP_SCAN": 19.2842,
+      "A5_HTTP_AUTH_HEADER_PROBE": 17.8374,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 22.9998
+    }
+  },
+  "visit_counts": {
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 1052,
+      "A1_PROBE_L2_NEIGHBOR": 19,
+      "A2_OOB_SERIAL_LUA_PROBE": 15,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14,
+      "A4_NMAP_NOPING_TCP_SCAN": 21,
+      "A5_HTTP_AUTH_HEADER_PROBE": 17,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 26
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 11,
+      "A1_PROBE_L2_NEIGHBOR": 1052,
+      "A2_OOB_SERIAL_LUA_PROBE": 10,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 23,
+      "A4_NMAP_NOPING_TCP_SCAN": 9,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 17
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 12,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 12,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 56,
+      "A1_PROBE_L2_NEIGHBOR": 19,
+      "A2_OOB_SERIAL_LUA_PROBE": 15,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 13,
+      "A4_NMAP_NOPING_TCP_SCAN": 1050,
+      "A5_HTTP_AUTH_HEADER_PROBE": 13,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 15
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 10,
+      "A1_PROBE_L2_NEIGHBOR": 15,
+      "A2_OOB_SERIAL_LUA_PROBE": 13,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 10,
+      "A4_NMAP_NOPING_TCP_SCAN": 11,
+      "A5_HTTP_AUTH_HEADER_PROBE": 20,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 1044
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 12,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 12,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 24,
+      "A1_PROBE_L2_NEIGHBOR": 20,
+      "A2_OOB_SERIAL_LUA_PROBE": 1052,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 15,
+      "A4_NMAP_NOPING_TCP_SCAN": 16,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 14
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 12,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 49,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 10,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 12,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 11
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 31,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 4
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 15,
+      "A1_PROBE_L2_NEIGHBOR": 16,
+      "A2_OOB_SERIAL_LUA_PROBE": 16,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14,
+      "A4_NMAP_NOPING_TCP_SCAN": 15,
+      "A5_HTTP_AUTH_HEADER_PROBE": 13,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 1052
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 12,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 12,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 12,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 11,
+      "A1_PROBE_L2_NEIGHBOR": 14,
+      "A2_OOB_SERIAL_LUA_PROBE": 13,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 1052,
+      "A4_NMAP_NOPING_TCP_SCAN": 16,
+      "A5_HTTP_AUTH_HEADER_PROBE": 11,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 15
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 16,
+      "A1_PROBE_L2_NEIGHBOR": 11,
+      "A2_OOB_SERIAL_LUA_PROBE": 18,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14,
+      "A4_NMAP_NOPING_TCP_SCAN": 1052,
+      "A5_HTTP_AUTH_HEADER_PROBE": 17,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 19
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 15,
+      "A1_PROBE_L2_NEIGHBOR": 17,
+      "A2_OOB_SERIAL_LUA_PROBE": 15,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 19,
+      "A4_NMAP_NOPING_TCP_SCAN": 12,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 1052
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 12,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 10,
+      "A1_PROBE_L2_NEIGHBOR": 1052,
+      "A2_OOB_SERIAL_LUA_PROBE": 12,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 19,
+      "A4_NMAP_NOPING_TCP_SCAN": 13,
+      "A5_HTTP_AUTH_HEADER_PROBE": 14,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 13
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 12,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 12,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 39,
+      "A1_PROBE_L2_NEIGHBOR": 15,
+      "A2_OOB_SERIAL_LUA_PROBE": 8,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 17,
+      "A4_NMAP_NOPING_TCP_SCAN": 1051,
+      "A5_HTTP_AUTH_HEADER_PROBE": 17,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 18
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 15,
+      "A1_PROBE_L2_NEIGHBOR": 13,
+      "A2_OOB_SERIAL_LUA_PROBE": 10,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14,
+      "A4_NMAP_NOPING_TCP_SCAN": 14,
+      "A5_HTTP_AUTH_HEADER_PROBE": 14,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 1050
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 12,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 12,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 6,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 12,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 2,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 2,
+      "A1_PROBE_L2_NEIGHBOR": 2,
+      "A2_OOB_SERIAL_LUA_PROBE": 2,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 12,
+      "A4_NMAP_NOPING_TCP_SCAN": 2,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 8,
+      "A1_PROBE_L2_NEIGHBOR": 15,
+      "A2_OOB_SERIAL_LUA_PROBE": 14,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 20,
+      "A4_NMAP_NOPING_TCP_SCAN": 1052,
+      "A5_HTTP_AUTH_HEADER_PROBE": 14,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 12
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 20,
+      "A1_PROBE_L2_NEIGHBOR": 17,
+      "A2_OOB_SERIAL_LUA_PROBE": 14,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14,
+      "A4_NMAP_NOPING_TCP_SCAN": 13,
+      "A5_HTTP_AUTH_HEADER_PROBE": 1052,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 17
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 19,
+      "A1_PROBE_L2_NEIGHBOR": 23,
+      "A2_OOB_SERIAL_LUA_PROBE": 14,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 9,
+      "A4_NMAP_NOPING_TCP_SCAN": 17,
+      "A5_HTTP_AUTH_HEADER_PROBE": 22,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 1051
+    }
+  },
+  "eligibility_traces": {
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN||A0_ENUM_IFACES_AND_ARP": 1.6308,
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN||A1_PROBE_L2_NEIGHBOR": 1.9466
+  },
+  "recent_trajectory": [
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"\\r\"); read(4096, 2000); exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": 19.6598,
+      "timestamp_utc": "2026-10-26T21:16:09.989140+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"\\r\"); read(4096, 3000); write(\"whoami\\r\"); read(4096, 2000); exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 12.621,
+      "timestamp_utc": "2026-10-26T21:16:44.850904+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 9600 --mute --script-run once --script 'write(\"\\r\"); read(4096, 3000); exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 8.5727,
+      "timestamp_utc": "2026-10-26T21:17:48.401065+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"\\r\"); expect(\"login:\", 5000); write(\"admin\\r\"); exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 4.8793,
+      "timestamp_utc": "2026-10-26T21:20:33.350424+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"\\r\"); expect(\"Password:\", 5000); write(\"admin\\r\"); exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 2.3572,
+      "timestamp_utc": "2026-10-26T21:23:13.389032+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"ip -br addr\\r\"); while read(4096, 500) > 0 do end; exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 0.9801,
+      "timestamp_utc": "2026-10-26T21:24:52.020362+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"ss -tulpn\\r\"); while read(4096, 500) > 0 do end; exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 0.3559,
+      "timestamp_utc": "2026-10-26T21:27:03.470122+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A2_OOB_SERIAL_LUA_PROBE",
+      "command": "tio -b 115200 --mute --script-run once --script 'write(\"ip route show\\r\"); while read(4096, 500) > 0 do end; exit(0)' /dev/ttyUSB0",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": 0.1146,
+      "timestamp_utc": "2026-10-26T21:28:31.597133+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "find $PROJECT_DIR -type f | head -80 && find $PROJECT_DIR -type d",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -4.921,
+      "timestamp_utc": "2026-10-26T21:55:24.327566+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_2_OOB_SERIAL_UNLOCK",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ls -la $PROJECT_DIR/",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -4.5867,
+      "timestamp_utc": "2026-10-26T21:57:19.741707+00:00"
+    },
+    {
+      "state_key": "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_2_OOB_SERIAL_UNLOCK",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ls -la $PROJECT_DIR/downloads/",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -3.7611,
+      "timestamp_utc": "2026-10-26T21:57:19.759997+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show; ip route show; ip neigh show",
+      "exit_code": 0,
+      "new_facts": 13,
+      "reward": 12.0,
+      "td_error": 8.6843,
+      "timestamp_utc": "2026-10-27T15:17:35.288733+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "ping -c 3 -W 2 <TARGET_IP> 2>&1 | tail -5",
+      "exit_code": 0,
+      "new_facts": 1,
+      "reward": 5.0,
+      "td_error": 6.2659,
+      "timestamp_utc": "2026-10-27T15:20:11.609149+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A6_CURL_L7_ENDPOINT_VERIFY",
+      "command": "ip route get <TARGET_IP>",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 23.5,
+      "td_error": 21.5014,
+      "timestamp_utc": "2026-10-27T15:22:10.775276+00:00"
+    },
+    {
+      "state_key": "C4_L7_API_AUTH_CHALLENGE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "curl -sS -k -i --max-time 10 https://<TARGET_IP>/",
+      "exit_code": 0,
+      "new_facts": 1,
+      "reward": 5.0,
+      "td_error": 2.5943,
+      "timestamp_utc": "2026-10-27T15:24:22.426646+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -10.5787,
+      "timestamp_utc": "2026-10-27T16:02:32.110785+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -12.1745,
+      "timestamp_utc": "2026-10-27T16:02:32.261853+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "ping -c 1 -W 1 <TARGET_IP>",
+      "exit_code": 2,
+      "new_facts": 0,
+      "reward": -2.5,
+      "td_error": -5.6277,
+      "timestamp_utc": "2026-10-27T16:02:32.297308+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -3.3578,
+      "timestamp_utc": "2026-10-27T16:03:12.845610+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -5.5948,
+      "timestamp_utc": "2026-10-27T16:03:12.998687+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "ping -c 1 -W 1 <TARGET_IP>",
+      "exit_code": 2,
+      "new_facts": 0,
+      "reward": -2.5,
+      "td_error": -3.5263,
+      "timestamp_utc": "2026-10-27T16:03:13.031869+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": 1.8654,
+      "timestamp_utc": "2026-10-27T16:03:13.149196+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -2.5112,
+      "timestamp_utc": "2026-10-27T16:03:59.707023+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -1.1364,
+      "timestamp_utc": "2026-10-27T16:03:59.866802+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "ping -c 1 -W 1 <TARGET_IP>",
+      "exit_code": 2,
+      "new_facts": 0,
+      "reward": -2.5,
+      "td_error": -2.423,
+      "timestamp_utc": "2026-10-27T16:03:59.908380+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": 4.207,
+      "timestamp_utc": "2026-10-27T16:04:00.026526+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip -4 -br addr show",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": -2.0,
+      "td_error": -1.6148,
+      "timestamp_utc": "2026-10-27T16:04:00.073601+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip neigh show",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 8.5,
+      "td_error": 9.8728,
+      "timestamp_utc": "2026-10-27T16:10:04.867968+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "tcpdump -n",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": 0.291,
+      "timestamp_utc": "2026-10-27T16:10:04.891274+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip neigh show",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 8.5,
+      "td_error": 3.2243,
+      "timestamp_utc": "2026-10-27T16:48:19.801238+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "tcpdump -n",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -0.5092,
+      "timestamp_utc": "2026-10-27T16:48:19.818964+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip neigh show",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 8.5,
+      "td_error": 1.578,
+      "timestamp_utc": "2026-10-27T21:30:03.182204+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "tcpdump -n",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -0.7658,
+      "timestamp_utc": "2026-10-27T21:30:03.205361+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip neigh show",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 8.5,
+      "td_error": 1.0529,
+      "timestamp_utc": "2026-10-27T22:00:20.508437+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "tcpdump -n",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -0.7886,
+      "timestamp_utc": "2026-10-27T22:00:20.523972+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip neigh show",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 8.5,
+      "td_error": 0.8313,
+      "timestamp_utc": "2026-10-28T03:56:27.349239+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "tcpdump -n",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -0.7301,
+      "timestamp_utc": "2026-10-28T03:56:27.392024+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A0_ENUM_IFACES_AND_ARP",
+      "command": "ip neigh show",
+      "exit_code": 0,
+      "new_facts": 2,
+      "reward": 8.5,
+      "td_error": 0.7035,
+      "timestamp_utc": "2026-10-28T03:57:14.421644+00:00"
+    },
+    {
+      "state_key": "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN",
+      "action_id": "A1_PROBE_L2_NEIGHBOR",
+      "command": "tcpdump -n",
+      "exit_code": 0,
+      "new_facts": 0,
+      "reward": 1.5,
+      "td_error": -0.6512,
+      "timestamp_utc": "2026-10-28T03:57:14.463367+00:00"
+    }
+  ],
+  "updated_at_utc": "2026-10-28T03:57:14.463367+00:00",
+  "q_var_table": {
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_0_UNMAPPED_LOCAL_NET": {
+      "A0_ENUM_IFACES_AND_ARP": 0.0023,
+      "A1_PROBE_L2_NEIGHBOR": 9.6996,
+      "A2_OOB_SERIAL_LUA_PROBE": 5.5193,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 17.383,
+      "A4_NMAP_NOPING_TCP_SCAN": 7.5823,
+      "A5_HTTP_AUTH_HEADER_PROBE": 8.6175,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 2.9347
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 16.5715,
+      "A1_PROBE_L2_NEIGHBOR": 0.021,
+      "A2_OOB_SERIAL_LUA_PROBE": 11.8067,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 1.5022,
+      "A4_NMAP_NOPING_TCP_SCAN": 16.0091,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12.7804,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 10.1748
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 7.9952,
+      "A1_PROBE_L2_NEIGHBOR": 6.0099,
+      "A2_OOB_SERIAL_LUA_PROBE": 10.7921,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 14.2335,
+      "A4_NMAP_NOPING_TCP_SCAN": 0.0299,
+      "A5_HTTP_AUTH_HEADER_PROBE": 12.4261,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 13.1041
+    },
+    "C0_LOCAL_LAN_DISCOVERY::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 14.0807,
+      "A1_PROBE_L2_NEIGHBOR": 8.8037,
+      "A2_OOB_SERIAL_LUA_PROBE": 11.4975,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 15.1481,
+      "A4_NMAP_NOPING_TCP_SCAN": 9.7663,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2.5476,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 0.0004
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 8.321,
+      "A1_PROBE_L2_NEIGHBOR": 6.0492,
+      "A2_OOB_SERIAL_LUA_PROBE": 0.035,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 10.1487,
+      "A4_NMAP_NOPING_TCP_SCAN": 6.3464,
+      "A5_HTTP_AUTH_HEADER_PROBE": 13.3939,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 13.3827
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 6.6506,
+      "A1_PROBE_L2_NEIGHBOR": 6.5132,
+      "A2_OOB_SERIAL_LUA_PROBE": 7.2484,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 8.9184,
+      "A4_NMAP_NOPING_TCP_SCAN": 13.6022,
+      "A5_HTTP_AUTH_HEADER_PROBE": 9.7876,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 0.0004
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_3_CROSS_SUBNET_L3_ROUTE": {
+      "A0_ENUM_IFACES_AND_ARP": 16.0091,
+      "A1_PROBE_L2_NEIGHBOR": 13.1408,
+      "A2_OOB_SERIAL_LUA_PROBE": 16.7129,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 0.0778,
+      "A4_NMAP_NOPING_TCP_SCAN": 11.6608,
+      "A5_HTTP_AUTH_HEADER_PROBE": 13.9965,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 12.9954
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 11.4864,
+      "A1_PROBE_L2_NEIGHBOR": 16.8147,
+      "A2_OOB_SERIAL_LUA_PROBE": 7.3981,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 11.4465,
+      "A4_NMAP_NOPING_TCP_SCAN": 0.0012,
+      "A5_HTTP_AUTH_HEADER_PROBE": 5.4564,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 7.2608
+    },
+    "C2_CROSS_SUBNET_L3_PIVOT::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 7.1918,
+      "A1_PROBE_L2_NEIGHBOR": 5.8666,
+      "A2_OOB_SERIAL_LUA_PROBE": 6.2565,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 5.4851,
+      "A4_NMAP_NOPING_TCP_SCAN": 13.4036,
+      "A5_HTTP_AUTH_HEADER_PROBE": 8.8659,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 0.0004
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_1_L2_NEIGHBOR_DISCOVERY": {
+      "A0_ENUM_IFACES_AND_ARP": 14.7831,
+      "A1_PROBE_L2_NEIGHBOR": 0.0033,
+      "A2_OOB_SERIAL_LUA_PROBE": 13.4987,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 7.0251,
+      "A4_NMAP_NOPING_TCP_SCAN": 14.0193,
+      "A5_HTTP_AUTH_HEADER_PROBE": 9.2291,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 8.7809
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 10.9719,
+      "A1_PROBE_L2_NEIGHBOR": 13.2088,
+      "A2_OOB_SERIAL_LUA_PROBE": 14.7831,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 6.6144,
+      "A4_NMAP_NOPING_TCP_SCAN": 0.0004,
+      "A5_HTTP_AUTH_HEADER_PROBE": 4.7319,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 8.9226
+    },
+    "C3_FIREWALL_ICMP_FILTERED_HOST::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 8.8037,
+      "A1_PROBE_L2_NEIGHBOR": 9.7623,
+      "A2_OOB_SERIAL_LUA_PROBE": 14.0693,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 8.9184,
+      "A4_NMAP_NOPING_TCP_SCAN": 7.3141,
+      "A5_HTTP_AUTH_HEADER_PROBE": 6.728,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 0.0004
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 13.3899,
+      "A1_PROBE_L2_NEIGHBOR": 14.0909,
+      "A2_OOB_SERIAL_LUA_PROBE": 14.7414,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 7.4782,
+      "A4_NMAP_NOPING_TCP_SCAN": 0.0011,
+      "A5_HTTP_AUTH_HEADER_PROBE": 14.8152,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 16.0364
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 7.9678,
+      "A1_PROBE_L2_NEIGHBOR": 7.7578,
+      "A2_OOB_SERIAL_LUA_PROBE": 12.4872,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 8.1574,
+      "A4_NMAP_NOPING_TCP_SCAN": 13.2862,
+      "A5_HTTP_AUTH_HEADER_PROBE": 0.0041,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 8.374
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_6_L7_SERVICE_GOAL_VERIFY": {
+      "A0_ENUM_IFACES_AND_ARP": 3.9557,
+      "A1_PROBE_L2_NEIGHBOR": 2.4872,
+      "A2_OOB_SERIAL_LUA_PROBE": 9.7976,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 12.7734,
+      "A4_NMAP_NOPING_TCP_SCAN": 10.9451,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2.3212,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 0.0004
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_4_BYPASS_ICMP_PORT_SCAN": {
+      "A0_ENUM_IFACES_AND_ARP": 12.4574,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 7.5961,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 10.3224
+    },
+    "C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_5_L7_AUTH_OR_HEADER_BYPASS": {
+      "A0_ENUM_IFACES_AND_ARP": 3.0,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 2.5869,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 9.105
+    },
+    "C4_L7_API_AUTH_CHALLENGE::STAGE_2_OOB_SERIAL_UNLOCK": {
+      "A0_ENUM_IFACES_AND_ARP": 13.5159,
+      "A1_PROBE_L2_NEIGHBOR": 3.0,
+      "A2_OOB_SERIAL_LUA_PROBE": 3.0,
+      "A3_INJECT_STATIC_ROUTE_AND_FWD": 3.0,
+      "A4_NMAP_NOPING_TCP_SCAN": 3.0,
+      "A5_HTTP_AUTH_HEADER_PROBE": 3.0,
+      "A6_CURL_L7_ENDPOINT_VERIFY": 3.0
+    }
+  },
+  "shadow_validation_passed": true
+}

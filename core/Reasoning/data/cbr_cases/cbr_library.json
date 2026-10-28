@@ -1,0 +1,191 @@
+{
+  "cases": [
+    {
+      "case_id": "CBR-001",
+      "binary": "ip",
+      "exit_code": 2,
+      "error_pattern": "RTNETLINK answers: File exists",
+      "symptom": "Adding IP address or route fails with 'RTNETLINK answers: File exists'",
+      "root_cause": "The IP address or static route already exists in the kernel routing/address table.",
+      "verified_fix": "Use `ip addr replace <ip>/<cidr> dev <iface>` or `ip route replace <subnet> via <gw>` instead of `add`, or inspect existing entries with `ip addr show` / `ip route show`.",
+      "success_count": 5
+    },
+    {
+      "case_id": "CBR-002",
+      "binary": "ip",
+      "exit_code": 2,
+      "error_pattern": "Error: Nexthop has invalid gateway|Network is unreachable",
+      "symptom": "Adding a route fails with 'Nexthop has invalid gateway' or 'Network is unreachable'",
+      "root_cause": "The gateway IP is not on any directly connected L2 subnet (no local interface has an IP in the same subnet as the gateway).",
+      "verified_fix": "First assign a local interface IP in the gateway's subnet (`sudo ip addr replace <local_ip>/<mask> dev <iface>` and `sudo ip link set <iface> up`) OR add an onlink route (`sudo ip route replace <subnet> via <gw> dev <iface> onlink`).",
+      "success_count": 6
+    },
+    {
+      "case_id": "CBR-003",
+      "binary": "tio",
+      "exit_code": 1,
+      "error_pattern": "unexpected symbol|syntax error|attempt to call|import ",
+      "symptom": "tio --script fails with Lua syntax error or hangs on Python syntax",
+      "root_cause": "`tio --script` uses Lua inside tio, NOT Python! Passing `import time` or Python code breaks tio.",
+      "verified_fix": "Use valid Lua syntax inside `tio --script`: e.g. `expect('login: ', 5000); write('root\\r\\n'); expect('# ', 5000); write('ip addr\\r\\n'); sleep(1); exit()` or use `python3 -c 'import serial...'` instead.",
+      "success_count": 8
+    },
+    {
+      "case_id": "CBR-004",
+      "binary": "ping",
+      "exit_code": 1,
+      "error_pattern": "100% packet loss|Destination Host Unreachable",
+      "symptom": "ICMP ping shows 100% packet loss or Destination Host Unreachable",
+      "root_cause": "Target host blocks ICMP, lacks a return route back to our source IP, or L2 ARP resolution failed (`INCOMPLETE` / `FAILED`).",
+      "verified_fix": "1. Check `ip neigh show` to see if ARP resolved a MAC address (if MAC is present, host is alive at L2!). 2. Check `sudo iptables -t nat -L -n -v` to ensure MASQUERADE is enabled if routing across subnets. 3. Probe TCP ports (`nmap -Pn -p 22,80,443 <ip>`).",
+      "success_count": 7
+    },
+    {
+      "case_id": "CBR-005",
+      "binary": "curl",
+      "exit_code": 7,
+      "error_pattern": "Failed to connect|Connection refused",
+      "symptom": "curl exits with code 7 (Connection refused)",
+      "root_cause": "The target host is reachable at L3, but no service is listening on that TCP port or a local firewall rejected the SYN packet.",
+      "verified_fix": "Verify listening ports with `ss -tulpn` (local) or `nmap -Pn -sT --top-ports 100 <target>` (remote).",
+      "success_count": 4
+    },
+    {
+      "case_id": "CBR-006",
+      "binary": "curl",
+      "exit_code": 28,
+      "error_pattern": "Operation timed out|Connection timed out",
+      "symptom": "curl exits with code 28 (Connection timed out)",
+      "root_cause": "Packets are being silently dropped (DROP firewall policy, missing NAT MASQUERADE return path, or wrong routing table entry).",
+      "verified_fix": "Check `ip route get <target_ip>`, verify ARP table `ip neigh show`, and add `--connect-timeout 5 --max-time 10` to curl.",
+      "success_count": 5
+    },
+    {
+      "case_id": "CBR-007",
+      "binary": "ssh",
+      "exit_code": 255,
+      "error_pattern": "Permission denied \\(publickey|Host key verification failed|no matching host key type",
+      "symptom": "SSH connection fails with exit code 255",
+      "root_cause": "Strict host key checking, legacy SSH algorithms on embedded router/device, or missing credentials.",
+      "verified_fix": "For embedded/legacy devices, use `ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o HostKeyAlgorithms=+ssh-rsa,ssh-dss <user>@<ip>`.",
+      "success_count": 4
+    },
+    {
+      "case_id": "CBR-008",
+      "binary": "any",
+      "exit_code": 127,
+      "error_pattern": "command not found",
+      "symptom": "Shell returns exit code 127 (command not found)",
+      "root_cause": "The requested binary is not installed or is in `/sbin` / `/usr/sbin` outside non-root PATH.",
+      "verified_fix": "Check `which <cmd>` or `/usr/sbin/<cmd>`, or use standard POSIX/iproute2 equivalents (`ip`, `ss`, `python3`).",
+      "success_count": 5
+    },
+    {
+      "case_id": "CBR-009",
+      "binary": "any",
+      "exit_code": 1,
+      "error_pattern": "is not recognized as an internal or external command|is not recognized as the name of a cmdlet",
+      "symptom": "Windows CMD or PowerShell reports command/cmdlet is not recognized",
+      "root_cause": "A Linux command was run on Windows, or a PowerShell cmdlet was invoked inside `cmd.exe` without `powershell -NoProfile -Command`.",
+      "verified_fix": "On Windows, use `powershell -NoProfile -ExecutionPolicy Bypass -Command \"<cmdlet>\"` or native Windows tools (`ipconfig /all`, `route print`, `arp -a`, `netstat -ano`, `curl.exe`).",
+      "success_count": 5
+    },
+    {
+      "case_id": "CBR-010",
+      "binary": "any",
+      "exit_code": 5,
+      "error_pattern": "Access is denied|requires elevation|Operation not permitted",
+      "symptom": "Command fails with 'Access is denied', 'requires elevation', or 'Operation not permitted'",
+      "root_cause": "Modifying network routes, firewall rules, or protected ACLs requires Administrator (Windows) or root/sudo (Linux) privileges.",
+      "verified_fix": "Use `sudo <cmd>` on Linux, an elevated Administrator shell on Windows, or non-privileged read-only inspection (`ip route show`, `route print`, `whoami /priv`).",
+      "success_count": 5
+    },
+    {
+      "case_id": "CBR-011",
+      "binary": "powershell",
+      "exit_code": 1,
+      "error_pattern": "running scripts is disabled on this system|PSSecurityException|AuthorizationManager check failed",
+      "symptom": "PowerShell blocks script execution due to ExecutionPolicy",
+      "root_cause": "Windows PowerShell Restricted execution policy blocks `.ps1` scripts by default.",
+      "verified_fix": "Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <script.ps1>` or `-Command \"...\"`.",
+      "success_count": 6
+    },
+    {
+      "case_id": "CBR-012",
+      "binary": "tio",
+      "exit_code": 0,
+      "error_pattern": "Command completed with exit code 0|Disconnected|Device or resource busy|Resource temporarily unavailable|Input/output error|console.*drop|too many commands",
+      "symptom": "Serial console (/dev/ttyUSB0) drops connection, freezes, or returns 0 bytes ('Command completed with exit code 0') when bombarded with rapid or chained commands",
+      "root_cause": "Hardware UART RX FIFO buffer overrun or rapid DTR/RTS port cycling caused by sending multiple commands without character/line pacing (-o/-O) or opening /dev/ttyUSB0 back-to-back.",
+      "verified_fix": "Use hardware UART pacing `-o 15 -O 120` and send ONLY ONE command per session: `tio -b 115200 -o 15 -O 120 --mute --script-run once --script 'write(\"\\r\"); msleep(500); write(\"id\\r\"); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0`.",
+      "success_count": 9
+    },
+    {
+      "case_id": "CBR-TRN-001",
+      "binary": "any",
+      "exit_code": 1,
+      "error_pattern": "Nexthop\\ has\\ invalid\\ gateway",
+      "symptom": "Nexthop has invalid gateway`** (`ip` exit code `2`): Caused by missing local subnet alias on `enp11s0`.",
+      "root_cause": "Distilled from sample_perimeter_router_playbook.md",
+      "verified_fix": "Assign",
+      "success_count": 2
+    },
+    {
+      "case_id": "CBR-TRN-002",
+      "binary": "any",
+      "exit_code": 1,
+      "error_pattern": "and\\ then\\ help\\ to",
+      "symptom": "and then help to",
+      "root_cause": "Distilled from CQC001_E020_M060_Networking_and_Name_Resolution.pdf",
+      "verified_fix": "it. We can use it to obtain a list of all computers in a non-domain",
+      "success_count": 2
+    },
+    {
+      "case_id": "CBR-TRN-003",
+      "binary": "any",
+      "exit_code": 1,
+      "error_pattern": "in\\ the\\ formatting,",
+      "symptom": "in the formatting,",
+      "root_cause": "Distilled from UNIX and Linux System Administration Handbook.pdf",
+      "verified_fix": "it, and then",
+      "success_count": 2
+    },
+    {
+      "case_id": "CBR-AUTO-101",
+      "binary": "ping",
+      "exit_code": 2,
+      "error_pattern": "ping:\\ connect:\\ Network\\ is\\ unreachable",
+      "symptom": "Auto-learned failure on `ping` (ping: connect: Network is unreachable)",
+      "root_cause": "Auto-learned failure on `ping -c 1 -W 1 <TARGET_IP>` (ping: connect: Network is unreachable)",
+      "verified_fix": "ip -4 -br addr show",
+      "success_count": 1
+    }
+  ],
+  "recent_failures": [
+    {
+      "timestamp": "2026-10-27 12:02:32",
+      "command": "ping -c 1 -W 1 <TARGET_IP>",
+      "binary": "ping",
+      "exit_code": 2,
+      "error_excerpt": "ping: connect: Network is unreachable",
+      "matched_case_id": null
+    },
+    {
+      "timestamp": "2026-10-27 12:03:13",
+      "command": "ping -c 1 -W 1 <TARGET_IP>",
+      "binary": "ping",
+      "exit_code": 2,
+      "error_excerpt": "ping: connect: Network is unreachable",
+      "matched_case_id": "CBR-AUTO-101"
+    },
+    {
+      "timestamp": "2026-10-27 12:03:59",
+      "command": "ping -c 1 -W 1 <TARGET_IP>",
+      "binary": "ping",
+      "exit_code": 2,
+      "error_excerpt": "ping: connect: Network is unreachable",
+      "matched_case_id": "CBR-AUTO-101"
+    }
+  ],
+  "updated_at": "2026-10-27 12:03:59"
+}

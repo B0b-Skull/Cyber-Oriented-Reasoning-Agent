@@ -1,0 +1,104 @@
+{
+  "updated": "2026-10-25 16:52:00",
+  "description": "Causal DAG for target API reachability and Out-of-Band (OOB) serial console intervention.",
+  "nodes": {
+    "Physical_Link": {
+      "base_prob": 0.95,
+      "role": "root_infra"
+    },
+    "Local_Subnet_IP_Route": {
+      "base_prob": 0.7,
+      "role": "local_config"
+    },
+    "VLAN_Tag_Alignment": {
+      "base_prob": 0.75,
+      "role": "l2_config"
+    },
+    "ARP_MAC_Resolution": {
+      "base_prob": 0.8,
+      "role": "l2_state"
+    },
+    "Serial_Console_OOB": {
+      "base_prob": 0.9,
+      "role": "oob_control"
+    },
+    "Target_Firewall_Allow": {
+      "base_prob": 0.65,
+      "role": "target_security"
+    },
+    "API_Daemon_Bound_0000": {
+      "base_prob": 0.7,
+      "role": "target_service"
+    },
+    "TCP_SYN_ACK_Handshake": {
+      "base_prob": 0.5,
+      "role": "l4_transport"
+    },
+    "HTTP_API_Access": {
+      "base_prob": 0.4,
+      "role": "target_goal"
+    }
+  },
+  "edges": [
+    {
+      "source": "Physical_Link",
+      "target": "ARP_MAC_Resolution",
+      "weight": 0.95,
+      "mechanism": "electrical/optical carrier"
+    },
+    {
+      "source": "Local_Subnet_IP_Route",
+      "target": "ARP_MAC_Resolution",
+      "weight": 0.9,
+      "mechanism": "egress interface selection"
+    },
+    {
+      "source": "VLAN_Tag_Alignment",
+      "target": "ARP_MAC_Resolution",
+      "weight": 0.9,
+      "mechanism": "802.1Q broadcast domain"
+    },
+    {
+      "source": "Serial_Console_OOB",
+      "target": "VLAN_Tag_Alignment",
+      "weight": 0.85,
+      "mechanism": "inspect/reconfigure target NIC via /dev/ttyUSB0"
+    },
+    {
+      "source": "Serial_Console_OOB",
+      "target": "Target_Firewall_Allow",
+      "weight": 0.95,
+      "mechanism": "flush/allow iptables via /dev/ttyUSB0"
+    },
+    {
+      "source": "Serial_Console_OOB",
+      "target": "API_Daemon_Bound_0000",
+      "weight": 0.95,
+      "mechanism": "restart/bind service or SSH/socat forward"
+    },
+    {
+      "source": "ARP_MAC_Resolution",
+      "target": "TCP_SYN_ACK_Handshake",
+      "weight": 0.95,
+      "mechanism": "L2 frame delivery"
+    },
+    {
+      "source": "Target_Firewall_Allow",
+      "target": "TCP_SYN_ACK_Handshake",
+      "weight": 0.95,
+      "mechanism": "INPUT chain permit"
+    },
+    {
+      "source": "API_Daemon_Bound_0000",
+      "target": "TCP_SYN_ACK_Handshake",
+      "weight": 0.95,
+      "mechanism": "listening socket backlog"
+    },
+    {
+      "source": "TCP_SYN_ACK_Handshake",
+      "target": "HTTP_API_Access",
+      "weight": 0.98,
+      "mechanism": "HTTP request/response stream"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="100%" height="100%" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="tier0Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="tier1Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="tier2Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="tier3Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="tier4Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#db2777"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+    <linearGradient id="llmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="760" rx="16" fill="url(#bgGrad)" stroke="#334155" stroke-width="2"/>
+
+  <!-- Header -->
+  <text x="600" y="42" text-anchor="middle" fill="#f8fafc" font-size="23" font-weight="700">Executive Overview: How the 5 Reasoning Tiers Support &amp; Feed the Local LLM</text>
+  <text x="600" y="68" text-anchor="middle" fill="#94a3b8" font-size="14">14 CPU Neuro-Symbolic Engines + Zero-Loss Virtual Memory + Autonomous /goal &amp; /relentless Loop (0 MB Extra GPU VRAM)</text>
+
+  <!-- Tier 0: Mission Control -->
+  <rect x="45" y="92" width="1110" height="82" rx="12" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+  <rect x="45" y="92" width="245" height="82" rx="12" fill="url(#tier0Grad)"/>
+  <text x="167" y="128" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">TIER 0: MISSION CONTROL</text>
+  <text x="167" y="150" text-anchor="middle" fill="#e0e7ff" font-size="12">/goal &amp; /relentless Controller</text>
+  <text x="310" y="122" fill="#f8fafc" font-size="14" font-weight="600">Role: "The Executive Project Manager" — Keeps the LLM focused until the objective is achieved</text>
+  <text x="310" y="145" fill="#cbd5e1" font-size="12.5">• Locks your objective (/goal), logs every attempt to ObsidianVault, blocks repeated failed commands, and runs multi-wave loops (/relentless).</text>
+  <text x="310" y="164" fill="#a5b4fc" font-size="12" font-weight="600">Feeds Into Tier 1 -&gt; Injects active goal + list of untried capability layers into the memory &amp; reasoning pipeline.</text>
+
+  <!-- Arrow 0 -> 1 -->
+  <line x1="600" y1="174" x2="600" y2="196" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Tier 1: Memory & Knowledge -->
+  <rect x="45" y="200" width="1110" height="82" rx="12" fill="#0f2942" stroke="#38bdf8" stroke-width="2"/>
+  <rect x="45" y="200" width="245" height="82" rx="12" fill="url(#tier1Grad)"/>
+  <text x="167" y="236" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">TIER 1: VIRTUAL MEMORY</text>
+  <text x="167" y="258" text-anchor="middle" fill="#e0f2fe" font-size="12">Context VM + Engine 1 (Vault Graph)</text>
+  <text x="310" y="230" fill="#f8fafc" font-size="14" font-weight="600">Role: "The Chief Librarian &amp; Archivist" — Infinite zero-loss memory without overflowing the LLM</text>
+  <text x="310" y="253" fill="#cbd5e1" font-size="12.5">• Saves 100% of raw logs to Shadow Archive, tracks verified facts in L1 State Register, and surfaces 2- to 3-hop linked Obsidian notes via PageRank.</text>
+  <text x="310" y="272" fill="#7dd3fc" font-size="12" font-weight="600">Feeds Into Tier 2 &amp; 3 -&gt; Supplies verified historical context, playbooks, and live system state to the safety &amp; logic engines.</text>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="600" y1="282" x2="600" y2="304" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Tier 2: Pre-Flight Safety & Telemetry Extraction -->
+  <rect x="45" y="308" width="1110" height="82" rx="12" fill="#0d2e2b" stroke="#14b8a6" stroke-width="2"/>
+  <rect x="45" y="308" width="245" height="82" rx="12" fill="url(#tier2Grad)"/>
+  <text x="167" y="344" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">TIER 2: SAFETY &amp; PARSING</text>
+  <text x="167" y="366" text-anchor="middle" fill="#ccfbf1" font-size="12">Engines 9, 11, 12, 13 (CEGAR/SyGuS)</text>
+  <text x="310" y="338" fill="#f8fafc" font-size="14" font-weight="600">Role: "The Pre-Flight Inspector &amp; Translator" — Prevents bad commands and structures raw data</text>
+  <text x="310" y="361" fill="#cbd5e1" font-size="12.5">• Blocks syntax errors, infinite hangs, and truncated IPs BEFORE execution (Engine 12), matches known error fixes (Engine 11), and parses outputs into tables (Engine 13).</text>
+  <text x="310" y="380" fill="#5eead4" font-size="12" font-weight="600">Feeds Into Tier 3 -&gt; Converts noisy terminal text into clean, structured mathematical facts and time-stamped state fluents.</text>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="600" y1="390" x2="600" y2="412" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Tier 3: Formal Deduction & Root-Cause Analysis -->
+  <rect x="45" y="416" width="1110" height="82" rx="12" fill="#331d0b" stroke="#f59e0b" stroke-width="2"/>
+  <rect x="45" y="416" width="245" height="82" rx="12" fill="url(#tier3Grad)"/>
+  <text x="167" y="452" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">TIER 3: DEDUCTIVE LOGIC</text>
+  <text x="167" y="474" text-anchor="middle" fill="#fef3c7" font-size="12">Engines 2, 3, 4, 5, 10 (Z3/Bayes/DAG)</text>
+  <text x="310" y="446" fill="#f8fafc" font-size="14" font-weight="600">Role: "The Forensic Detective &amp; Mathematician" — Proves constraints and pinpoints root causes</text>
+  <text x="310" y="469" fill="#cbd5e1" font-size="12.5">• Proves network/system constraints with Microsoft Z3 (Engine 2), ranks root causes via Bayes &amp; Dempster-Shafer (Engines 4 &amp; 10), and models cause-and-effect (Engine 5).</text>
+  <text x="310" y="488" fill="#fcd34d" font-size="12" font-weight="600">Feeds Into Tier 4 -&gt; Hands proven constraints, conflict alerts, and the #1 root-cause hypothesis to the creative planner.</text>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="600" y1="498" x2="600" y2="520" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Tier 4: Creative Synthesis & Consensus Arbiter -->
+  <rect x="45" y="524" width="1110" height="82" rx="12" fill="#2e1035" stroke="#ec4899" stroke-width="2"/>
+  <rect x="45" y="524" width="245" height="82" rx="12" fill="url(#tier4Grad)"/>
+  <text x="167" y="560" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">TIER 4: CREATIVE PLANNER</text>
+  <text x="167" y="582" text-anchor="middle" fill="#fce7f3" font-size="12">Engines 6, 7, 8, 14 + Consensus Arbiter</text>
+  <text x="310" y="554" fill="#f8fafc" font-size="14" font-weight="600">Role: "The R&amp;D Strategist &amp; Chief Editor" — Invents creative workarounds &amp; speaks with One Voice</text>
+  <text x="310" y="577" fill="#cbd5e1" font-size="12.5">• Evolves creative multi-tool combinations via MAP-Elites (Engine 14), proves step-by-step plans in Clingo ASP (Engine 8), and distills 14 engines into 1 action.</text>
+  <text x="310" y="596" fill="#f9a8d4" font-size="12" font-weight="600">Feeds Into Local LLM -&gt; Injects a single verified &gt;&gt;&gt; CONSENSUS IMMEDIATE ACTION &lt;&lt;&lt; digest (~700 tokens) into the LLM prompt.</text>
+
+  <!-- Arrow 4 -> LLM -->
+  <line x1="600" y1="606" x2="600" y2="632" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)"/>
+
+  <!-- Bottom Box: Local LLM Execution Core -->
+  <rect x="140" y="636" width="920" height="96" rx="14" fill="url(#llmGrad)" stroke="#6ee7b7" stroke-width="2.5"/>
+  <text x="600" y="668" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="800">LOCAL LLM CORE: Qwen3.8-27B (Default) / Qwen3.5-9B (Fast) on llama-server</text>
+  <text x="600" y="693" text-anchor="middle" fill="#ecfdf5" font-size="13.5">Receives Clean Context + Verified State Table + Single Consensus Action -&gt; Generates Exact Tool Call or Final Executive Answer</text>
+  <text x="600" y="715" text-anchor="middle" fill="#a7f3d0" font-size="12.5" font-weight="600">100% of GPU VRAM Dedicated to LLM Generation | All 14 Reasoning Engines Run on CPU in ~168 ms</text>
+</svg>

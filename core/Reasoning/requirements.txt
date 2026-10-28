@@ -1,0 +1,7 @@
+# Core 15-Engine Neuro-Symbolic & Associative Reasoning Dependencies (100% CPU, 0 MB GPU VRAM)
+numpy>=1.24.0
+scipy>=1.10.0
+networkx>=3.0
+sympy>=1.12
+z3-solver>=4.12.0
+shapely>=2.0.0

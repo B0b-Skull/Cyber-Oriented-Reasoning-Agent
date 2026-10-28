@@ -1,0 +1,82 @@
+{
+  "updated": "2026-10-25 16:52:00",
+  "description": "Causal DAG for multi-hop Layer-2 / Layer-3 traffic routing across isolated subnets.",
+  "nodes": {
+    "Local_Static_Route": {
+      "base_prob": 0.65,
+      "role": "local_config"
+    },
+    "L2_Neighbor_Adjacency": {
+      "base_prob": 0.8,
+      "role": "l2_state"
+    },
+    "Pivot_Gateway_Ingress": {
+      "base_prob": 0.75,
+      "role": "transit"
+    },
+    "Pivot_IP_Forward_Sysctl": {
+      "base_prob": 0.6,
+      "role": "transit_config"
+    },
+    "Pivot_Forward_Firewall": {
+      "base_prob": 0.65,
+      "role": "transit_security"
+    },
+    "Destination_Reachability": {
+      "base_prob": 0.85,
+      "role": "target_host"
+    },
+    "Return_Route_Or_MASQUERADE": {
+      "base_prob": 0.55,
+      "role": "return_path"
+    },
+    "End_To_End_L3_Routing": {
+      "base_prob": 0.35,
+      "role": "target_goal"
+    }
+  },
+  "edges": [
+    {
+      "source": "Local_Static_Route",
+      "target": "Pivot_Gateway_Ingress",
+      "weight": 0.95,
+      "mechanism": "next-hop forwarding"
+    },
+    {
+      "source": "L2_Neighbor_Adjacency",
+      "target": "Pivot_Gateway_Ingress",
+      "weight": 0.95,
+      "mechanism": "L2 MAC framing"
+    },
+    {
+      "source": "Pivot_Gateway_Ingress",
+      "target": "Destination_Reachability",
+      "weight": 0.9,
+      "mechanism": "packet arrival at router"
+    },
+    {
+      "source": "Pivot_IP_Forward_Sysctl",
+      "target": "Destination_Reachability",
+      "weight": 0.95,
+      "mechanism": "net.ipv4.ip_forward=1"
+    },
+    {
+      "source": "Pivot_Forward_Firewall",
+      "target": "Destination_Reachability",
+      "weight": 0.95,
+      "mechanism": "FORWARD chain ACCEPT"
+    },
+    {
+      "source": "Destination_Reachability",
+      "target": "End_To_End_L3_Routing",
+      "weight": 0.95,
+      "mechanism": "forward packet delivery"
+    },
+    {
+      "source": "Return_Route_Or_MASQUERADE",
+      "target": "End_To_End_L3_Routing",
+      "weight": 0.95,
+      "mechanism": "symmetric return path / SNAT"
+    }
+  ]
+}

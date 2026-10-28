@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 820" width="100%" height="100%" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#172033"/>
+    </linearGradient>
+    <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrPink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#f472b6"/>
+    </marker>
+    <marker id="arrEmerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <rect width="1240" height="820" rx="16" fill="url(#bg2)" stroke="#334155" stroke-width="2"/>
+  <text x="620" y="40" text-anchor="middle" fill="#f8fafc" font-size="22" font-weight="700">The 14-Engine Neuro-Symbolic Handoff Map: How Each Engine Feeds the Next</text>
+  <text x="620" y="64" text-anchor="middle" fill="#94a3b8" font-size="13.5">Every engine transforms raw observations into higher-order intelligence before handing off to the Consensus Arbiter &amp; Local LLM</text>
+
+  <!-- Column Headers -->
+  <rect x="35" y="84" width="275" height="36" rx="8" fill="#0369a1"/>
+  <text x="172" y="107" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">STAGE A: TELEMETRY &amp; MEMORY</text>
+
+  <rect x="335" y="84" width="275" height="36" rx="8" fill="#b45309"/>
+  <text x="472" y="107" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">STAGE B: FORMAL &amp; BAYES LOGIC</text>
+
+  <rect x="635" y="84" width="275" height="36" rx="8" fill="#7e22ce"/>
+  <text x="772" y="107" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">STAGE C: CAUSAL &amp; CREATIVE LEAPS</text>
+
+  <rect x="935" y="84" width="270" height="36" rx="8" fill="#047857"/>
+  <text x="1070" y="107" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700">STAGE D: ARBITER &amp; LOCAL LLM</text>
+
+  <!-- STAGE A BOXES (Left Column) -->
+  <!-- Engine 12 -->
+  <rect x="35" y="138" width="275" height="106" rx="10" fill="#0f2942" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="50" y="162" fill="#38bdf8" font-size="13" font-weight="700">Engine 12: CEGAR Pre-Verifier</text>
+  <text x="50" y="182" fill="#e2e8f0" font-size="11.5">• Checks bash syntax, flags &amp; full 4-octet IPs</text>
+  <text x="50" y="200" fill="#e2e8f0" font-size="11.5">• Blocks hangs (tio/ping) before execution</text>
+  <text x="50" y="224" fill="#7dd3fc" font-size="11" font-weight="600">Out -&gt; Verified safe tool execution</text>
+
+  <!-- Engine 13 -->
+  <rect x="35" y="264" width="275" height="106" rx="10" fill="#0f2942" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="50" y="288" fill="#38bdf8" font-size="13" font-weight="700">Engine 13: SyGuS Output Extractor</text>
+  <text x="50" y="308" fill="#e2e8f0" font-size="11.5">• Parses ip, route, arp, ss, nmap, curl logs</text>
+  <text x="50" y="326" fill="#e2e8f0" font-size="11.5">• Archives 100% raw text to Shadow Store</text>
+  <text x="50" y="350" fill="#7dd3fc" font-size="11" font-weight="600">Out -&gt; Structured facts to L1 State Register</text>
+
+  <!-- Engine 9 -->
+  <rect x="35" y="390" width="275" height="106" rx="10" fill="#0f2942" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="50" y="414" fill="#38bdf8" font-size="13" font-weight="700">Engine 9: Temporal Event Calculus</text>
+  <text x="50" y="434" fill="#e2e8f0" font-size="11.5">• Tracks state changes over time (Fluents)</text>
+  <text x="50" y="452" fill="#e2e8f0" font-size="11.5">• Marks old facts STALE after resets/reboots</text>
+  <text x="50" y="476" fill="#7dd3fc" font-size="11" font-weight="600">Out -&gt; Live time-valid state facts</text>
+
+  <!-- Engine 11 -->
+  <rect x="35" y="516" width="275" height="106" rx="10" fill="#0f2942" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="50" y="540" fill="#38bdf8" font-size="13" font-weight="700">Engine 11: Case-Based Fingerprints</text>
+  <text x="50" y="560" fill="#e2e8f0" font-size="11.5">• Matches stderr/exit codes against known cases</text>
+  <text x="50" y="578" fill="#e2e8f0" font-size="11.5">• Retrieves proven repair commands instantly</text>
+  <text x="50" y="602" fill="#7dd3fc" font-size="11" font-weight="600">Out -&gt; Instant fix advisories &amp; failure tags</text>
+
+  <!-- Engine 1 -->
+  <rect x="35" y="642" width="275" height="114" rx="10" fill="#0f2942" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="50" y="666" fill="#38bdf8" font-size="13" font-weight="700">Engine 1: Associative Vault Graph</text>
+  <text x="50" y="686" fill="#e2e8f0" font-size="11.5">• Bipartite PageRank + Spreading Activation</text>
+  <text x="50" y="704" fill="#e2e8f0" font-size="11.5">• Finds 2- to 3-hop clues across ObsidianVault</text>
+  <text x="50" y="728" fill="#7dd3fc" font-size="11" font-weight="600">Out -&gt; Hidden multi-hop Vault concepts</text>
+
+  <!-- STAGE B BOXES (Second Column) -->
+  <!-- Engine 2 -->
+  <rect x="335" y="165" width="275" height="125" rx="10" fill="#2e1d09" stroke="#f59e0b" stroke-width="1.8"/>
+  <text x="350" y="190" fill="#fbbf24" font-size="13" font-weight="700">Engine 2: Geometric &amp; Z3 SMT Solver</text>
+  <text x="350" y="212" fill="#e2e8f0" font-size="11.5">• Receives live state (E9/E13) + Vault links (E1)</text>
+  <text x="350" y="230" fill="#e2e8f0" font-size="11.5">• Mathematically proves subnet, route, VLAN &amp;</text>
+  <text x="350" y="246" fill="#e2e8f0" font-size="11.5">  interface reachability via Microsoft Z3</text>
+  <text x="350" y="272" fill="#fcd34d" font-size="11" font-weight="600">Out -&gt; Proven SAT/UNSAT topology facts</text>
+
+  <!-- Engine 3 -->
+  <rect x="335" y="315" width="275" height="125" rx="10" fill="#2e1d09" stroke="#f59e0b" stroke-width="1.8"/>
+  <text x="350" y="340" fill="#fbbf24" font-size="13" font-weight="700">Engine 3: Formal Concept Lattice (FCA)</text>
+  <text x="350" y="362" fill="#e2e8f0" font-size="11.5">• Builds mathematical Galois Concept Lattice</text>
+  <text x="350" y="380" fill="#e2e8f0" font-size="11.5">  of hosts, ports, interfaces &amp; properties</text>
+  <text x="350" y="398" fill="#e2e8f0" font-size="11.5">• Discovers strict attribute implications (A -&gt; B)</text>
+  <text x="350" y="422" fill="#fcd34d" font-size="11" font-weight="600">Out -&gt; Induced structural rules &amp; anomalies</text>
+
+  <!-- Engine 4 -->
+  <rect x="335" y="465" width="275" height="125" rx="10" fill="#2e1d09" stroke="#f59e0b" stroke-width="1.8"/>
+  <text x="350" y="490" fill="#fbbf24" font-size="13" font-weight="700">Engine 4: Bayesian Abductive Engine</text>
+  <text x="350" y="512" fill="#e2e8f0" font-size="11.5">• Combines Z3 proofs (E2) + FCA rules (E3)</text>
+  <text x="350" y="530" fill="#e2e8f0" font-size="11.5">• Computes posterior probability P(H|E) for</text>
+  <text x="350" y="546" fill="#e2e8f0" font-size="11.5">  every candidate root cause + Shannon EIG</text>
+  <text x="350" y="572" fill="#fcd34d" font-size="11" font-weight="600">Out -&gt; Ranked root causes + highest-info probe</text>
+
+  <!-- Engine 10 -->
+  <rect x="335" y="615" width="275" height="125" rx="10" fill="#2e1d09" stroke="#f59e0b" stroke-width="1.8"/>
+  <text x="350" y="640" fill="#fbbf24" font-size="13" font-weight="700">Engine 10: Dempster-Shafer Epistemic</text>
+  <text x="350" y="662" fill="#e2e8f0" font-size="11.5">• Separates "Disbelief" from "Ignorance" [Bel, Pl]</text>
+  <text x="350" y="680" fill="#e2e8f0" font-size="11.5">• Computes Dempster Conflict Mass (K) when</text>
+  <text x="350" y="696" fill="#e2e8f0" font-size="11.5">  two tools/sensors contradict each other</text>
+  <text x="350" y="722" fill="#fcd34d" font-size="11" font-weight="600">Out -&gt; Sensor conflict alert &amp; epistemic bounds</text>
+
+  <!-- STAGE C BOXES (Third Column) -->
+  <!-- Engine 5 -->
+  <rect x="635" y="165" width="275" height="125" rx="10" fill="#27103c" stroke="#c084fc" stroke-width="1.8"/>
+  <text x="650" y="190" fill="#e879f9" font-size="13" font-weight="700">Engine 5: Causal DAG &amp; Do-Calculus</text>
+  <text x="650" y="212" fill="#e2e8f0" font-size="11.5">• Receives top Bayesian hypothesis (E4)</text>
+  <text x="650" y="230" fill="#e2e8f0" font-size="11.5">• Simulates Pearl do(X) interventions on the</text>
+  <text x="650" y="246" fill="#e2e8f0" font-size="11.5">  dependency graph without touching production</text>
+  <text x="650" y="272" fill="#f5d0fe" font-size="11" font-weight="600">Out -&gt; Predicted side-effects &amp; best lever</text>
+
+  <!-- Engine 7 -->
+  <rect x="635" y="315" width="275" height="125" rx="10" fill="#27103c" stroke="#c084fc" stroke-width="1.8"/>
+  <text x="650" y="340" fill="#e879f9" font-size="13" font-weight="700">Engine 7: Hyperdimensional VSA (10k-D)</text>
+  <text x="650" y="362" fill="#e2e8f0" font-size="11.5">• Encodes system roles into 10,000-D to 32,768-D</text>
+  <text x="650" y="380" fill="#e2e8f0" font-size="11.5">  bipolar vectors; performs algebraic unbinding</text>
+  <text x="650" y="398" fill="#e2e8f0" font-size="11.5">• Finds zero-shot functional equivalents</text>
+  <text x="650" y="422" fill="#f5d0fe" font-size="11" font-weight="600">Out -&gt; Conceptual leap vector analogies</text>
+
+  <!-- Engine 6 -->
+  <rect x="635" y="465" width="275" height="125" rx="10" fill="#27103c" stroke="#c084fc" stroke-width="1.8"/>
+  <text x="650" y="490" fill="#e879f9" font-size="13" font-weight="700">Engine 6: Structure-Mapping Analogy</text>
+  <text x="650" y="512" fill="#e2e8f0" font-size="11.5">• Combines Causal DAG (E5) + VSA leaps (E7)</text>
+  <text x="650" y="530" fill="#e2e8f0" font-size="11.5">• Maps solved playbooks (e.g. Serial OOB) onto</text>
+  <text x="650" y="546" fill="#e2e8f0" font-size="11.5">  blocked network paths via relational alignment</text>
+  <text x="650" y="572" fill="#f5d0fe" font-size="11" font-weight="600">Out -&gt; Cross-domain workaround blueprint</text>
+
+  <!-- Engine 14 -->
+  <rect x="635" y="615" width="275" height="125" rx="10" fill="#27103c" stroke="#c084fc" stroke-width="1.8"/>
+  <text x="650" y="640" fill="#e879f9" font-size="13" font-weight="700">Engine 14: Evolutionary MAP-Elites</text>
+  <text x="650" y="662" fill="#e2e8f0" font-size="11.5">• Evolves multi-tool chains across 320-800</text>
+  <text x="650" y="680" fill="#e2e8f0" font-size="11.5">  generations on CPU (e.g. Serial + Proxy-ARP</text>
+  <text x="650" y="696" fill="#e2e8f0" font-size="11.5">  + Socat Relay) verified against Z3 constraints</text>
+  <text x="650" y="722" fill="#f5d0fe" font-size="11" font-weight="600">Out -&gt; Top 3 diverse multi-tool strategies</text>
+
+  <!-- STAGE D BOXES (Right Column) -->
+  <!-- Engine 8 -->
+  <rect x="935" y="165" width="270" height="155" rx="10" fill="#062e22" stroke="#10b981" stroke-width="2"/>
+  <text x="950" y="192" fill="#34d399" font-size="13.5" font-weight="700">Engine 8: Clingo ASP Planner</text>
+  <text x="950" y="214" fill="#e2e8f0" font-size="11.5">• Receives Causal (E5), Analogy (E6)</text>
+  <text x="950" y="232" fill="#e2e8f0" font-size="11.5">  &amp; Evolutionary (E14) inputs</text>
+  <text x="950" y="252" fill="#e2e8f0" font-size="11.5">• Uses Answer Set Programming</text>
+  <text x="950" y="270" fill="#e2e8f0" font-size="11.5">  to prove shortest valid command</text>
+  <text x="950" y="288" fill="#e2e8f0" font-size="11.5">  sequence to reach the Goal</text>
+  <text x="950" y="308" fill="#6ee7b7" font-size="11" font-weight="600">Out -&gt; Verified multi-step plan</text>
+
+  <!-- Consensus Arbiter -->
+  <rect x="935" y="355" width="270" height="175" rx="10" fill="#1e1b4b" stroke="#818cf8" stroke-width="2.2"/>
+  <text x="1070" y="384" text-anchor="middle" fill="#a5b4fc" font-size="14" font-weight="800">SINGLE CONSENSUS ARBITER</text>
+  <text x="1070" y="403" text-anchor="middle" fill="#cbd5e1" font-size="11">(Guardrail 4: "One Voice to LLM")</text>
+  <text x="950" y="428" fill="#e2e8f0" font-size="11.5">Reconciles all 14 engines by priority:</text>
+  <text x="950" y="448" fill="#fde047" font-size="11.5" font-weight="600">1. Resolve Sensor Conflict (E10/E4)</text>
+  <text x="950" y="468" fill="#6ee7b7" font-size="11.5" font-weight="600">2. Execute Proven ASP Step #1 (E8)</text>
+  <text x="950" y="488" fill="#f9a8d4" font-size="11.5" font-weight="600">3. Apply Evolutionary Pivot (E14)</text>
+  <text x="950" y="514" fill="#c7d2fe" font-size="11" font-weight="600">Out -&gt; 1 Consensus Action Digest</text>
+
+  <!-- Local LLM Box -->
+  <rect x="935" y="565" width="270" height="175" rx="12" fill="#047857" stroke="#6ee7b7" stroke-width="2.5"/>
+  <text x="1070" y="598" text-anchor="middle" fill="#ffffff" font-size="15.5" font-weight="800">LOCAL LLM AGENT</text>
+  <text x="1070" y="618" text-anchor="middle" fill="#a7f3d0" font-size="12" font-weight="600">(Qwen3.8-27B / Qwen3.5-9B)</text>
+  <text x="950" y="644" fill="#ecfdf5" font-size="11.5">• Reads ~700-token Executive Digest</text>
+  <text x="950" y="664" fill="#ecfdf5" font-size="11.5">• Follows Consensus Immediate Action</text>
+  <text x="950" y="684" fill="#ecfdf5" font-size="11.5">• Updates Obsidian Attempt Ledger</text>
+  <text x="950" y="704" fill="#ecfdf5" font-size="11.5">• Loops via /relentless until</text>
+  <text x="950" y="722" fill="#fde047" font-size="11.5" font-weight="700">  [GOAL_ACHIEVED]</text>
+
+  <!-- Connecting Arrows Across Columns -->
+  <line x1="310" y1="315" x2="333" y2="230" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrCyan)"/>
+  <line x1="310" y1="440" x2="333" y2="250" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrCyan)"/>
+  <line x1="310" y1="695" x2="333" y2="265" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrCyan)"/>
+  <line x1="310" y1="565" x2="333" y2="525" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrCyan)"/>
+
+  <!-- Stage B vertical & cross links -->
+  <line x1="472" y1="290" x2="472" y2="313" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrAmber)"/>
+  <line x1="472" y1="440" x2="472" y2="463" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrAmber)"/>
+  <line x1="472" y1="590" x2="472" y2="613" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrAmber)"/>
+  <line x1="610" y1="525" x2="633" y2="225" stroke="#fbbf24" stroke-width="2.2" marker-end="url(#arrAmber)"/>
+  <line x1="610" y1="230" x2="633" y2="665" stroke="#fbbf24" stroke-width="1.8" marker-end="url(#arrAmber)"/>
+
+  <!-- Stage C vertical & cross links -->
+  <line x1="772" y1="290" x2="772" y2="463" stroke="#f472b6" stroke-width="2" marker-end="url(#arrPink)"/>
+  <line x1="772" y1="440" x2="772" y2="463" stroke="#f472b6" stroke-width="2" marker-end="url(#arrPink)"/>
+  <line x1="772" y1="590" x2="772" y2="613" stroke="#f472b6" stroke-width="2" marker-end="url(#arrPink)"/>
+  <line x1="910" y1="225" x2="933" y2="225" stroke="#f472b6" stroke-width="2" marker-end="url(#arrPink)"/>
+  <line x1="910" y1="525" x2="933" y2="255" stroke="#f472b6" stroke-width="2" marker-end="url(#arrPink)"/>
+  <line x1="910" y1="675" x2="933" y2="285" stroke="#f472b6" stroke-width="2" marker-end="url(#arrPink)"/>
+
+  <!-- Stage D vertical links -->
+  <line x1="1070" y1="320" x2="1070" y2="353" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrEmerald)"/>
+  <line x1="1070" y1="530" x2="1070" y2="563" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrEmerald)"/>
+
+  <!-- Footer Note -->
+  <text x="620" y="795" text-anchor="middle" fill="#94a3b8" font-size="12.5">Full Unabridged 14-Engine Report Auto-Saved to ObsidianVault/reasoning/ | Compact Consensus Digest Fed to Local LLM Context</text>
+</svg>
