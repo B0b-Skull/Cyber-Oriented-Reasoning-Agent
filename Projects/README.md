@@ -48,7 +48,7 @@ flowchart LR
 
 ## 2. Mandatory Startup Project Selection, Rename & Creation Menu (`Projects/<project-name>/`)
 
-When starting the **C.O.R.A. (Cyber Oriented Reasoning Agent)** CLI (`./run_cora_NIX.sh` or `.\run_cora_WIN.ps1`) or Web Interface (`./run_cora_NIX.sh start` or `.\run_cora_WIN.ps1 start`), C.O.R.A. requires a project in `CORA/Projects/` to be selected or created and a session Personality Mode (`Default`, `Analyst`, `Berserker`, or `Ninja`) to be chosen before displaying the main C.O.R.A. login banner (`core/Explained/assets/CROW_Logo_White_TransparentBackground.webp`) and interacting with the LLM:
+When starting the **C.O.R.A. (Cyber Oriented Reasoning Agent)** CLI (`./run_cora_NIX.sh` or `.\run_cora_WIN.ps1`) or Web Interface (`./run_cora_NIX.sh start` or `.\run_cora_WIN.ps1 start`), C.O.R.A. requires a project in `CORA/Projects/` to be selected or created and a session Personality Mode (`Default`, `Analyst`, `Berserker`, or `Ninja`) to be chosen before displaying the main C.O.R.A. login banner (`core/Explained/assets/CROW_Logo-NoWords_Transparent_Glow-NoBackground.png`) and interacting with the LLM:
 
 1. **`[1 .. N]` Existing Projects:** Lists every project directory currently inside `CORA/Projects/` assigned a number.
 2. **`[N + 1] Rename Current Project`:** Placed directly above `CREATE NEW PROJECT`. Opens a secondary screen where you select the number of the project to rename (with `[B] Go Back` and `[C] CANCEL` options) and enter the new project name.

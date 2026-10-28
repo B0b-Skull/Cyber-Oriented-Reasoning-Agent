@@ -57,9 +57,9 @@ updated: 2026-10-26 14:50:17
 | **`serial`** | `concept` | `0.0127` | `59` | `[[commands/tio_serial_playbook]]`, `[[commands/trained_bcf_cne_basics]]`, `[[commands/trained_cqc001_e020_m020_ntfs_cheat_sheets]]`, `[[commands/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]]` |
 | **`powershell`** | `concept` | `0.0095` | `75` | `[[00_TRAINED_INDEX]]`, `[[commands/trained_apt28-center-of-storm-2017_mandiant]]`, `[[commands/trained_basic_survey_commands]]`, `[[commands/trained_bcf_cne_basics]]` |
 | **`netstat`** | `concept` | `0.0074` | `55` | `[[commands/trained_basic_survey_commands]]`, `[[commands/trained_bcf_cne_basics]]`, `[[commands/trained_bcf_windows_live_response]]`, `[[commands/trained_bcf_windows_process_investigation]]` |
-| **`curl`** | `concept` | `0.0073` | `14` | `[[commands/curl_playbook]]`, `[[commands/trained_cqc001_e040_m005_powershell_comparison]]`, `[[commands/trained_operator-handbook-search_copy_paste]]`, `[[commands/trained_sample_perimeter_router_playbook]]` |
+| **`curl`** | `concept` | `0.0073` | `13` | `[[commands/curl_playbook]]`, `[[commands/trained_cqc001_e040_m005_powershell_comparison]]`, `[[commands/trained_operator-handbook-search_copy_paste]]` |
 | **`wmic`** | `concept` | `0.0058` | `41` | `[[00_TRAINED_INDEX]]`, `[[commands/trained_auditpol_cmds]]`, `[[commands/trained_basic_survey_commands]]`, `[[commands/trained_bcf_windows_process_investigation]]` |
-| **`tio`** | `concept` | `0.0056` | `8` | `[[commands/tio_serial_playbook]]`, `[[commands/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]]`, `[[commands/trained_sample_perimeter_router_playbook]]`, `[[knowledge/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]]` |
+| **`tio`** | `concept` | `0.0056` | `7` | `[[commands/tio_serial_playbook]]`, `[[commands/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]]`, `[[knowledge/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]]` |
 
 ## 3. Multi-Hop Conceptual Leap Pathways Across Categories
 1. *(1-hop bridge)*: `[[00_TRAINED_INDEX]]` $\leftrightarrow$ `[[commands/trained_unix_and_linux_system_administration_handbook]]`
@@ -85,18 +85,18 @@ updated: 2026-10-26 14:50:17
 - `198.51.100.0/24` $\leftrightarrow$ `203.0.113.0/24`: **DISJOINT** (Address space gap: `22,784` IPs)
 - `198.51.100.0/24` $\leftrightarrow$ `198.51.100.0/25`: **DISJOINT** (Address space gap: `2,151,149,184` IPs)
 - `198.51.100.0/24` $\leftrightarrow$ `192.0.2.0/24`: **DISJOINT** (Address space gap: `3,059,422,720` IPs)
-- `198.51.100.0/24` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `345,400,320` IPs)
+- `198.51.100.0/24` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `345,400,320` IPs)
 - `198.51.100.0/24` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `2,151,149,056` IPs)
 - `203.0.113.0/24` $\leftrightarrow$ `198.51.100.0/25`: **DISJOINT** (Address space gap: `2,151,126,144` IPs)
 - `203.0.113.0/24` $\leftrightarrow$ `192.0.2.0/24`: **DISJOINT** (Address space gap: `3,059,399,680` IPs)
-- `203.0.113.0/24` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `345,377,280` IPs)
+- `203.0.113.0/24` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `345,377,280` IPs)
 - `203.0.113.0/24` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `2,151,126,016` IPs)
 - `198.51.100.0/25` $\leftrightarrow$ `192.0.2.0/24`: **DISJOINT** (Address space gap: `908,273,408` IPs)
-- `198.51.100.0/25` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `1,805,683,328` IPs)
+- `198.51.100.0/25` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `1,805,683,328` IPs)
 - `198.51.100.0/25` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `0` IPs)
-- `192.0.2.0/24` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `2,713,956,864` IPs)
+- `192.0.2.0/24` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `2,713,956,864` IPs)
 - `192.0.2.0/24` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `908,273,536` IPs)
-- `172.17.0.0/16` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `1,805,683,200` IPs)
+- `192.0.2.128/25` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `1,805,683,200` IPs)
 
 ---
 
@@ -249,7 +249,7 @@ flowchart TD
 
 # Stage 10: CEGAR Pre-Execution Verification
 ### CEGAR Pre-Execution Command Verifier
-- **Active Local Subnets Checked**: `127.0.0.0/8, 198.51.100.0/24, 203.0.113.0/24, 198.51.100.0/25, 192.0.2.0/24, 172.17.0.0/16, 198.51.100.128/25`
+- **Active Local Subnets Checked**: `127.0.0.0/8, 198.51.100.0/24, 203.0.113.0/24, 198.51.100.0/25, 192.0.2.0/24, 192.0.2.128/25, 198.51.100.128/25`
 - **Guardrail 1 Policy**: Hard-blocks syntax errors (`bash -n`), infinite non-TTY hangs (`tio` without `--script`, `ping` without `-c`), Python inside `tio --script`, and truncated/malformed IPv4 addresses (`http://172.24`, `ip route get 1`). All semantic route checks are non-blocking advisories.
 
 #### Verified Candidate Commands
@@ -326,7 +326,7 @@ bash: line 1: `ip neigh show <TARGET_IP>'
 # Stage 14: Trajectory Reinforcement Learning (`TD(lambda)`) & Network World-Model
 ### Engine 19: Trajectory Reinforcement Learning (`TD(lambda)` + UCB1) & Live Network World-Model
 - **Active 12-Bit Symbolic Network State (`s_t`)**: **`C1_OOB_SERIAL_LOOPBACK_APPLIANCE::STAGE_2_OOB_SERIAL_UNLOCK`** (`bits=[1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0]`)
-- **Live Host Network Sensor**: Primary NIC=`eth0`, Local Subnets=`['198.51.100.0/24', '203.0.113.0/24', '198.51.100.0/25', '192.0.2.0/24', '172.17.0.0/16', '198.51.100.128/25']`, Default GW=`198.51.100.1`, Reachable L2 ARP Neighbors=`4`, IPv4 Forwarding=`True`
+- **Live Host Network Sensor**: Primary NIC=`eth0`, Local Subnets=`['198.51.100.0/24', '203.0.113.0/24', '198.51.100.0/25', '192.0.2.0/24', '192.0.2.128/25', '198.51.100.128/25']`, Default GW=`198.51.100.1`, Reachable L2 ARP Neighbors=`4`, IPv4 Forwarding=`True`
 - **RL Policy Training Maturity**: `5200` Digital-Twin Episodes + `52` Online CLI Steps (Avg Return = `+40.08`)
 - **RL Optimal Immediate Action ($Q^*(s_t, a^*) = +30.36$)**: `tio --script 'write("id\r\nip -br addr\r\nss -tulpn\r\n"); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0` (*Out-of-Band Serial Console Daemon & Socket Inspection*)
 

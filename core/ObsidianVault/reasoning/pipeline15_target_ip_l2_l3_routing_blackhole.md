@@ -58,7 +58,7 @@ updated: 2026-10-26 14:50:17
 | **`serial`** | `concept` | `0.0076` | `59` | `[[commands/tio_serial_playbook]]`, `[[commands/trained_bcf_cne_basics]]`, `[[commands/trained_cqc001_e020_m020_ntfs_cheat_sheets]]`, `[[commands/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]]` |
 | **`netstat`** | `concept` | `0.0076` | `55` | `[[commands/trained_basic_survey_commands]]`, `[[commands/trained_bcf_cne_basics]]`, `[[commands/trained_bcf_windows_live_response]]`, `[[commands/trained_bcf_windows_process_investigation]]` |
 | **`wmic`** | `concept` | `0.0070` | `41` | `[[00_TRAINED_INDEX]]`, `[[commands/trained_auditpol_cmds]]`, `[[commands/trained_basic_survey_commands]]`, `[[commands/trained_bcf_windows_process_investigation]]` |
-| **`curl`** | `concept` | `0.0066` | `14` | `[[commands/curl_playbook]]`, `[[commands/trained_cqc001_e040_m005_powershell_comparison]]`, `[[commands/trained_operator-handbook-search_copy_paste]]`, `[[commands/trained_sample_perimeter_router_playbook]]` |
+| **`curl`** | `concept` | `0.0066` | `13` | `[[commands/curl_playbook]]`, `[[commands/trained_cqc001_e040_m005_powershell_comparison]]`, `[[commands/trained_operator-handbook-search_copy_paste]]` |
 | **`arp`** | `concept` | `0.0057` | `42` | `[[commands/trained_apt28-fancybear-report]]`, `[[commands/trained_basic_survey_commands]]`, `[[commands/trained_bpf_syntax]]`, `[[commands/trained_centos-debian-survey]]` |
 
 ## 3. Multi-Hop Conceptual Leap Pathways Across Categories
@@ -85,18 +85,18 @@ updated: 2026-10-26 14:50:17
 - `198.51.100.0/24` $\leftrightarrow$ `203.0.113.0/24`: **DISJOINT** (Address space gap: `22,784` IPs)
 - `198.51.100.0/24` $\leftrightarrow$ `198.51.100.0/25`: **DISJOINT** (Address space gap: `2,151,149,184` IPs)
 - `198.51.100.0/24` $\leftrightarrow$ `192.0.2.0/24`: **DISJOINT** (Address space gap: `3,059,422,720` IPs)
-- `198.51.100.0/24` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `345,400,320` IPs)
+- `198.51.100.0/24` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `345,400,320` IPs)
 - `198.51.100.0/24` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `2,151,149,056` IPs)
 - `203.0.113.0/24` $\leftrightarrow$ `198.51.100.0/25`: **DISJOINT** (Address space gap: `2,151,126,144` IPs)
 - `203.0.113.0/24` $\leftrightarrow$ `192.0.2.0/24`: **DISJOINT** (Address space gap: `3,059,399,680` IPs)
-- `203.0.113.0/24` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `345,377,280` IPs)
+- `203.0.113.0/24` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `345,377,280` IPs)
 - `203.0.113.0/24` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `2,151,126,016` IPs)
 - `198.51.100.0/25` $\leftrightarrow$ `192.0.2.0/24`: **DISJOINT** (Address space gap: `908,273,408` IPs)
-- `198.51.100.0/25` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `1,805,683,328` IPs)
+- `198.51.100.0/25` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `1,805,683,328` IPs)
 - `198.51.100.0/25` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `0` IPs)
-- `192.0.2.0/24` $\leftrightarrow$ `172.17.0.0/16`: **DISJOINT** (Address space gap: `2,713,956,864` IPs)
+- `192.0.2.0/24` $\leftrightarrow$ `192.0.2.128/25`: **DISJOINT** (Address space gap: `2,713,956,864` IPs)
 - `192.0.2.0/24` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `908,273,536` IPs)
-- `172.17.0.0/16` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `1,805,683,200` IPs)
+- `192.0.2.128/25` $\leftrightarrow$ `198.51.100.128/25`: **DISJOINT** (Address space gap: `1,805,683,200` IPs)
 
 ---
 
@@ -238,7 +238,7 @@ flowchart TD
 
 # Stage 10: CEGAR Pre-Execution Verification
 ### CEGAR Pre-Execution Command Verifier
-- **Active Local Subnets Checked**: `127.0.0.0/8, 198.51.100.0/24, 203.0.113.0/24, 198.51.100.0/25, 192.0.2.0/24, 172.17.0.0/16, 198.51.100.128/25`
+- **Active Local Subnets Checked**: `127.0.0.0/8, 198.51.100.0/24, 203.0.113.0/24, 198.51.100.0/25, 192.0.2.0/24, 192.0.2.128/25, 198.51.100.128/25`
 - **Guardrail 1 Policy**: Hard-blocks syntax errors (`bash -n`), infinite non-TTY hangs (`tio` without `--script`, `ping` without `-c`), Python inside `tio --script`, and truncated/malformed IPv4 addresses (`http://172.24`, `ip route get 1`). All semantic route checks are non-blocking advisories.
 
 #### Verified Candidate Commands
@@ -322,7 +322,7 @@ bash: line 1: `nmap -Pn -sT -p 22,80,443,8080,8443 <TARGET_IP>'
 # Stage 14: Trajectory Reinforcement Learning (`TD(lambda)`) & Network World-Model
 ### Engine 19: Trajectory Reinforcement Learning (`TD(lambda)` + UCB1) & Live Network World-Model
 - **Active 12-Bit Symbolic Network State (`s_t`)**: **`C2_CROSS_SUBNET_L3_PIVOT::STAGE_3_CROSS_SUBNET_L3_ROUTE`** (`bits=[1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0]`)
-- **Live Host Network Sensor**: Primary NIC=`eth0`, Local Subnets=`['198.51.100.0/24', '203.0.113.0/24', '198.51.100.0/25', '192.0.2.0/24', '172.17.0.0/16', '198.51.100.128/25']`, Default GW=`198.51.100.1`, Reachable L2 ARP Neighbors=`4`, IPv4 Forwarding=`True`
+- **Live Host Network Sensor**: Primary NIC=`eth0`, Local Subnets=`['198.51.100.0/24', '203.0.113.0/24', '198.51.100.0/25', '192.0.2.0/24', '192.0.2.128/25', '198.51.100.128/25']`, Default GW=`198.51.100.1`, Reachable L2 ARP Neighbors=`4`, IPv4 Forwarding=`True`
 - **RL Policy Training Maturity**: `5200` Digital-Twin Episodes + `52` Online CLI Steps (Avg Return = `+40.08`)
 - **RL Optimal Immediate Action ($Q^*(s_t, a^*) = +36.81$)**: `sudo ip route replace <REMOTE_SUBNET> via <GATEWAY_IP> && sudo sysctl -w net.ipv4.ip_forward=1` (*Inject Cross-Subnet Static Route via Gateway Pivot & Enable IP Forwarding*)
 

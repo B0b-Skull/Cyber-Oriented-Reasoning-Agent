@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updated_at": "2026-10-28T00:31:27-04:00",
+  "updated_at": "2026-10-28T00:37:22-04:00",
   "discount_gamma": 0.92,
   "tactic_categories": [
     "Passive_Enum",
@@ -45,7 +45,7 @@
       "command_template": "ip -4 -br addr show; ip route show; ip neigh show",
       "post_state_success": "s_passive_topology_mapped",
       "post_state_fail": "s_init_unknown",
-      "alpha_success": 60.04,
+      "alpha_success": 61.04,
       "alpha_fail": 1.92,
       "step_cost": 1.0,
       "source": "seed_core"
@@ -2649,7 +2649,7 @@
       "command_template": "tcpdump -c 15 -vnni eth0 host {target_ip}",
       "post_state_success": "s_active_services_enumerated",
       "post_state_fail": "s_passive_topology_mapped",
-      "alpha_success": 11.8,
+      "alpha_success": 12.8,
       "alpha_fail": 1.44,
       "step_cost": 1.5,
       "source": "CQC001_E010_M030_transcript.pdf"
@@ -65039,5 +65039,5 @@
       "source": "windows_command_line_Administration.pdf"
     }
   ],
-  "online_updates_count": 3
+  "online_updates_count": 5
 }

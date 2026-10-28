@@ -6,7 +6,7 @@
 > **OPEN-SOURCE NOTICE, ATTRIBUTION & LIMITATION OF LIABILITY:**  
 > C.O.R.A. is open-source software under active development and continuous refinement. Redistribution, modification, or operational deployment is permitted provided that clear attribution and development credit to https://CROWinnovations.com are retained in all copies and derivative works. C.O.R.A. and its layered reasoning engines are provided `"AS IS"` without warranty of any kind. The developer assumes no liability or legal responsibility for any actions, damages, data loss, or legal consequences arising from the use of this system.
 
-![C.O.R.A. Real CROW Logo & Login Banner (from ~/Pictures/CROW_Logo_White_TransparentBackground.webp)](Explained/assets/cora_splash_and_versioning_guide.svg)
+![C.O.R.A. Real CROW Logo & Login Banner (Explained/assets/CROW_Logo-NoWords_Transparent_Glow-NoBackground.png)](Explained/assets/cora_splash_and_versioning_guide.svg)
 
 ### How C.O.R.A.'s 3-Section Semantic Version (`5.14.11`) Works
 Displayed directly above `Author: https://CROWinnovations.com` on the CLI startup splash screen as `Version: 5.14.11` and persisted in [`Log/cora_version.json`](./Log/cora_version.json):

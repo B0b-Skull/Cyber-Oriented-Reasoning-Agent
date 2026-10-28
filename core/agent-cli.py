@@ -1606,13 +1606,16 @@ _CORA_BANNER_LINES = (
 
 def _load_crow_logo_ascii(width: int = 32, height: int = 9) -> list[str]:
     """
-    Dynamically render the CROW logo (`CROW_Logo_White_TransparentBackground.webp`) to a left-aligned
+    Dynamically render the CROW logo (`CROW_Logo-NoWords_Transparent_Glow-NoBackground.png`
+    or `CROW_Logo_White_TransparentBackground.webp`) to a left-aligned
     `width x height` ASCII block matching the height from the top of the `C.O.R.A.` banner (`5` lines)
     to the bottom of the `Cyber Oriented Reasoning Agent` subtitle (`9` lines total).
-    Falls back to the pre-rendered `_CROW_LOGO_FALLBACK_LINES` derived from the exact same `.webp` image.
+    Falls back to the pre-rendered `_CROW_LOGO_FALLBACK_LINES` if Pillow or the image file is unavailable.
     """
     candidates = [
+        BASE_DIR / "Explained" / "assets" / "CROW_Logo-NoWords_Transparent_Glow-NoBackground.png",
         BASE_DIR / "Explained" / "assets" / "CROW_Logo_White_TransparentBackground.webp",
+        Path.home() / "Pictures" / "CROW_Logo-NoWords_Transparent_Glow-NoBackground.png",
         Path.home() / "Pictures" / "CROW_Logo_White_TransparentBackground.webp",
     ]
     for img_path in candidates:
