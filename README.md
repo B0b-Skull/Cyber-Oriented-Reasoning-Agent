@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://CROWinnovations.com">
-    <img src="core/Explained/assets/CROW_Logo_White_TransparentBackground.webp" alt="CROW Innovations Emblem" width="220" />
+    <img src="core/Explained/assets/<img src="assets/CROW_Logo-NoWords_Transparent_Glow-NoBackground.png"" alt="CROW Innovations Emblem" width="220" />
   </a>
 
   # C.O.R.A. — Cyber Oriented Reasoning Agent
