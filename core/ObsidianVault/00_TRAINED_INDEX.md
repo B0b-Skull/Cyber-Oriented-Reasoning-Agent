@@ -202,8 +202,6 @@
 | `metro case studies.pdf` | `pdf` | [[knowledge/trained_metro_case_studies]] | [[commands/trained_metro_case_studies]] | `1` | `LO` |
 | `ptrkrysik_camppp.pdf` | `pdf` | [[knowledge/trained_ptrkrysik_camppp]] | [[commands/trained_ptrkrysik_camppp]] | `2` | `-` |
 | `recognizing-suspicious-network-connections-python_12515.pdf` | `pdf` | [[knowledge/trained_recognizing-suspicious-network-connections-python_12515]] | [[commands/trained_recognizing-suspicious-network-connections-python_12515]] | `3` | `-` |
-| `sample_perimeter_network_diagram.png` | `image_diagram` | [[knowledge/trained_sample_perimeter_network_diagram]] | [[commands/trained_sample_perimeter_network_diagram]] | `2` | `10.20.30.0/24, 10.20.30.1, 10.20.30.1/24, enp11s0, eth0, ttyUSB0` |
-| `sample_perimeter_router_playbook.md` | `text` | [[knowledge/trained_sample_perimeter_router_playbook]] | [[commands/trained_sample_perimeter_router_playbook]] | `12` | `10.20.30.0/24, 10.20.30.10, 172.24.10.1, enp11s0, ttyUSB0` |
 | `tdoct1933b_eng.pdf` | `pdf` | [[knowledge/trained_tdoct1933b_eng]] | - | `0` | `1.2.3.1, 1.2.3.2, 1.2.3.3` |
 | `us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent Asynchronous-And-Fileless-Backdoor-wp.pdf` | `pdf` | [[knowledge/trained_us-15-graeber-abusing-windows-management-instrumentation-wmi-to-]] | [[commands/trained_us-15-graeber-abusing-windows-management-instrumentation-wmi-to-]] | `47` | `172.24.72.131, 172.24.72.134, 172.24.72.135` |
 | `windows_command_line_Administration.pdf` | `pdf` | [[knowledge/trained_windows_command_line_administration]] | [[commands/trained_windows_command_line_administration]] | `332` | `127.0.0.1, 172.24.0.244` |
