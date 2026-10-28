@@ -12,6 +12,9 @@ core/open-webui-data/
 core/Reasoning/.venv/
 core/Reasoning/wheelhouse/
 core/Reasoning/data/hardware_profile.json
+core/Reasoning/data/hardware_resource_profile.json
+Projects/*
+!Projects/README.md
 core/Reasoning/data/vault_entities_cache.json
 core/Reasoning/data/continual_learning_state.json
 core/Reasoning/data/learned_cbr_cases.json
