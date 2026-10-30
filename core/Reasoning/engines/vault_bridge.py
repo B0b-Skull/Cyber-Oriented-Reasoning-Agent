@@ -173,7 +173,7 @@ def _resolve_existing_project_slug(candidate: str = "") -> str:
             return slug
 
     for state_file in (
-        CORE_DIR / "Log" / "active-project.txt",
+        CORA_CORE_DIR / "Log" / "active-project.txt",
         DATA_DIR / "sessions" / "active_project.txt",
     ):
         if state_file.is_file():

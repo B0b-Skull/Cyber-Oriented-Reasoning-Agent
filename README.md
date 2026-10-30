@@ -74,6 +74,8 @@ cd CORA
 .\run_cora_WIN.ps1 -train                               # Train Vault & 15 Engines on docs/images in .\Training\
 .\run_cora_WIN.ps1 status                               # Check server status, active model & hardware profile
 .\run_cora_WIN.ps1 troubleshoot                         # Run 5-Layer diagnostics & auto-repair check
+.\Troubleshooting\test_webgui_WIN.ps1                   # Run automated Windows WebGUI button, modal & API test suite
+.\Troubleshooting\test_cli_WIN.ps1                      # Run automated Windows CLI switch, menu & slash-command test suite
 .\run_cora_WIN.ps1 stop                                 # Stop background llama-server and free RAM/VRAM
 ```
 

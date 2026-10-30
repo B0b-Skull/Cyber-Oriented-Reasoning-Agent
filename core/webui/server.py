@@ -48,13 +48,29 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
-
-import psutil
+try:
+    from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+    from fastapi.staticfiles import StaticFiles
+    from pydantic import BaseModel, Field
+    import psutil
+except ModuleNotFoundError:
+    _req_path = Path(__file__).resolve().parent / "requirements.txt"
+    if _req_path.is_file():
+        print(f"[CORA WebUI] Installing missing Python dependencies from {_req_path}...", flush=True)
+        for _pip_args in (
+            [sys.executable, "-m", "pip", "install", "-q", "-r", str(_req_path)],
+            [sys.executable, "-m", "pip", "install", "--break-system-packages", "-q", "-r", str(_req_path)],
+        ):
+            if subprocess.run(_pip_args, check=False).returncode == 0:
+                break
+    from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+    from fastapi.staticfiles import StaticFiles
+    from pydantic import BaseModel, Field
+    import psutil
 
 # Ensure `core/` is on sys.path so `Reasoning` and `Network_Isolation` import cleanly
 WEBUI_DIR = Path(__file__).resolve().parent
@@ -543,7 +559,7 @@ def _sync_cli_session_files(cfg: Dict[str, str]) -> None:
     environment variables synchronized with the WebUI so the CLI and WebUI share state.
     """
     raw_proj = (cfg.get("active_project") or "").strip()
-    proj = slugify(raw_proj) if (raw_proj and raw_proj.lower() not in {"active_session", "active-session", "default", "default-project", "default_session"}) else ""
+    proj = slugify(raw_proj) if (raw_proj and raw_proj.lower() not in {"active_session", "active-session", "default", "default-project", "default_session", "untitled", "unassigned"}) else ""
     mode_key = cfg.get("session_mode", "default").lower()
     if mode_key not in SESSION_MODES:
         mode_key = "default"
@@ -831,6 +847,7 @@ def collect_hardware_metrics() -> Dict[str, Any]:
             "per_core_pct": per_cpu[:16],
             "cores_physical": psutil.cpu_count(logical=False) or 1,
             "cores_logical": psutil.cpu_count(logical=True) or 1,
+            "logical_cores": psutil.cpu_count(logical=True) or 1,
             "frequency_mhz": freq_mhz,
             "temperature_c": cpu_temp_c,
         },
@@ -863,7 +880,7 @@ def collect_hardware_metrics() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Project Workspace Management (Matching `core/agent-cli.py`)
 # ---------------------------------------------------------------------------
-_INVALID_PROJECT_NAMES = {"active_session", "active-session", "default", "default-project", "default_session"}
+_INVALID_PROJECT_NAMES = {"active_session", "active-session", "default", "default-project", "default_session", "untitled", "unassigned"}
 
 
 def resolve_active_project_slug(candidate: Optional[str] = None, cfg: Optional[Dict[str, str]] = None) -> str:
@@ -1508,7 +1525,10 @@ def _find_running_llama_process() -> Optional[Dict[str, Any]]:
     return None
 
 
-def _get_llama_health(llama_base: str) -> Dict[str, Any]:
+_LLAMA_HEALTH_CACHE: Dict[str, Any] = {"ts": 0.0, "base": "", "data": None}
+
+
+def _get_llama_health(llama_base: str, ttl: float = 2.0) -> Dict[str, Any]:
     """
     Inspect `llama-server` health and active model on `llama_base` (e.g. `http://127.0.0.1:8080/v1`).
     Distinguishes between:
@@ -1517,6 +1537,15 @@ def _get_llama_health(llama_base: str) -> Dict[str, Any]:
       - `state == "offline"`: no `llama-server` process is running and TCP port is not reachable
     """
     base_clean = (llama_base or "http://127.0.0.1:8080/v1").rstrip("/")
+    now_mono = time.monotonic()
+    if (
+        ttl > 0
+        and _LLAMA_HEALTH_CACHE["data"] is not None
+        and _LLAMA_HEALTH_CACHE["base"] == base_clean
+        and (now_mono - float(_LLAMA_HEALTH_CACHE["ts"])) < ttl
+    ):
+        return dict(_LLAMA_HEALTH_CACHE["data"])
+
     llama_root = base_clean[:-3] if base_clean.endswith("/v1") else base_clean
     models_url = f"{base_clean}/models" if base_clean.endswith("/v1") else f"{base_clean}/v1/models"
     health_url = f"{llama_root}/health"
@@ -1531,14 +1560,18 @@ def _get_llama_health(llama_base: str) -> Dict[str, Any]:
 
     if not _is_url_port_reachable(base_clean):
         if live_proc is not None:
-            return {
+            res_loading = {
                 "online": False,
                 "state": "loading",
                 "pid": live_proc["pid"],
                 "active_model": active_model,
                 "detail": "Initializing CUDA & loading GGUF model into VRAM/RAM...",
             }
-        return {"online": False, "state": "offline", "active_model": "", "detail": "Port not reachable"}
+            _LLAMA_HEALTH_CACHE.update({"ts": now_mono, "base": base_clean, "data": res_loading})
+            return dict(res_loading)
+        res_off = {"online": False, "state": "offline", "active_model": "", "detail": "Port not reachable"}
+        _LLAMA_HEALTH_CACHE.update({"ts": now_mono, "base": base_clean, "data": res_off})
+        return dict(res_off)
 
     state = "offline"
     detail = ""
@@ -1555,12 +1588,14 @@ def _get_llama_health(llama_base: str) -> Dict[str, Any]:
         except Exception:
             pass
         if he.code == 503 or "loading" in err_txt.lower():
-            return {
+            res_503 = {
                 "online": False,
                 "state": "loading",
                 "active_model": active_model,
                 "detail": "Loading model weights into VRAM/RAM...",
             }
+            _LLAMA_HEALTH_CACHE.update({"ts": now_mono, "base": base_clean, "data": res_503})
+            return dict(res_503)
         detail = f"HTTP {he.code}: {err_txt[:160]}"
     except Exception as exc:
         detail = str(exc)
@@ -1576,12 +1611,14 @@ def _get_llama_health(llama_base: str) -> Dict[str, Any]:
                     state = "ok"
     except urllib.error.HTTPError as he:
         if he.code == 503 and state != "ok":
-            return {
+            res_m503 = {
                 "online": False,
                 "state": "loading",
                 "active_model": active_model,
                 "detail": "Loading model weights into VRAM/RAM...",
             }
+            _LLAMA_HEALTH_CACHE.update({"ts": now_mono, "base": base_clean, "data": res_m503})
+            return dict(res_m503)
     except Exception:
         pass
 
@@ -1589,12 +1626,14 @@ def _get_llama_health(llama_base: str) -> Dict[str, Any]:
         state = "loading"
         detail = "Initializing model server..."
 
-    return {
+    res_final = {
         "online": state == "ok",
         "state": state,
         "active_model": active_model if state != "offline" else "",
         "detail": detail,
     }
+    _LLAMA_HEALTH_CACHE.update({"ts": now_mono, "base": base_clean, "data": res_final})
+    return dict(res_final)
 
 
 def _find_llama_server_binary() -> Optional[Path]:
@@ -2804,6 +2843,25 @@ def execute_safe_shell_command(
     else:
         os.environ["LLM_POSTURE_OVERRIDE"] = iso_env
 
+    # 0. Pre-execution catastrophic host wipe guardrail (applies across all modes)
+    catastrophic_re = re.compile(
+        r"(?:\brm\s+-[a-zA-Z]*[rf][a-zA-Z]*\s+(?:/(?:\s|$)|\*|--no-preserve-root)|"
+        r"\bformat\s+[a-zA-Z]:|"
+        r"\bmkfs(?:\.[a-z0-9]+)?\s+/dev/|"
+        r"\bdd\s+if=/dev/(?:zero|urandom)\s+of=/dev/|"
+        r"\brd\s+/s\s+/q\s+[a-zA-Z]:\\|"
+        r"\bRemove-Item\b[^\n]*-Recurse[^\n]*[a-zA-Z]:\\(?:\s|$))",
+        flags=re.I,
+    )
+    if catastrophic_re.search(cmd_clean):
+        return {
+            "executed": False,
+            "blocked": True,
+            "command": cmd_clean,
+            "reason": "Blocked by Engine 9 (CEGAR): Catastrophic root/filesystem wipe command is strictly prohibited.",
+            "cegar": {"blocked": True, "reason": "Catastrophic filesystem destruction guardrail"},
+        }
+
     # 1. Check Engine 9 CEGAR Pre-Verifier (includes WHITE/BLUE/Windows interface & subnet checks)
     cegar = verify_command_cegar(cmd_clean)
     if cegar.get("blocked"):
@@ -3132,7 +3190,10 @@ async def _on_startup() -> None:
     init_sqlite_db()
     cfg = get_all_settings()
     _sync_cli_session_files(cfg)
-    if (cfg.get("inference_provider") or "llama-server") == "llama-server":
+    if (
+        (cfg.get("inference_provider") or "llama-server") == "llama-server"
+        and os.environ.get("CORA_SKIP_AUTO_LLAMA") != "1"
+    ):
         target_model = cfg.get("selected_model") or "3.8"
         threading.Thread(
             target=ensure_llama_server_running,
@@ -3223,6 +3284,7 @@ async def get_dashboard_bootstrap() -> Dict[str, Any]:
     if (
         (cfg.get("inference_provider") or "llama-server") == "llama-server"
         and (models_info.get("llama_server") or {}).get("state") == "offline"
+        and os.environ.get("CORA_SKIP_AUTO_LLAMA") != "1"
     ):
         target_model = cfg.get("selected_model") or "3.5"
         threading.Thread(
@@ -3353,11 +3415,14 @@ async def update_session_configuration(req: SessionConfigUpdateRequest) -> Dict[
     cfg = update_settings_dict(updates)
     ifaces = cfg.get("allowed_interfaces", "eth0,eth1")
     override_str = f"blue:{ifaces}" if iso_level == "blue" else iso_level
-    posture = detect_console_posture(override=override_str)
+    posture = _get_cached_posture(override_str, ttl=1.5)
     _log_posture_event("WEBUI_APPLY", posture)
 
     model_changed = req.selected_model is not None and req.selected_model.strip() != current.get("selected_model")
-    if (cfg.get("inference_provider") or "llama-server") == "llama-server":
+    if (
+        (cfg.get("inference_provider") or "llama-server") == "llama-server"
+        and os.environ.get("CORA_SKIP_AUTO_LLAMA") != "1"
+    ):
         llama_health = _get_llama_health(cfg.get("llama_api_url") or "http://127.0.0.1:8080/v1")
         if model_changed or llama_health["state"] == "offline":
             threading.Thread(
@@ -3402,7 +3467,10 @@ async def api_list_projects() -> Dict[str, Any]:
 
 @app.post("/api/projects/select")
 async def api_select_project(req: ProjectSelectRequest) -> Dict[str, Any]:
-    slug = slugify(req.slug)
+    raw_slug = (req.slug or "").strip()
+    if not raw_slug or raw_slug.lower() in _INVALID_PROJECT_NAMES:
+        raise HTTPException(status_code=400, detail="Please select a valid project name.")
+    slug = slugify(raw_slug)
     if not slug or slug.lower() in _INVALID_PROJECT_NAMES:
         raise HTTPException(status_code=400, detail="Please select a valid project name.")
     proj_dir = ensure_project_structure(slug)
@@ -3430,7 +3498,10 @@ async def api_select_project(req: ProjectSelectRequest) -> Dict[str, Any]:
 
 @app.post("/api/projects/create")
 async def api_create_project(req: ProjectCreateRequest) -> Dict[str, Any]:
-    slug = slugify(req.name)
+    raw_name = (req.name or "").strip()
+    if not raw_name or raw_name.lower() in _INVALID_PROJECT_NAMES:
+        raise HTTPException(status_code=400, detail="Invalid project name. Please choose a specific project name.")
+    slug = slugify(raw_name)
     if not slug or slug.lower() in _INVALID_PROJECT_NAMES:
         raise HTTPException(status_code=400, detail="Invalid project name. Please choose a specific project name.")
     proj_dir = ensure_project_structure(slug)
@@ -3450,8 +3521,14 @@ async def api_create_project(req: ProjectCreateRequest) -> Dict[str, Any]:
 
 @app.post("/api/projects/rename")
 async def api_rename_project(req: ProjectRenameRequest) -> Dict[str, Any]:
-    old_slug = slugify(req.old_slug)
-    new_slug = slugify(req.new_name)
+    raw_old = (req.old_slug or "").strip()
+    raw_new = (req.new_name or "").strip()
+    if not raw_old or not raw_new or raw_new.lower() in _INVALID_PROJECT_NAMES:
+        raise HTTPException(status_code=400, detail="Invalid project name.")
+    old_slug = slugify(raw_old)
+    new_slug = slugify(raw_new)
+    if not new_slug or new_slug.lower() in _INVALID_PROJECT_NAMES:
+        raise HTTPException(status_code=400, detail="Invalid project name.")
     old_dir = Path(PROJECTS_DIR) / old_slug
     new_dir = Path(PROJECTS_DIR) / new_slug
     if not old_dir.is_dir():
@@ -4083,7 +4160,7 @@ async def api_submit_query(req: QuerySubmitRequest) -> Dict[str, Any]:
 
     proj_dir = ensure_project_structure(active_proj)
     override_str = f"blue:{ifaces}" if iso_level == "blue" else iso_level
-    posture = detect_console_posture(override=override_str)
+    posture = _get_cached_posture(override_str)
 
     active_goal = get_project_last_goal(proj_dir) or cfg.get("active_goal", "")
     query_text = (req.query or "").strip()
@@ -4175,7 +4252,9 @@ async def api_submit_query(req: QuerySubmitRequest) -> Dict[str, Any]:
 
     if q_low in ("/status", "/hw", "/state", "/context"):
         hw = await asyncio.to_thread(collect_hardware_metrics)
-        llama_st = await asyncio.to_thread(check_llama_server_health)
+        llama_st = await asyncio.to_thread(
+            _get_llama_health, cfg.get("llama_api_base", "http://127.0.0.1:8080/v1")
+        )
         gpu_lines = []
         for g in hw.get("gpus") or []:
             gpu_lines.append(

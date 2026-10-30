@@ -61,6 +61,17 @@ bash Troubleshooting/troubleshoot_llm_NIX.sh --json
 
 # 5. Append JSON diagnostic summary or disable ANSI colors:
 .\Troubleshooting\troubleshoot_llm_WIN.ps1 -Json -NoColor
+
+# 6. Run automated end-to-end Windows WebGUI button/option/modal/API test suite (63 checks):
+.\Troubleshooting\test_webgui_WIN.ps1
+python .\Troubleshooting\test_webgui_WIN.py
+
+# 7. Run automated end-to-end Windows CLI switch/menu/command test suite:
+.\Troubleshooting\test_cli_WIN.ps1
+python .\Troubleshooting\test_cli_WIN.py
+
+# 8. Run automated WSL Linux CLI (PTY + SIGWINCH resize) & Linux WebGUI test suite:
+wsl -d Ubuntu -- python3 /mnt/c/CODEX/NeuralNet/CORA_GITHUB/Troubleshooting/test_nix_WSL.py
 ```
 
 ---

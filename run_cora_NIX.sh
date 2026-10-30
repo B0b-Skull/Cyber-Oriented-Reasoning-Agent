@@ -943,7 +943,7 @@ print_hardware_profile() {
 is_llama_running() {
   if [[ -f "$PID_FILE" ]]; then
     local pid
-    pid=$(<"$PID_FILE")
+    pid=$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || true)
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
       return 0
     fi
@@ -1025,7 +1025,7 @@ is_webui_running() {
   fi
   if [[ -f "$WEBUI_PID_FILE" ]]; then
     local wpid
-    wpid=$(<"$WEBUI_PID_FILE")
+    wpid=$(tr -d '[:space:]' < "$WEBUI_PID_FILE" 2>/dev/null || true)
     if [[ -n "$wpid" ]] && kill -0 "$wpid" 2>/dev/null; then
       return 0
     fi
@@ -1095,7 +1095,7 @@ start_cora_webui() {
   fi
   if is_webui_running; then
     local wpid="active"
-    [[ -f "$WEBUI_PID_FILE" ]] && wpid=$(<"$WEBUI_PID_FILE")
+    [[ -f "$WEBUI_PID_FILE" ]] && wpid=$(tr -d '[:space:]' < "$WEBUI_PID_FILE" 2>/dev/null || echo "active")
     printf 'Custom CORA WebUI is already running (PID %s) -> %s\n' "$wpid" "$url"
     printf 'Verifying local LLM (llama-server) readiness...'
     if curl -sS -m 90 -X POST "${url}/api/models/start" -H "Content-Type: application/json" -d '{"force_restart":false}' 2>/dev/null | grep -q '"ok":true'; then
@@ -1155,7 +1155,7 @@ stop_cora_webui() {
   local stopped_any=0
   if [[ -f "$WEBUI_PID_FILE" ]]; then
     local wpid
-    wpid=$(<"$WEBUI_PID_FILE")
+    wpid=$(tr -d '[:space:]' < "$WEBUI_PID_FILE" 2>/dev/null || true)
     if [[ -n "$wpid" ]] && kill -0 "$wpid" 2>/dev/null; then
       printf 'Stopping Custom CORA WebUI (PID %s)...\n' "$wpid"
       kill "$wpid" 2>/dev/null || true
@@ -1186,8 +1186,15 @@ start_services() {
   # When starting the Web Interface interactively, display the C.O.R.A. splash screen
   # and require selecting or creating a project in /Projects and choosing a Session Personality Mode
   # before interacting with the LLM.
+  local has_no_browser=0
+  local _ea
+  for _ea in "${EXTRA_ARGS[@]:-}"; do
+    if [[ "$_ea" == "--no-browser" || "$_ea" == "-no-browser" ]]; then
+      has_no_browser=1
+    fi
+  done
   rm -f "$BASE_DIR/Log/active_session_mode.env" 2>/dev/null || true
-  if [[ -t 0 && -t 1 && "${CORA_NON_INTERACTIVE:-0}" != "1" ]]; then
+  if [[ -t 0 && -t 1 && "${CORA_NON_INTERACTIVE:-0}" != "1" && -z "${CORA_ACTIVE_PROJECT:-}" && "$has_no_browser" == "0" ]]; then
     python3 "$BASE_DIR/agent-cli.py" --select-project-only
   fi
   if [[ -f "$BASE_DIR/Log/active_session_mode.env" ]]; then
@@ -1228,7 +1235,10 @@ start_services() {
           skip_next=1
         fi
         ;;
-      --continue|-c)
+      -P|--project)
+        skip_next=1
+        ;;
+      --continue|-c|--no-browser|-no-browser|--hud|--no-hud|--keep-server|--keep-alive|-P:*|--project:*|-P=*|--project=*)
         ;;
       *)
         srv_extra_args+=("${EXTRA_ARGS[$i]}")
@@ -1238,7 +1248,7 @@ start_services() {
 
   if is_llama_running; then
     printf 'llama-server is already running (PID %s, Model: %s). Use "./run_cora_NIX.sh restart -m %s" to switch models.\n' \
-      "$(<"$PID_FILE")" "$(cat "$ACTIVE_MODEL_FILE" 2>/dev/null || echo unknown)" "$MODEL_KEY"
+      "$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || echo active)" "$(tr -d '\r\n' < "$ACTIVE_MODEL_FILE" 2>/dev/null || echo unknown)" "$MODEL_KEY"
   else
     printf 'Starting llama-server (%s) on http://%s:%s (Active Project: %s) ...\n' \
       "$MODEL_ALIAS" "$HOST" "$LLAMA_PORT" "${CORA_ACTIVE_PROJECT:-select-in-webui}"
@@ -1262,11 +1272,11 @@ start_services() {
       --ubatch-size "$UBATCH_SIZE" \
       --cont-batching \
       --no-webui \
-      "${srv_extra_args[@]}" \
+      ${srv_extra_args[@]+"${srv_extra_args[@]}"} \
       > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
     echo "$MODEL_ALIAS ($(basename "$MODEL_PATH"))" > "$ACTIVE_MODEL_FILE"
-    printf 'llama-server started (PID %s, Model: %s). Waiting for model load...\n' "$(<"$PID_FILE")" "$MODEL_ALIAS"
+    printf 'llama-server started (PID %s, Model: %s). Waiting for model load...\n' "$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || echo active)" "$MODEL_ALIAS"
   fi
 
   start_cora_webui
@@ -1290,13 +1300,13 @@ run_cli() {
   fi
   local current_active=""
   if [[ -f "$ACTIVE_MODEL_FILE" ]]; then
-    current_active=$(<"$ACTIVE_MODEL_FILE")
+    current_active=$(tr -d '\r\n' < "$ACTIVE_MODEL_FILE" 2>/dev/null || true)
   fi
 
   if (( running_now == 0 )) || [[ "$current_active" != "$MODEL_ALIAS"* ]]; then
     if (( running_now == 1 )); then
       printf 'Switching running llama-server to %s ...\n' "$MODEL_ALIAS"
-      kill "$(<"$PID_FILE")" 2>/dev/null || true
+      kill "$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || true)" 2>/dev/null || true
       rm -f "$PID_FILE" "$ACTIVE_MODEL_FILE"
       sleep 1
     fi
@@ -1355,7 +1365,7 @@ run_cli() {
   export REASONING_MODE="$REASONING_MODE"
 
   KEEP_SRV_ON_EXIT=0
-  for arg in "${EXTRA_ARGS[@]}"; do
+  for arg in "${EXTRA_ARGS[@]:-}"; do
     if [[ "$arg" == "--keep-server" || "$arg" == "--keep-alive" ]]; then
       KEEP_SRV_ON_EXIT=1
       export KEEP_SERVER_ON_EXIT=1
@@ -1366,7 +1376,7 @@ run_cli() {
     rm -f "$BASE_DIR/Log/active_session_mode.env" 2>/dev/null || true
     if (( ${KEEP_SRV_ON_EXIT:-0} == 0 )) && [[ -f "$PID_FILE" ]]; then
       local srv_pid
-      srv_pid=$(<"$PID_FILE")
+      srv_pid=$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || true)
       if [[ -n "$srv_pid" ]] && kill -0 "$srv_pid" 2>/dev/null; then
         kill "$srv_pid" 2>/dev/null || true
       fi
@@ -1375,14 +1385,14 @@ run_cli() {
   }
   trap cleanup_cli_session EXIT INT TERM HUP
 
-  python3 "$BASE_DIR/agent-cli.py" "${EXTRA_ARGS[@]}"
+  python3 "$BASE_DIR/agent-cli.py" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}
 }
 
 stop_services() {
   rm -f "$BASE_DIR/Log/active_session_mode.env" 2>/dev/null || true
   if is_llama_running; then
     local pid
-    pid=$(<"$PID_FILE")
+    pid=$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || true)
     printf 'Stopping llama-server (PID %s)...\n' "$pid"
     kill "$pid" 2>/dev/null || true
     rm -f "$PID_FILE" "$ACTIVE_MODEL_FILE"
@@ -1399,15 +1409,15 @@ status_services() {
   printf '\nService Status:\n'
   if is_llama_running; then
     local active_mod
-    active_mod=$(cat "$ACTIVE_MODEL_FILE" 2>/dev/null || echo "$MODEL_ALIAS")
-    printf '  llama-server: RUNNING (PID %s)\n' "$(<"$PID_FILE")"
+    active_mod=$(tr -d '\r\n' < "$ACTIVE_MODEL_FILE" 2>/dev/null || echo "$MODEL_ALIAS")
+    printf '  llama-server: RUNNING (PID %s)\n' "$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || echo active)"
     printf '  Active Model: %s\n' "$active_mod"
     printf '  Llama API:    http://%s:%s (OpenAI-compatible API & llama.cpp server)\n' "$HOST" "$LLAMA_PORT"
   else
     printf '  llama-server: STOPPED\n'
   fi
   if is_webui_running; then
-    printf '  CORA WebUI:   RUNNING (PID %s) -> http://%s:%s (Custom Svelte/FastAPI Dashboard)\n' "$(<"$WEBUI_PID_FILE")" "$HOST" "$WEBUI_PORT"
+    printf '  CORA WebUI:   RUNNING (PID %s) -> http://%s:%s (Custom Svelte/FastAPI Dashboard)\n' "$(tr -d '[:space:]' < "$WEBUI_PID_FILE" 2>/dev/null || echo active)" "$HOST" "$WEBUI_PORT"
   else
     printf '  CORA WebUI:   STOPPED (Start with: ./run_cora_NIX.sh webui  or  ./run_cora_NIX.sh start)\n'
   fi
@@ -1427,10 +1437,10 @@ case "$ACTION" in
   download)       cmd_download_models "${EXTRA_ARGS[0]:-$MODEL_SELECT}" ;;
   tune|detect)    print_hardware_profile ;;
   cli)            run_cli ;;
-  reason|reasoning) exec python3 "$BASE_DIR/Reasoning/reasoning_cli.py" "${EXTRA_ARGS[@]}" ;;
-  train)          exec bash "$TRAINING_DIR/train_llm_NIX.sh" "${EXTRA_ARGS[@]}" ;;
-  posture)        exec bash "$BASE_DIR/Network_Isolation/ConsolePostureDetection_NIX.sh" "${EXTRA_ARGS[@]}" ;;
-  troubleshoot|diag|diagnostics) exec bash "$CORA_ROOT/Troubleshooting/troubleshoot_llm_NIX.sh" "${EXTRA_ARGS[@]}" ;;
+  reason|reasoning) exec python3 "$BASE_DIR/Reasoning/reasoning_cli.py" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} ;;
+  train)          exec bash "$TRAINING_DIR/train_llm_NIX.sh" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} ;;
+  posture)        exec bash "$BASE_DIR/Network_Isolation/ConsolePostureDetection_NIX.sh" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} ;;
+  troubleshoot|diag|diagnostics) exec bash "$CORA_ROOT/Troubleshooting/troubleshoot_llm_NIX.sh" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} ;;
   logs)           tail -n 50 -f "$LOG_FILE" ;;
   -h|--help|help) usage ;;
   *)              usage >&2; exit 2 ;;

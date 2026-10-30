@@ -64,6 +64,7 @@ def _rl_wrap(ansi_seq: str) -> str:
 
 BASE_DIR = Path(__file__).resolve().parent
 CORA_ROOT = BASE_DIR.parent if BASE_DIR.name.lower() == "core" else BASE_DIR
+LOG_DIR = BASE_DIR / "Log"
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 VAULT_DIR = Path(os.environ.get("OBSIDIAN_VAULT_DIR", str(BASE_DIR / "ObsidianVault"))).resolve()
@@ -284,7 +285,7 @@ def restore_last_cli_session(messages: list) -> dict:
     if data.get("personality_mode"):
         saved_pmode = str(data["personality_mode"]).strip().upper()
         try:
-            set_personality_mode(saved_pmode, netiso_group=saved_iso)
+            apply_personality_mode(saved_pmode, netiso_group=saved_iso)
         except Exception:
             pass
     if data.get("active_goal"):
@@ -492,6 +493,8 @@ class BottomPinnedHUD:
         self._last_rows = 0
         self._pending_resize_dims = (0, 0)
         self._pending_resize_ts = 0.0
+        self._in_readline_input = False
+        self._resize_flag = False
         # Default both Linux and Windows to 'pin' mode (pins the HUD metric bar to the very bottom
         # row of the terminal window, BELOW the `[POSTURE] You>` input prompt).
         # On Windows PowerShell/ConPTY, we combine `cols - 1` bottom-right wrap prevention (`\033[?7l`),
@@ -889,15 +892,17 @@ class BottomPinnedHUD:
             self._metrics["gpu"] = g_pct
             self._metrics["vram"] = v_pct
             self._metrics["disk"] = self._sample_disk_pct()
-            if self.mode == "pin":
-                self.render(force_region=False)
+            if self.mode == "pin" and not self._in_readline_input:
+                force_reg = self._resize_flag
+                self._resize_flag = False
+                self.render(force_region=force_reg)
             else:
                 self._update_window_title()
             self._stop_evt.wait(1.5)
 
     def _on_resize(self, signum, frame) -> None:
-        if self.active and self.mode == "pin":
-            self.render(force_region=True)
+        # Never call sys.stdout.write() inside a signal handler (avoids RuntimeError: reentrant call inside BufferedWriter)
+        self._resize_flag = True
 
     def start(self) -> None:
         if self.active or not sys.stdout.isatty():
@@ -923,10 +928,6 @@ class BottomPinnedHUD:
                 sys.stdout.write(f"\n\033[1A\0337\033[1;{rows - 1}r\0338")
                 sys.stdout.flush()
             self.render(force_region=True)
-            try:
-                signal.signal(signal.SIGWINCH, self._on_resize)
-            except Exception:
-                pass
 
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
@@ -3714,7 +3715,11 @@ def execute_tool(name: str, args: dict) -> str:
             # Engine 12: CEGAR Pre-Execution Verifier + Hardware UART Pacing Auto-Transform
             cegar_advisories = []
             try:
-                from Reasoning.engines.cegar_verifier import apply_serial_pacing_transform, verify_command_cegar
+                from Reasoning.engines.cegar_verifier import (
+                    apply_serial_pacing_transform,
+                    is_analyst_mode,
+                    verify_command_cegar,
+                )
 
                 cmd, pacing_note = apply_serial_pacing_transform(cmd)
                 if pacing_note:
@@ -4364,17 +4369,20 @@ SHOW_THINKING_EXPANDED_CLI: bool = False
 
 def print_last_thinking_trace_cli() -> None:
     """Display or toggle the last captured LLM <think> thought process & engine trace (Ctrl+O)."""
+    global SHOW_THINKING_EXPANDED_CLI
+    SHOW_THINKING_EXPANDED_CLI = not SHOW_THINKING_EXPANDED_CLI
+    state_lbl = "EXPANDED (ON)" if SHOW_THINKING_EXPANDED_CLI else "HIDDEN by default (OFF)"
     if LAST_THINKING_TRACE.strip():
         print(
-            "\n\033[1;33m=== 🧠 C.O.R.A. Thought Process & Internal Reasoning Trace (Expanded via Ctrl+O) ===\033[0m\n"
+            f"\n\033[1;33m=== 🧠 C.O.R.A. Thought Process & Internal Reasoning Trace (Ctrl+O: {state_lbl}) ===\033[0m\n"
             f"\033[0;37m{LAST_THINKING_TRACE.strip()}\033[0m\n"
             "\033[1;33m====================================================================================\033[0m\n",
             flush=True,
         )
     else:
         print(
-            "\n\033[1;33m[🧠 Thought Process (Ctrl+O)]\033[0m No `<think>` trace recorded yet in this session. "
-            f"(Live thought auto-expansion is currently `{'ON' if SHOW_THINKING_EXPANDED_CLI else 'HIDDEN by default'}`)\n",
+            f"\n\033[1;33m[🧠 Thought Process (Ctrl+O)]\033[0m Live thought auto-expansion toggled to `{state_lbl}` "
+            "(No `<think>` trace recorded yet in this session).\n",
             flush=True,
         )
 
@@ -6474,6 +6482,7 @@ def _setup_posix_readline_completer() -> None:
         readline.set_completer_delims(" \t\n;")
         readline.set_completer(_completer)
         readline.parse_and_bind("tab: complete")
+        readline.parse_and_bind(r'"\C-o": "\C-a\C-k/ctrl-o\n"')
     except Exception:
         pass
 
@@ -6488,8 +6497,15 @@ def _read_interactive_cli_line(prompt_text: str) -> str:
     """
     _load_cli_history()
     if os.name != "nt" or not sys.stdin.isatty() or not sys.stdout.isatty():
-        line = input(prompt_text).strip()
-        if line:
+        HUD._in_readline_input = True
+        try:
+            raw_line = input(prompt_text)
+        finally:
+            HUD._in_readline_input = False
+        if "\x0f" in raw_line:
+            return "/ctrl-o"
+        line = raw_line.strip()
+        if line and line != "/ctrl-o":
             _save_cli_history_entry(line)
         return line
 
@@ -6785,16 +6801,21 @@ def main() -> None:
     p_fg = posture.get("fg_hex", "#FFE8E8")
     p_ifaces = posture.get("allowed_interfaces") or []
 
-    if HUD_ENABLED:
-        HUD.start()
-
     pending_onboarding_doc = ""
     if startup_project_doc:
-        # Check if `startup_project_doc` is an existing project name in `Projects/` rather than a doc path
+        # Check if `startup_project_doc` is an existing or new project name in `Projects/` rather than a doc path
         cand_existing = slugify_project_name(startup_project_doc)
-        if (PROJECTS_DIR / cand_existing).is_dir() and not Path(os.path.expanduser(startup_project_doc)).exists():
+        doc_path_candidate = Path(os.path.expanduser(startup_project_doc))
+        looks_like_doc_path = (
+            doc_path_candidate.exists()
+            or "/" in startup_project_doc
+            or "\\" in startup_project_doc
+            or doc_path_candidate.suffix.lower() in (".md", ".txt", ".pdf", ".json", ".yaml", ".yml", ".rst", ".html")
+        )
+        if cand_existing and ((PROJECTS_DIR / cand_existing).is_dir() or not looks_like_doc_path):
+            ensure_project_workspace(cand_existing)
             _persist_selected_project(cand_existing)
-            print(f"\033[1;32m[Active Project Selected]\033[0m `Projects/{cand_existing}/`\n")
+            print(f"\033[1;32m[Active Project Selected]\033[0m `Projects/{cand_existing}/` (`Projects/{cand_existing}/Files/` ready)\n")
         else:
             try:
                 derived_name, _ = load_documentation_source(startup_project_doc)
@@ -6886,6 +6907,8 @@ def main() -> None:
         pass
 
     _setup_posix_readline_completer()
+    if HUD_ENABLED:
+        HUD.start()
 
     while True:
         if HUD.active:

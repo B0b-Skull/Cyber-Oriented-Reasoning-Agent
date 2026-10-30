@@ -42,6 +42,7 @@ core/Log/*.db
 core/Log/*.db-*
 core/Log/active-project.txt
 core/Log/active_session_mode.env
+core/Log/cli_command_history.json
 core/webui/frontend/node_modules/
 __pycache__/
 *.py[cod]

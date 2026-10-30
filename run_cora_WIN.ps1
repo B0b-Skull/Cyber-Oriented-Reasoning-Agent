@@ -1093,7 +1093,10 @@ function Start-Services {
                 $skipNext = 1
             }
             continue
-        } elseif ($eArg -in @("--continue", "-c")) {
+        } elseif ($eArg -in @("-P", "--project")) {
+            $skipNext = 1
+            continue
+        } elseif ($eArg -in @("--continue", "-c", "--no-browser", "-no-browser", "--hud", "--no-hud", "--keep-server", "--keep-alive") -or $eArg -match '^(?:-P|--project)[:=]') {
             continue
         } else {
             $srvExtraArgs.Add($eArg)

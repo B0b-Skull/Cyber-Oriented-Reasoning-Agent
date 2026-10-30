@@ -30,8 +30,36 @@ param(
     [switch]$Reset,
     [switch]$Demo,
     [switch]$Json,
-    [switch]$Quiet
+    [switch]$Quiet,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$ExtraArgs = @()
 )
+
+# Normalize array-splatted flags from `run_cora_WIN.ps1 posture ...`
+$AllTokens = @()
+if ($Apply -ne "") { $AllTokens += $Apply; $Apply = "" }
+if ($ExtraArgs) { $AllTokens += $ExtraArgs }
+for ($i = 0; $i -lt $AllTokens.Count; $i++) {
+    $tok = $AllTokens[$i]
+    switch -Regex ($tok) {
+        "^--?detect$" { $Detect = [switch]::Present }
+        "^--?reset$"  { $Reset = [switch]::Present }
+        "^--?demo$"   { $Demo = [switch]::Present }
+        "^--?json$"   { $Json = [switch]::Present }
+        "^--?quiet$"  { $Quiet = [switch]::Present }
+        "^--?apply$"  {
+            if ($i + 1 -lt $AllTokens.Count) {
+                $i++
+                $Apply = $AllTokens[$i]
+            }
+        }
+        default {
+            if (-not $tok.StartsWith("-") -and $Apply -eq "") {
+                $Apply = $tok
+            }
+        }
+    }
+}
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
