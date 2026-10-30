@@ -53,9 +53,10 @@ def parameterize_tactical_template(text: str) -> str:
     if not text:
         return ""
     s = _PARAM_IPV4_RE.sub("<TARGET_IP>", str(text))
-    s = re.sub(r"(?:~|/home/[^/\s'\"]+)/Projects/CORA/Projects/[^/\s'\"]+", "$PROJECT_DIR", s)
-    s = re.sub(r"(?:~|/home/[^/\s'\"]+)/Projects/[^/\s'\"]+", "$PROJECT_DIR", s)
+    s = re.sub(r"(?:~|/home/[^/\s'\"]+|[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s'\"]+)[\\/]+Projects[\\/]+CORA[\\/]+Projects[\\/]+[^\\/\s'\"]+", "$PROJECT_DIR", s)
+    s = re.sub(r"(?:~|/home/[^/\s'\"]+|[A-Za-z]:[\\/]+[^\s'\"]+)[\\/]+Projects[\\/]+[^\\/\s'\"]+", "$PROJECT_DIR", s)
     s = re.sub(r"/home/[^/\s'\"]+", "~", s)
+    s = re.sub(r"[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s'\"]+", "~", s)
     curr_user = os.environ.get("USER") or os.environ.get("USERNAME") or ""
     if curr_user and len(curr_user) >= 3:
         s = re.sub(rf"\b{re.escape(curr_user)}\b", "$USER", s)
@@ -140,34 +141,78 @@ def ensure_directories() -> None:
     _DIRS_ENSURED = True
 
 
+_INVALID_PROJECT_NAMES = {"active_session", "active-session", "default", "default-project", "default_session"}
+
+
 def slugify_project_name(name: str) -> str:
     """
     Sanitize a project directory name in `Projects/<project_name>/`:
     Spaces and any special/strange characters are automatically converted to dashes (`-`).
-    If an existing directory with that exact name (e.g., `active_session`) already exists on disk,
+    If an existing directory with that exact name already exists on disk,
     preserve its exact directory name.
     """
     raw = str(name or "").strip()
-    if not raw:
-        return "default-project"
+    if not raw or raw.lower() in _INVALID_PROJECT_NAMES:
+        return ""
     if (PROJECTS_DIR / raw).is_dir() and re.match(r"^[a-zA-Z0-9_\-]+$", raw):
         return raw
     s = re.sub(r"[^a-zA-Z0-9\-]+", "-", raw).strip("-")
     s = re.sub(r"-{2,}", "-", s)
-    return s[:64].strip("-") or "default-project"
+    clean = s[:64].strip("-")
+    return "" if clean.lower() in _INVALID_PROJECT_NAMES else clean
+
+
+def _resolve_existing_project_slug(candidate: str = "") -> str:
+    """Resolve an active project slug from candidate, env, state files, or existing `Projects/` folders."""
+    for raw in (
+        candidate,
+        os.environ.get("CORA_ACTIVE_PROJECT", ""),
+    ):
+        slug = slugify_project_name(raw)
+        if slug and (PROJECTS_DIR / slug).is_dir():
+            return slug
+
+    for state_file in (
+        CORE_DIR / "Log" / "active-project.txt",
+        DATA_DIR / "sessions" / "active_project.txt",
+    ):
+        if state_file.is_file():
+            try:
+                saved = slugify_project_name(state_file.read_text(encoding="utf-8", errors="replace").strip())
+                if saved and (PROJECTS_DIR / saved).is_dir():
+                    return saved
+            except Exception:
+                pass
+
+    if PROJECTS_DIR.is_dir():
+        existing = [
+            d.name
+            for d in sorted(PROJECTS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True)
+            if d.is_dir() and not d.name.startswith(".") and d.name.lower() not in _INVALID_PROJECT_NAMES
+        ]
+        if existing:
+            return existing[0]
+
+    # If the caller explicitly provided a new valid project name, allow creating it
+    explicit_slug = slugify_project_name(candidate) or slugify_project_name(os.environ.get("CORA_ACTIVE_PROJECT", ""))
+    return explicit_slug
 
 
 def get_active_project_dir(project_name: str = "") -> Path:
     """
     Resolve and initialize the isolated project workspace inside `CORA/Projects/<project_slug>/`.
-    Defaults to `CORA_ACTIVE_PROJECT` env var or `active_session` when no named project is active.
-    Creates `downloads/`, `artifacts/`, `targets/`, `notes/`, `reasoning/`, and `memory.md`.
+    Never creates a dummy `active_session` or `default` project in `Projects/`.
+    Creates `Files/`, `downloads/`, `artifacts/`, `targets/`, `notes/`, `reasoning/`, and `memory.md`.
     """
     ensure_directories()
-    raw_name = (project_name or os.environ.get("CORA_ACTIVE_PROJECT", "") or "active_session").strip()
-    slug = slugify_project_name(raw_name) if raw_name != "active_session" else "active_session"
-    proj_dir = PROJECTS_DIR / slug
-    for sub in ("downloads", "artifacts", "targets", "notes", "reasoning", "shadow_archive"):
+    slug = _resolve_existing_project_slug(project_name)
+    if slug:
+        proj_dir = PROJECTS_DIR / slug
+    else:
+        # No user project selected or created yet; keep scratch state outside `Projects/`
+        slug = "unassigned"
+        proj_dir = DATA_DIR / "sessions" / "_unassigned_workspace"
+    for sub in ("Files", "downloads", "artifacts", "targets", "notes", "reasoning", "shadow_archive"):
         (proj_dir / sub).mkdir(parents=True, exist_ok=True)
     mem_file = proj_dir / "memory.md"
     if not mem_file.exists():
@@ -847,9 +892,9 @@ def load_json_state(filepath: str, default: Any = None) -> Any:
             mtime = p.stat().st_mtime
             cached = _JSON_STATE_RAM_CACHE.get(key)
             if cached is not None and cached[0] == mtime:
-                return copy.deepcopy(cached[1]) if len(str(cached[1])) < 50000 else cached[1]
+                return copy.deepcopy(cached[1])
             data = json.loads(p.read_text(encoding="utf-8"))
-            _JSON_STATE_RAM_CACHE[key] = (mtime, data)
+            _JSON_STATE_RAM_CACHE[key] = (mtime, copy.deepcopy(data))
             return data
         except Exception:
             pass
@@ -914,19 +959,33 @@ def _netmask_to_prefixlen(mask: str) -> int:
         return 24
 
 
+def _parse_iface_tokens(raw_if: str) -> List[str]:
+    s = (raw_if or "").strip().strip("\"'")
+    if not s:
+        return []
+    if "," in s:
+        parts = [x.strip() for x in s.split(",")]
+    elif re.search(r"\b(?:vEthernet|Adapter|Connection|Loopback)\b", s, re.I):
+        parts = [s]
+    else:
+        parts = [x.strip() for x in s.split()]
+    return [p for p in parts if p and p.lower() != "lo"]
+
+
 def _get_isolation_filter() -> Tuple[str, List[str]]:
     """Return `(isolation_level, allowed_interfaces)` for RED / WHITE / BLUE network isolation."""
     if os.environ.get("CORA_PERSONALITY_MODE", "").strip().upper() == "ANALYST":
         return "white", ["lo"]
-    mode = os.environ.get("LLM_ISOLATION_MODE", "").strip().lower()
-    override = os.environ.get("LLM_POSTURE_OVERRIDE", "").strip().lower()
-    eff = override or mode
+    mode_raw = os.environ.get("LLM_ISOLATION_MODE", "").strip()
+    override_raw = os.environ.get("LLM_POSTURE_OVERRIDE", "").strip()
+    eff_raw = override_raw or mode_raw
+    eff = eff_raw.lower()
     if eff in ("white", "airgap", "air-gap", "netns", "namespace", "air_gapped_netns", "llm-isolated", "green"):
         return "white", ["lo"]
     if eff in ("blue", "lan_usb", "lan", "isolated_lan_usb", "group", "llm-local", "restricted") or eff.startswith(("blue:", "blue=")):
         raw_if = os.environ.get("LLM_ALLOWED_IFACES", "").strip()
         if not raw_if and eff.startswith(("blue:", "blue=")):
-            raw_if = eff.split(":", 1)[1] if ":" in eff else eff.split("=", 1)[1]
+            raw_if = eff_raw.split(":", 1)[1] if ":" in eff_raw else eff_raw.split("=", 1)[1]
         if not raw_if:
             try:
                 from Network_Isolation.console_posture import load_network_isolation_config
@@ -935,7 +994,17 @@ def _get_isolation_filter() -> Tuple[str, List[str]]:
                 return "blue", list(cfg.get("blue_allowed_ifaces") or ["eth0", "eth1"])
             except Exception:
                 return "blue", ["eth0", "eth1"]
-        parsed = [x.strip() for x in raw_if.replace(" ", ",").split(",") if x.strip() and x.strip() != "lo"]
+        parsed = _parse_iface_tokens(raw_if)
+        if os.name == "nt" and parsed == ["eth0", "eth1"]:
+            try:
+                from Network_Isolation.console_posture import _get_windows_active_interfaces
+
+                win_ifaces = _get_windows_active_interfaces()
+                if win_ifaces and not any(i.lower() in ("eth0", "eth1") for i in win_ifaces):
+                    preferred = [i for i in win_ifaces if not i.lower().startswith("vethernet")]
+                    return "blue", (preferred[:2] if preferred else win_ifaces[:2])
+            except Exception:
+                pass
         return "blue", (parsed or ["eth0", "eth1"])
     return "red", []
 
@@ -1016,43 +1085,80 @@ def detect_host_network_context(force_refresh: bool = False) -> Dict[str, Any]:
                 if sp not in serial_ports:
                     serial_ports.append(sp)
     else:
-        # Windows native discovery via ipconfig
-        try:
-            proc = subprocess.run(
-                ["ipconfig"],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=2.0,
-                check=False,
-            )
-            if proc.returncode == 0 and proc.stdout:
-                cur_ip = ""
-                for ln in proc.stdout.splitlines():
-                    s = ln.strip()
-                    if s.endswith(":") and "adapter" in s.lower():
-                        adapter = re.sub(r"(?i)^.*adapter\s+", "", s[:-1]).strip()
-                        if adapter and adapter not in interfaces:
-                            interfaces.append(adapter)
-                    elif "IPv4 Address" in s or "IP Address" in s:
-                        m = re.search(r"(\d+\.\d+\.\d+\.\d+)", s)
-                        if m and not m.group(1).startswith("127."):
-                            cur_ip = m.group(1)
-                            if cur_ip not in local_ips:
-                                local_ips.append(cur_ip)
-                    elif "Subnet Mask" in s and cur_ip:
-                        m = re.search(r"(\d+\.\d+\.\d+\.\d+)", s)
-                        plen = _netmask_to_prefixlen(m.group(1)) if m else 24
-                        try:
-                            net_str = str(ipaddress.ip_network(f"{cur_ip}/{plen}", strict=False))
-                            if net_str not in local_subnets:
-                                local_subnets.append(net_str)
-                        except Exception:
-                            pass
-                        cur_ip = ""
-        except Exception:
-            pass
+        # Windows native discovery via ipconfig (respecting WHITE / BLUE isolation)
+        if iso_level == "white":
+            interfaces = ["lo"]
+        else:
+            try:
+                proc = subprocess.run(
+                    ["ipconfig"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=2.0,
+                    check=False,
+                )
+                if proc.returncode == 0 and proc.stdout:
+                    cur_ip = ""
+                    cur_adapter = ""
+                    blue_low = {b.lower() for b in blue_ifaces}
+
+                    def _win_adapter_allowed(name: str) -> bool:
+                        if iso_level != "blue" or not blue_low:
+                            return True
+                        nl = name.lower()
+                        if nl in blue_low:
+                            return True
+                        return any(len(b) >= 3 and (b in nl or nl in b) for b in blue_low)
+
+                    for ln in proc.stdout.splitlines():
+                        s = ln.strip()
+                        if s.endswith(":") and "adapter" in s.lower():
+                            cur_adapter = re.sub(r"(?i)^.*adapter\s+", "", s[:-1]).strip()
+                            if cur_adapter and _win_adapter_allowed(cur_adapter):
+                                if cur_adapter not in interfaces:
+                                    interfaces.append(cur_adapter)
+                        elif "IPv4 Address" in s or "IP Address" in s:
+                            if cur_adapter and not _win_adapter_allowed(cur_adapter):
+                                cur_ip = ""
+                                continue
+                            m = re.search(r"(\d+\.\d+\.\d+\.\d+)", s)
+                            if m and not m.group(1).startswith("127."):
+                                cur_ip = m.group(1)
+                                if cur_ip not in local_ips:
+                                    local_ips.append(cur_ip)
+                        elif "Subnet Mask" in s and cur_ip:
+                            m = re.search(r"(\d+\.\d+\.\d+\.\d+)", s)
+                            plen = _netmask_to_prefixlen(m.group(1)) if m else 24
+                            try:
+                                net_str = str(ipaddress.ip_network(f"{cur_ip}/{plen}", strict=False))
+                                if net_str not in local_subnets:
+                                    local_subnets.append(net_str)
+                            except Exception:
+                                pass
+                            cur_ip = ""
+            except Exception:
+                pass
+            if iso_level == "blue" and blue_ifaces:
+                for bi in blue_ifaces:
+                    if bi not in interfaces:
+                        interfaces.append(bi)
+            try:
+                proc_com = subprocess.run(
+                    ["reg", "query", r"HKLM\HARDWARE\DEVICEMAP\SERIALCOMM"],
+                    capture_output=True,
+                    text=True,
+                    timeout=1.5,
+                    check=False,
+                )
+                if proc_com.returncode == 0 and proc_com.stdout:
+                    for cm in re.findall(r"\bCOM\d+\b", proc_com.stdout, flags=re.I):
+                        cm_up = cm.upper()
+                        if cm_up not in serial_ports:
+                            serial_ports.append(cm_up)
+            except Exception:
+                pass
 
     _HOST_NET_CACHE = {
         "_iso_sig": cache_sig,
@@ -1378,6 +1484,7 @@ def render_command_template(template: str, ctx: Optional[Dict[str, Any]] = None)
     ser = str(c.get("serial_device") or c.get("serial_port") or "/dev/ttyUSB0")
     replacements = {
         "{target_ip}": prim_ip,
+        "{target}": prim_ip,
         "{primary_ip}": prim_ip,
         "{secondary_ip}": sec_ip,
         "{secondary_target_ip}": rem_ip,
@@ -1389,6 +1496,8 @@ def render_command_template(template: str, ctx: Optional[Dict[str, Any]] = None)
         "{serial_port}": ser,
         "{serial_device}": ser,
         "<TARGET_IP>": prim_ip,
+        "<target_ip>": prim_ip,
+        "<target>": prim_ip,
         "<PRIMARY_IP>": prim_ip,
         "<REMOTE_HOST>": rem_ip,
         "<SECONDARY_IP>": sec_ip,
@@ -1401,4 +1510,11 @@ def render_command_template(template: str, ctx: Optional[Dict[str, Any]] = None)
     out = template
     for k, v in replacements.items():
         out = out.replace(k, v)
+    if os.name == "nt" and "tio " not in out and "/dev/tty" not in out:
+        out = out.replace("ip -4 -br addr show; ip route show; ip neigh show", "ipconfig /all & route print -4 & arp -a")
+        out = out.replace("ss -tulpn; ip -d link show", "netstat -ano & ipconfig /all")
+        out = re.sub(r"\bip\s+neigh\s+show\b", "arp -a", out)
+        out = re.sub(r"\bip\s+route\s+get\s+(\S+)\s*;\s*", "", out)
+        out = re.sub(r"\bping\s+-c\s+(\d+)\s+-W\s+\d+\b", r"ping -n \1 -w 1200", out)
+        out = re.sub(r"\bping\s+-c\s+(\d+)\b", r"ping -n \1", out)
     return out

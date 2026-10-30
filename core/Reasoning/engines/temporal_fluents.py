@@ -286,8 +286,8 @@ def record_command_event(command: str, output: str, returncode: int = 0) -> Dict
             }
             initiated.append(key)
 
-    # HTTP / curl / Invoke-WebRequest / Test-NetConnection status update
-    if any(k in cmd_low for k in ("curl ", "invoke-webrequest", "invoke-restmethod", "test-netconnection", "tnc ")):
+    # HTTP / curl / Invoke-WebRequest / Test-NetConnection / scan_target status update
+    if any(k in cmd_low for k in ("curl ", "invoke-webrequest", "invoke-restmethod", "test-netconnection", "tnc ", "scan_target")):
         ip_m = re.search(r"\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b", command)
         target_ep = ip_m.group(0) if ip_m else "target_http"
         key = f"http:{target_ep}"
@@ -296,7 +296,7 @@ def record_command_event(command: str, output: str, returncode: int = 0) -> Dict
         elif returncode == 28 or "timed out" in out_low:
             val = "TIMEOUT_EXIT_28"
         elif returncode == 0 or "tcptestsucceeded : true" in out_low:
-            http_m = re.search(r"http/\d(?:\.\d)?\s+(\d{3})", out_low)
+            http_m = re.search(r"(?:http/\d(?:\.\d)?\s+|->\s*http\s+)(\d{3})", out_low)
             val = f"HTTP_{http_m.group(1)}" if http_m else "REACHABLE_OK"
         else:
             val = f"EXIT_{returncode}"
@@ -312,6 +312,22 @@ def record_command_event(command: str, output: str, returncode: int = 0) -> Dict
             "timestamp": now_str,
         }
         initiated.append(key)
+
+        for m_p in re.finditer(r"port\s+(\d+)/(tcp|udp):\s*open", out_low):
+            p_num, p_proto = m_p.group(1), m_p.group(2)
+            p_key = f"port:{target_ep}:{p_num}/{p_proto}"
+            fluents[p_key] = {
+                "entity": target_ep,
+                "attribute": f"port_{p_num}_{p_proto}",
+                "value": "OPEN",
+                "fluent": f"Open_Port({target_ep}, {p_num}/{p_proto})",
+                "category": "open_port",
+                "persistence": "observed",
+                "status": "HOLDING",
+                "updated_turn": turn_id,
+                "timestamp": now_str,
+            }
+            initiated.append(p_key)
 
     if initiated or invalidated:
         events_log.append(

@@ -90,15 +90,29 @@ def _auto_infer_observed_evidence(
     p_low = (problem or "").lower()
     if "exit 7" in p_low or "connection refused" in p_low or "actively refused" in p_low:
         ev.setdefault("curl_exit_7_Immediate_refused", True)
-    if "timed out" in p_low or "exit 28" in p_low or "100% packet loss" in p_low or "network is unreachable" in p_low:
+    if (
+        "timed out" in p_low
+        or "exit 28" in p_low
+        or "100% packet loss" in p_low
+        or "(100% loss)" in p_low
+        or "network is unreachable" in p_low
+    ):
         ev.setdefault("curl_exit_28_timeout", True)
-        if "100% packet loss" in p_low or "ping" in p_low or "network is unreachable" in p_low:
+        if "100% packet loss" in p_low or "(100% loss)" in p_low or "ping" in p_low or "network is unreachable" in p_low:
             ev.setdefault("icmp_ping_fails", True)
-    if "0% packet loss" in p_low or "bytes from " in p_low:
+    if (
+        "0% packet loss" in p_low
+        or "(0% loss)" in p_low
+        or "bytes from " in p_low
+        or "reply from " in p_low
+    ):
         ev.setdefault("icmp_ping_responds", True)
-    if any(k in p_low for k in ("401", "403", "ssl", "tls", "certificate", "mtls", "client.crt")):
+        ev.setdefault("arp_resolved_mac_present", True)
+    if any(k in p_low for k in ("401", "403", "ssl", "tls", "certificate", "mtls", "client.crt", "http 200", "http/1.1 200")):
         ev.setdefault("http_401_or_403_or_tls_alert", True)
         ev.setdefault("alt_port_open_in_scan", True)
+        ev.setdefault("icmp_ping_responds", True)
+        ev.setdefault("arp_resolved_mac_present", True)
     if "incomplete" in p_low or "destination host unreachable" in p_low:
         ev.setdefault("arp_incomplete_or_missing", True)
     if "127.0.0.1:" in p_low or ("serial" in p_low and "ss -tulpn" in p_low):
@@ -107,6 +121,14 @@ def _auto_infer_observed_evidence(
         ev.setdefault("serial_console_oob_available", True)
     if any(k in p_low for k in ("privesc", "privilege escalation", "suid", "sudoers", "capabilities", "www-data", "active directory", "ldap", "smb")):
         ev.setdefault("post_exploitation_shell_active", True)
+
+    for p_stat in sygus_extracted.get("ping_stats") or []:
+        loss_val = float(p_stat.get("loss_pct", 100.0))
+        if loss_val < 100.0:
+            ev.setdefault("icmp_ping_responds", True)
+            ev.setdefault("arp_resolved_mac_present", True)
+        else:
+            ev.setdefault("icmp_ping_fails", True)
 
     arp_list = sygus_extracted.get("arp_neighbors") or sygus_extracted.get("neighbors") or []
     for nb in arp_list:
@@ -117,6 +139,13 @@ def _auto_infer_observed_evidence(
             ev.setdefault("arp_incomplete_or_missing", True)
     if sygus_extracted.get("open_ports"):
         ev.setdefault("alt_port_open_in_scan", True)
+        ev.setdefault("icmp_ping_responds", True)
+        ev.setdefault("arp_resolved_mac_present", True)
+    if sygus_extracted.get("http_responses"):
+        ev.setdefault("alt_port_open_in_scan", True)
+        ev.setdefault("http_401_or_403_or_tls_alert", True)
+        ev.setdefault("icmp_ping_responds", True)
+        ev.setdefault("arp_resolved_mac_present", True)
     if not primary_in_local and any(
         k in p_low
         for k in (
@@ -552,7 +581,7 @@ def run_neuro_symbolic_pipeline(
     layer1_post_veto_applied = False
     if post_cegar.get("blocked"):
         layer1_post_veto_applied = True
-        fallback_safe = "ls -la $PROJECT_DIR" if active_p_mode == "ANALYST" else default_probe_cmd
+        fallback_safe = ("dir /b %PROJECT_DIR%" if is_windows else "ls -la $PROJECT_DIR") if active_p_mode == "ANALYST" else default_probe_cmd
         repaired_c = post_cegar.get("repaired_command") or fallback_safe
         consensus_action = render_command_template(repaired_c, ctx)
         consensus_rationale = f"[Layer 1 CEGAR & {active_p_mode} Mode Safety Repair Applied] {consensus_rationale}"

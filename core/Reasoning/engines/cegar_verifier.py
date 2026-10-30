@@ -33,13 +33,15 @@ _CEGAR_CMD_CACHE: Dict[str, Dict[str, Any]] = {}
 def _is_bash_n_available() -> bool:
     """
     Verify once whether `bash -n` works on the host OS.
-    On Windows machines with an unconfigured WSL `C:\\Windows\\System32\\bash.exe` stub,
-    `bash -n` exits with code 1 ('Windows Subsystem for Linux has no installed distributions'),
-    which would falsely block valid commands if not probed first.
+    On Windows machines (`os.name == "nt"`), commands run under PowerShell/cmd rather than bash,
+    and an unconfigured WSL `C:\\Windows\\System32\\bash.exe` stub either blocks or exits with code 1.
     """
     global _BASH_N_AVAILABLE
     if _BASH_N_AVAILABLE is not None:
         return _BASH_N_AVAILABLE
+    if os.name == "nt":
+        _BASH_N_AVAILABLE = False
+        return False
     try:
         proc = subprocess.run(
             ["bash", "-n"],
@@ -148,9 +150,41 @@ def _find_truncated_or_malformed_ipv4(text: str) -> Optional[str]:
 
 
 def _get_host_all_interface_subnets() -> Dict[str, List[ipaddress.IPv4Network]]:
-    """Map every host interface on Linux to its IPv4 networks (unfiltered) to detect disallowed subnet probes in BLUE mode."""
+    """Map every host interface on Linux and Windows to its IPv4 networks (unfiltered) to detect disallowed subnet probes in BLUE mode."""
     out: Dict[str, List[ipaddress.IPv4Network]] = {}
     if os.name == "nt":
+        try:
+            proc = subprocess.run(
+                ["ipconfig"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=1.5,
+                check=False,
+            )
+            if proc.returncode == 0 and proc.stdout:
+                cur_iface = ""
+                cur_ip = ""
+                for ln in proc.stdout.splitlines():
+                    s = ln.strip()
+                    if s.endswith(":") and "adapter" in s.lower():
+                        cur_iface = re.sub(r"(?i)^.*adapter\s+", "", s[:-1]).strip()
+                    elif ("IPv4 Address" in s or "IP Address" in s) and cur_iface:
+                        m = re.search(r"(\d+\.\d+\.\d+\.\d+)", s)
+                        if m:
+                            cur_ip = m.group(1)
+                    elif "Subnet Mask" in s and cur_iface and cur_ip:
+                        m = re.search(r"(\d+\.\d+\.\d+\.\d+)", s)
+                        mask = m.group(1) if m else "255.255.255.0"
+                        try:
+                            net = ipaddress.ip_network(f"{cur_ip}/{mask}", strict=False)
+                            out.setdefault(cur_iface, []).append(net)
+                        except ValueError:
+                            pass
+                        cur_ip = ""
+        except Exception:
+            pass
         return out
     try:
         proc = subprocess.run(
@@ -175,6 +209,18 @@ def _get_host_all_interface_subnets() -> Dict[str, List[ipaddress.IPv4Network]]:
     except Exception:
         pass
     return out
+
+
+def _is_iface_in_allowed(iface_name: str, allowed_set: set[str]) -> bool:
+    ilow = (iface_name or "").strip().lower()
+    if not ilow:
+        return False
+    allowed_low = {a.lower() for a in allowed_set}
+    if ilow in allowed_low:
+        return True
+    if os.name == "nt":
+        return any(len(a) >= 3 and (a in ilow or ilow in a) for a in allowed_low if a != "lo")
+    return False
 
 
 def _check_network_isolation_policy(cmd_or_target: str, is_target_only: bool = False) -> Optional[Dict[str, Any]]:
@@ -207,27 +253,65 @@ def _check_network_isolation_policy(cmd_or_target: str, is_target_only: bool = F
                     "counterexample": f"Target `{cmd_or_target}` is external to loopback (`127.0.0.1`).",
                     "suggested_fix": "Switch to `-netiso blue <ifaces>` or `-netiso red` if external network probing is required.",
                 }
+            return None
+
+        # Command-level WHITE mode checks (enforced on both Windows and Linux):
+        # 1. Remote Windows SMB / UNC share paths (`\\live.sysinternals.com\...`, `\\target\...`)
+        m_unc = re.search(r"\\\\(?!(?:127\.0\.0\.1|localhost|\.)\\)([A-Za-z0-9_.\-]+)\\", cmd_or_target, re.I)
+        if m_unc:
+            return {
+                "blocked": True,
+                "reason": "WHITE Network Isolation (Air-Gap Mode) blocks remote SMB/UNC share access (`127.0.0.1` loopback only).",
+                "counterexample": f"Command references external UNC share host `\\\\{m_unc.group(1)}\\`.",
+                "suggested_fix": "Use locally installed binaries in `Tools/Windows/` or switch to BLUE/RED network isolation.",
+            }
+
+        # 2. External HTTP/HTTPS URLs not targeting 127.x.x.x or localhost
+        m_url = re.search(r"https?://(?!(?:127\.\d+\.\d+\.\d+|localhost|\[::1\])\b)([A-Za-z0-9_.\-]+)", cmd_or_target, re.I)
+        if m_url:
+            return {
+                "blocked": True,
+                "reason": "WHITE Network Isolation (Air-Gap Mode) blocks outbound HTTP/HTTPS requests (`127.0.0.1` loopback only).",
+                "counterexample": f"Command references external URL host `{m_url.group(1)}`.",
+                "suggested_fix": "Restrict requests to `127.0.0.1` / `localhost` or switch to BLUE/RED network isolation.",
+            }
+
+        # 3. Non-loopback IPv4 addresses in command arguments
+        for m_ip in re.finditer(r"\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b", cmd_or_target):
+            try:
+                ip_obj = ipaddress.IPv4Address(m_ip.group(1))
+            except ValueError:
+                continue
+            if ip_obj.is_loopback or str(ip_obj) in ("0.0.0.0", "255.255.255.255", "255.255.255.0", "255.255.0.0"):
+                continue
+            return {
+                "blocked": True,
+                "reason": "WHITE Network Isolation (Namespace Mode) blocks external network targets (`lo` / `127.0.0.1` loopback only).",
+                "counterexample": f"Command references non-loopback IPv4 address `{ip_obj}`.",
+                "suggested_fix": "Switch to `-netiso blue <ifaces>` or `-netiso red` if external network probing is required.",
+            }
         return None
 
     # BLUE mode enforcement: Only `blue_ifaces` (+ `lo`) are allowed
     if not is_target_only:
-        # 1. Check explicit interface flags (`dev <iface>`, `-i <iface>`, `-I <iface>`, `--interface <iface>`)
+        # 1. Check explicit interface flags (`dev <iface>`, `-i <iface>`, `-I <iface>`, `--interface <iface>`, `-InterfaceAlias <iface>`)
         for m_if in re.finditer(
-            r"(?:\bdev\s+|\s-[iI]\s*|\s--interface(?:=|\s+)|\bifconfig\s+|\bip\s+link\s+set\s+(?:dev\s+)?)([a-zA-Z0-9_.\-]+)",
+            r"(?:\bdev\s+|\s-[iI]\s*|\s--interface(?:=|\s+)|\s-InterfaceAlias\s+|\bifconfig\s+|\bip\s+link\s+set\s+(?:dev\s+)?)([\"']?[a-zA-Z0-9_.\-() ]+?[\"']?)(?=\s|$|;|&|\|)",
             cmd_or_target,
+            re.I,
         ):
-            cand_if = m_if.group(1).strip()
-            if cand_if in host_ifaces and cand_if not in allowed_set:
+            cand_if = m_if.group(1).strip().strip("\"'")
+            if any(cand_if.lower() == h.lower() for h in host_ifaces) and not _is_iface_in_allowed(cand_if, allowed_set):
                 return {
                     "blocked": True,
                     "reason": f"BLUE Network Isolation Policy locks CLI interaction strictly to `{', '.join(blue_ifaces)}`.",
                     "counterexample": f"Command references disallowed interface `{cand_if}` (Allowed: `{', '.join(blue_ifaces)}`).",
                     "suggested_fix": f"Use only allowed interface(s): `{', '.join(blue_ifaces)}`.",
                 }
-        # 2. Check any bare mention of a known disallowed host NIC (e.g., `eth2`, `wlan0`, `docker0`, `br-*`)
+        # 2. Check any bare mention of a known disallowed host NIC (e.g., `eth2`, `wlan0`, `Wi-Fi`, `VMnet1`)
         for h_if in host_ifaces:
-            if h_if not in allowed_set and len(h_if) >= 3:
-                if re.search(rf"(?<![a-zA-Z0-9_.\-/]){re.escape(h_if)}(?![a-zA-Z0-9_.\-/])", cmd_or_target):
+            if not _is_iface_in_allowed(h_if, allowed_set) and len(h_if) >= 3:
+                if re.search(rf"(?<![a-zA-Z0-9_.\-/]){re.escape(h_if)}(?![a-zA-Z0-9_.\-/])", cmd_or_target, re.I):
                     return {
                         "blocked": True,
                         "reason": f"BLUE Network Isolation Policy locks CLI interaction strictly to `{', '.join(blue_ifaces)}`.",
@@ -235,12 +319,17 @@ def _check_network_isolation_policy(cmd_or_target: str, is_target_only: bool = F
                         "suggested_fix": f"Restrict all commands to allowed interface(s): `{', '.join(blue_ifaces)}`.",
                     }
 
-    # 3. Check if any IPv4 address in the command/target belongs to a disallowed local interface subnet
-    allowed_nets = [n for iface in allowed_set for n in all_if_nets.get(iface, [])]
+    # 3. Check if any IPv4 address in the command/target belongs to a disallowed local interface subnet (or outside allowed subnets on Windows)
+    allowed_nets = [
+        n
+        for iface, nets in all_if_nets.items()
+        if _is_iface_in_allowed(iface, allowed_set)
+        for n in nets
+    ]
     disallowed_if_map: List[tuple[str, ipaddress.IPv4Network]] = [
         (iface, net)
         for iface, nets in all_if_nets.items()
-        if iface not in allowed_set
+        if not _is_iface_in_allowed(iface, allowed_set)
         for net in nets
     ]
     for m_ip in re.finditer(r"\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b", cmd_or_target):
@@ -248,7 +337,7 @@ def _check_network_isolation_policy(cmd_or_target: str, is_target_only: bool = F
             ip_obj = ipaddress.IPv4Address(m_ip.group(1))
         except ValueError:
             continue
-        if ip_obj.is_loopback or str(ip_obj) in ("0.0.0.0", "255.255.255.255"):
+        if ip_obj.is_loopback or str(ip_obj) in ("0.0.0.0", "255.255.255.255", "255.255.255.0", "255.255.0.0"):
             continue
         if any(ip_obj in anet for anet in allowed_nets):
             continue
@@ -260,6 +349,23 @@ def _check_network_isolation_policy(cmd_or_target: str, is_target_only: bool = F
                     "counterexample": f"Target `{ip_obj}` resides on disallowed interface `{bad_if}` (Allowed interfaces: `{', '.join(blue_ifaces)}`).",
                     "suggested_fix": f"Only interact with targets reachable via allowed interface(s): `{', '.join(blue_ifaces)}`.",
                 }
+        if os.name == "nt" and allowed_nets:
+            allowed_subnets_str = ", ".join(str(n) for n in allowed_nets)
+            return {
+                "blocked": True,
+                "reason": (
+                    f"BLUE Network Isolation Policy on Windows locks traffic strictly to allowed interface "
+                    f"`{', '.join(blue_ifaces)}` subnet(s) (`{allowed_subnets_str}`)."
+                ),
+                "counterexample": (
+                    f"Target `{ip_obj}` is outside the allowed Windows interface subnet(s) `{allowed_subnets_str}` "
+                    f"for `{', '.join(blue_ifaces)}`."
+                ),
+                "suggested_fix": (
+                    f"Target only hosts within `{allowed_subnets_str}` (`{', '.join(blue_ifaces)}`), add the required "
+                    f"Windows adapter to BLUE allowed interfaces, or switch to RED isolation."
+                ),
+            }
     return None
 
 
@@ -278,6 +384,12 @@ def _check_personality_mode_policy(cmd_or_target: str, is_target_only: bool = Fa
     if not s or mode in ("DEFAULT", "BERSERKER"):
         return None
 
+    _ls_proj_fallback = "dir %PROJECT_DIR%" if os.name == "nt" else "ls -la $PROJECT_DIR"
+    _passive_net_fallback = (
+        "ipconfig & route print & arp -a"
+        if os.name == "nt"
+        else "ip -4 -br addr show; ip route show; ip neigh show"
+    )
     if mode == "ANALYST":
         if is_target_only:
             return {
@@ -285,7 +397,7 @@ def _check_personality_mode_policy(cmd_or_target: str, is_target_only: bool = Fa
                 "reason": "ANALYST Mode (WHITE Network Isolation) strictly prohibits network scanning (`scan_target`) and outbound data transmission.",
                 "counterexample": f"Target scan `{s}` attempted while in ANALYST mode (local laptop data analysis only).",
                 "suggested_fix": "Use `read_file`, `list_directory`, `vault_search`, `vault_read_note`, or `generate_project_report` to analyze existing local project data.",
-                "repaired_command": "ls -la $PROJECT_DIR",
+                "repaired_command": _ls_proj_fallback,
             }
         # 1. Block all network scanning and active enumeration binaries unconditionally
         m_scan = re.search(
@@ -306,7 +418,7 @@ def _check_personality_mode_policy(cmd_or_target: str, is_target_only: bool = Fa
                 "reason": "ANALYST Mode (WHITE Network Isolation) strictly prohibits network scanning and external enumeration.",
                 "counterexample": f"Network scanner `{tool_found}` detected in `{s[:100]}`.",
                 "suggested_fix": "Analyze local scan reports, logs, and files inside `Projects/<active_project>/` instead of running network scans.",
-                "repaired_command": "ls -la $PROJECT_DIR",
+                "repaired_command": _ls_proj_fallback,
             }
 
         # 2. Block outbound network clients, packet senders, remote shells, and serial OOB transmitters
@@ -326,7 +438,7 @@ def _check_personality_mode_policy(cmd_or_target: str, is_target_only: bool = Fa
                 "reason": "ANALYST Mode (WHITE Network Isolation) strictly prohibits network scanning or sending data outside the local laptop system.",
                 "counterexample": f"Network/outbound command `{tok_found}` detected in `{s[:100]}`.",
                 "suggested_fix": "Use local filesystem analysis tools (`cat`, `grep`, `jq`, `awk`, `python3` on local files, `read_file`, `vault_search`) only.",
-                "repaired_command": "ls -la $PROJECT_DIR",
+                "repaired_command": _ls_proj_fallback,
             }
 
         # 3. Block inline scripting socket/HTTP connections (e.g. `python3 -c "...socket/urllib/requests/http.client..."`)
@@ -336,7 +448,7 @@ def _check_personality_mode_policy(cmd_or_target: str, is_target_only: bool = Fa
                 "reason": "ANALYST Mode (WHITE Network Isolation) prohibits outbound network connections via scripting libraries.",
                 "counterexample": f"Outbound network library call detected in `{s[:100]}`.",
                 "suggested_fix": "Process only local files on the workstation disk in ANALYST mode.",
-                "repaired_command": "ls -la $PROJECT_DIR",
+                "repaired_command": _ls_proj_fallback,
             }
         return None
 
@@ -357,7 +469,7 @@ def _check_personality_mode_policy(cmd_or_target: str, is_target_only: bool = Fa
                 "reason": f"[NINJA MODE COVERT GUARD] `{noisy_tool}` is a high-noise, aggressive tool prohibited in Ninja mode.",
                 "counterexample": f"Command `{s[:100]}` uses noisy/flood scanner `{noisy_tool}`.",
                 "suggested_fix": "Use covert, low-noise techniques: passive local inspection (`ss -tulnp`, `ip neigh`, `arp -a`), targeted single-request `curl -sS -m 5`, or stealthy `nmap -sS -T2 -Pn --max-rate 15 -p <specific_ports> <target>`.",
-                "repaired_command": "ip -4 -br addr show; ip route show; ip neigh show",
+                "repaired_command": _passive_net_fallback,
             }
 
         # 2. Block aggressive `nmap` flags (`-T4`, `-T5`, `-A`, `--min-rate` > 50, noisy NSE scripts, full `-p-` without `-T1/-T2`)
@@ -621,12 +733,13 @@ def verify_command_cegar(command: str) -> Dict[str, Any]:
     # --- HARD-BLOCK 3: Unbounded `ping` without `-c`, `-w`, or `-n` ---
     if re.search(r"(?:^|&&|\|\||;|\bsudo\s+)\bping\b", cmd):
         if not re.search(r"\bping\b[^;&|]*\s[-/](?:[a-zA-Z]*[cwn])\b", cmd):
+            ping_rep = "ping -n 3 -w 2000" if (os.name == "nt" or is_win_ps) else "ping -c 3 -W 2"
             return {
                 "blocked": True,
-                "reason": "Unbounded `ping` on Linux runs forever without `-c <count>` or `-w <deadline>`.",
+                "reason": "Unbounded `ping` runs forever on Linux without `-c <count>` or `-w <deadline>`.",
                 "counterexample": f"`{cmd}` lacks `-c` / `-n` packet count limit.",
-                "suggested_fix": "Add `-c 3 -W 2` (Linux) or `-n 3` (Windows) to `ping` (e.g., `ping -c 3 -W 2 <target_ip>`).",
-                "repaired_command": re.sub(r"\bping\b", "ping -c 3 -W 2", cmd, count=1),
+                "suggested_fix": "Add `-c 3 -W 2` (Linux) or `-n 3 -w 2000` (Windows) to `ping`.",
+                "repaired_command": re.sub(r"\bping\b", ping_rep, cmd, count=1),
                 "advisories": advisories,
             }
 

@@ -8,6 +8,7 @@ core/models/*.bin
 core/models/*.safetensors
 core/models/*.part
 core/bin/
+Tools/
 core/open-webui-data/
 core/Reasoning/.venv/
 core/Reasoning/wheelhouse/
@@ -37,6 +38,11 @@ core/Reasoning/data/causal_dags/
 core/Log/*.log
 core/Log/*.pid
 core/Log/*.model
+core/Log/*.db
+core/Log/*.db-*
+core/Log/active-project.txt
+core/Log/active_session_mode.env
+core/webui/frontend/node_modules/
 __pycache__/
 *.py[cod]
 *$py.class

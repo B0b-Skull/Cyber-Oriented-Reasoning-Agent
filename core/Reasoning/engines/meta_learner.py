@@ -453,7 +453,7 @@ def _write_suggested_improvement_obsidian_note(audit_summary: Dict[str, Any], ma
         frontmatter
         + f"# Meta-Learning & Next-Tool Forecast Calibration Audit ({today_str})\n\n"
         + "> [!IMPORTANT]\n"
-        + "> Automatically synthesized by **Engine 17 (`meta_learner.py`)** "
+        + "> Automatically synthesized by **Engine 13 (`meta_learner.py`)** "
         + "to audit reasoning accuracy, calibrate tool-forecasting weights, and prune redundant diagnostic steps.\n\n"
         + "- **Parent Index:** [[00_MEMORY_INDEX]] | [[00_SUGGESTED_IMPROVEMENTS_INDEX]]\n\n"
         + markdown_body
@@ -461,13 +461,27 @@ def _write_suggested_improvement_obsidian_note(audit_summary: Dict[str, Any], ma
     )
     _atomic_write_text(note_path, full_md)
 
-    # Update 00_SUGGESTED_IMPROVEMENTS_INDEX.md
+    # Update 00_SUGGESTED_IMPROVEMENTS_INDEX.md (preserving historical entries)
     rel_link = f"SuggestedImprovements/{note_name}"
+    new_bullet = (
+        f"- [[{rel_link}]] — Brier Score `{audit_summary.get('rolling_brier_score')}`, "
+        f"ECE `{audit_summary.get('expected_calibration_error_pct')}%`, "
+        f"Top Authority `{audit_summary.get('top_weighted_engine')}`"
+    )
+    existing_bullets: List[str] = []
+    if SUGGESTED_INDEX_FILE.is_file():
+        try:
+            for ln in SUGGESTED_INDEX_FILE.read_text(encoding="utf-8", errors="replace").splitlines():
+                if ln.strip().startswith("- [[") and f"[[{rel_link}]]" not in ln:
+                    existing_bullets.append(ln.strip())
+        except Exception:
+            pass
     idx_lines = [
         "# Suggested Improvements & Meta-Learning Audit Index (`00_SUGGESTED_IMPROVEMENTS_INDEX`)\n",
-        "> Tracks automated Meta-Learning calibration audits (Engine 17) and Counterfactual Shapley Command-Chain Ablation discoveries (Engine 18).\n",
-        "## Latest Meta-Learning & Ablation Audits",
-        f"- [[{rel_link}]] — Brier Score `{audit_summary.get('rolling_brier_score')}`, ECE `{audit_summary.get('expected_calibration_error_pct')}%`, Top Authority `{audit_summary.get('top_weighted_engine')}`",
+        "> Tracks automated Meta-Learning calibration audits (Engine 13 `meta_learner.py`).\n",
+        "## Latest Meta-Learning Audits",
+        new_bullet,
+        *existing_bullets[:29],
     ]
     _atomic_write_text(SUGGESTED_INDEX_FILE, "\n".join(idx_lines) + "\n")
     return f"[[{rel_link}]]"

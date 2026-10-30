@@ -165,7 +165,7 @@ def process_tool_output_zero_loss(
 
     fluent_evt: Dict[str, Any] = {}
     # 1. Event Calculus & Temporal Fluent tracking
-    if tool_name in ("run_command", "reasoning_engine"):
+    if tool_name in ("run_command", "run_shell_command", "scan_target", "reasoning_engine"):
         fluent_evt = record_command_event(command_or_key, text, exit_code)
         if fluent_evt.get("invalidated_fluents"):
             header_blocks.append(
@@ -174,7 +174,7 @@ def process_tool_output_zero_loss(
             )
 
     # 2. Case-Based Reasoning (CBR) failure fingerprint matching + Engine 16/17 Continual & Meta Learning
-    if tool_name == "run_command":
+    if tool_name in ("run_command", "run_shell_command", "scan_target"):
         cbr_match = match_failure_fingerprint(command_or_key, exit_code, text)
         if cbr_match:
             header_blocks.append(
@@ -235,7 +235,7 @@ def process_tool_output_zero_loss(
     if sygus.get("summary_header"):
         header_blocks.append(sygus["summary_header"])
 
-    if tool_name == "run_command":
+    if tool_name in ("run_command", "run_shell_command", "scan_target"):
         try:
             from .continual_learner import get_continual_learning_state
             from .rl_network_policy import record_rl_step_transition

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run_cora_NIX.sh — Manage the CORA server (llama.cpp CUDA/CPU) + Open WebUI + CORA Agent CLI.
+# run_cora_NIX.sh — Manage the CORA server (llama.cpp CUDA/CPU) + Custom CORA WebUI + CORA Agent CLI.
 # Supports switching between:
 #   - qwen3.8 (DEFAULT):  Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.4 GiB)
 #   - qwen3.5 (FAST):     Qwen3.5-9B-Uncensored-Q4_K_M.gguf (5.2 GiB, HauhauCS-Aggressive)
@@ -29,6 +29,12 @@ TRAINING_DIR="${CORA_TRAINING_DIR:-$CORA_ROOT/Training}"
 export CORA_ROOT CORA_CORE_DIR="$BASE_DIR" CORA_MODELS_DIR="$MODELS_DIR" CORA_PROJECTS_DIR="$PROJECTS_DIR" CORA_TRAINING_DIR="$TRAINING_DIR" OBSIDIAN_VAULT_DIR="$BASE_DIR/ObsidianVault"
 mkdir -p "$LOG_DIR" "$PROJECTS_DIR" "$MODELS_DIR" "$TRAINING_DIR"
 chmod 775 "$LOG_DIR" "$PROJECTS_DIR" 2>/dev/null || true
+# Ensure every existing project in Projects/ has a Files/ subdirectory
+for _pdir in "$PROJECTS_DIR"/*/; do
+  if [[ -d "$_pdir" ]]; then
+    mkdir -p "${_pdir%/}/Files" 2>/dev/null || true
+  fi
+done
 # Automatically migrate any legacy root-level pid/model/log files into Log/
 for _legacy in llama-server.pid llama-server.model llama-server.log; do
   if [[ -f "$BASE_DIR/$_legacy" && ! -f "$LOG_DIR/$_legacy" ]]; then
@@ -38,10 +44,12 @@ done
 PID_FILE="$LOG_DIR/llama-server.pid"
 ACTIVE_MODEL_FILE="$LOG_DIR/llama-server.model"
 LOG_FILE="$LOG_DIR/llama-server.log"
+WEBUI_PID_FILE="$LOG_DIR/webui.pid"
+WEBUI_LOG_FILE="$LOG_DIR/webui.log"
 
 HOST="${HOST:-127.0.0.1}"
 LLAMA_PORT="${LLAMA_PORT:-8080}"
-WEBUI_PORT="${WEBUI_PORT:-3000}"
+WEBUI_PORT="${WEBUI_PORT:-1337}"
 
 QWEN38_URL="https://huggingface.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF/resolve/main/RVN-Q3_K_M-multilingual.gguf"
 QWEN38_FILE="Qwen3.8-27B-Uncensored-Q3_K_M.gguf"
@@ -83,13 +91,14 @@ CONTINUE_SESSION="${LLM_CONTINUE_SESSION:-0}"
 
 usage() {
   cat <<'EOT'
-Usage: ./run_cora_NIX.sh {start|stop|restart|status|models|download|tune|cli|continue|reason|train|posture|troubleshoot|logs} [-m MODEL] [options...]
+Usage: ./run_cora_NIX.sh {start|stop|restart|status|webui|webgui|models|download|tune|cli|continue|reason|train|posture|troubleshoot|logs} [-m MODEL] [options...]
 
 Commands:
-  start        Start llama-server (with Agent tools + auto-detected tuning) and Open WebUI
-  stop         Stop llama-server and Open WebUI
+  start        Start llama-server (with Agent tools + auto-detected tuning) and Custom CORA WebUI (port 1337)
+  stop         Stop llama-server and Custom CORA WebUI
   restart      Restart both services (optionally switching models with -m)
   status       Show service status, active model, auto-detected hardware profile, and GPU VRAM usage
+  webui|webgui Start & open the Custom CORA WebUI Dashboard (http://127.0.0.1:1337)
   models       List installed & available models and show which model is active / default
   download     Download/verify a specific model (-m turbo | -m turbo-q6 | -m turbo-q8 | -m all-turbo | -m all)
   tune         Display the auto-detected hardware profile and exact flags without starting
@@ -258,7 +267,7 @@ EXTRA_ARGS=()
 
 is_action_keyword() {
   case "$1" in
-    start|stop|restart|status|models|download|pull|tune|detect|cli|continue|resume|reason|reasoning|train|-train|--train|posture|troubleshoot|diag|diagnostics|logs|-h|--help|help)
+    start|stop|restart|status|webui|webgui|-webui|--webui|-webgui|--webgui|gui|ui|dashboard|models|download|pull|tune|detect|cli|continue|resume|reason|reasoning|train|-train|--train|posture|troubleshoot|diag|diagnostics|logs|-h|--help|help)
       return 0
       ;;
     *)
@@ -269,10 +278,12 @@ is_action_keyword() {
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    start|stop|restart|status|models|download|pull|tune|detect|cli|continue|resume|reason|reasoning|train|-train|--train|posture|logs|-h|--help|help)
+    start|stop|restart|status|webui|webgui|-webui|--webui|-webgui|--webgui|gui|ui|dashboard|models|download|pull|tune|detect|cli|continue|resume|reason|reasoning|train|-train|--train|posture|troubleshoot|diag|diagnostics|logs|-h|--help|help)
       if (( ACTION_SET == 0 )); then
         if [[ "$1" == "-train" || "$1" == "--train" ]]; then
           ACTION="train"
+        elif [[ "$1" == "webui" || "$1" == "webgui" || "$1" == "-webui" || "$1" == "--webui" || "$1" == "-webgui" || "$1" == "--webgui" || "$1" == "gui" || "$1" == "ui" || "$1" == "dashboard" ]]; then
+          ACTION="webui"
         elif [[ "$1" == "pull" ]]; then
           ACTION="download"
         elif [[ "$1" == "continue" || "$1" == "resume" ]]; then
@@ -863,13 +874,13 @@ detect_hardware_and_tune() {
   fi
 
   if (( TOTAL_RAM_MIB >= 120000 || GPU_TOTAL_MIB >= 24000 || LOGICAL_CPUS >= 36 )); then
-    REASONING_HW_TIER="ULTRA_SERVER_DATACENTER (15 Core Engines: 32,768-D VSA, 80x H-MDP, 1,200 RL eps, 32x K-Means++)"
+    REASONING_HW_TIER="ULTRA_SERVER_DATACENTER (15 Core Engines: 1,024-D VSA, 80x H-MDP, 1,200 RL eps, 32x K-Means++)"
   elif (( TOTAL_RAM_MIB >= 24000 && LOGICAL_CPUS >= 16 )); then
-    REASONING_HW_TIER="EXTREME_WORKSTATION (15 Core Engines: 16,384-D VSA, 80x H-MDP, 600 RL eps, 20x K-Means++)"
+    REASONING_HW_TIER="EXTREME_WORKSTATION (15 Core Engines: 1,024-D VSA, 80x H-MDP, 600 RL eps, 20x K-Means++)"
   elif (( TOTAL_RAM_MIB >= 12000 && LOGICAL_CPUS >= 8 )); then
-    REASONING_HW_TIER="HIGH_PERFORMANCE (15 Core Engines: 10,000-D VSA, 60x H-MDP, 400 RL eps, 12x K-Means++)"
+    REASONING_HW_TIER="HIGH_PERFORMANCE (15 Core Engines: 1,024-D VSA, 60x H-MDP, 400 RL eps, 12x K-Means++)"
   else
-    REASONING_HW_TIER="PORTABLE_CONSERVATIVE (15 Core Engines: 4,096-D VSA, 40x H-MDP, 200 RL eps, 8x K-Means++)"
+    REASONING_HW_TIER="PORTABLE_CONSERVATIVE (15 Core Engines: 1,024-D VSA, 40x H-MDP, 200 RL eps, 8x K-Means++)"
   fi
 
   SERVER_AGENT_ARGS=()
@@ -1008,6 +1019,159 @@ list_models() {
   printf '==============================================\n'
 }
 
+is_webui_running() {
+  if curl -sS -m 2 "http://${HOST}:${WEBUI_PORT}/api/health" 2>/dev/null | grep -q '"cora-webui"'; then
+    return 0
+  fi
+  if [[ -f "$WEBUI_PID_FILE" ]]; then
+    local wpid
+    wpid=$(<"$WEBUI_PID_FILE")
+    if [[ -n "$wpid" ]] && kill -0 "$wpid" 2>/dev/null; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+ensure_webui_python_deps() {
+  if ! python3 -c "import fastapi, uvicorn, psutil, pydantic" >/dev/null 2>&1; then
+    if [[ -f "$BASE_DIR/webui/requirements.txt" ]]; then
+      printf 'Installing CORA WebUI Python dependencies (%s/webui/requirements.txt)...\n' "$BASE_DIR"
+      python3 -m pip install -q -r "$BASE_DIR/webui/requirements.txt" 2>/dev/null || \
+        python3 -m pip install --break-system-packages -q -r "$BASE_DIR/webui/requirements.txt" 2>/dev/null || true
+    fi
+  fi
+}
+
+start_cora_webui() {
+  local open_browser="${1:-1}"
+  if [[ ! -f "$BASE_DIR/webui/server.py" ]]; then
+    printf 'Warning: Custom CORA WebUI server not found at %s\n' "$BASE_DIR/webui/server.py" >&2
+    return 0
+  fi
+  local no_browser=0
+  local arg
+  for arg in "${EXTRA_ARGS[@]:-}"; do
+    if [[ "$arg" == "--no-browser" || "$arg" == "-no-browser" ]]; then
+      no_browser=1
+    fi
+  done
+  local url="http://${HOST}:${WEBUI_PORT}"
+
+  ensure_webui_python_deps
+  if [[ -n "${CORA_ACTIVE_PROJECT:-}" && "${CORA_ACTIVE_PROJECT,,}" != "active_session" && "${CORA_ACTIVE_PROJECT,,}" != "default" ]]; then
+    mkdir -p "$PROJECTS_DIR/${CORA_ACTIVE_PROJECT}/Files" 2>/dev/null || true
+  fi
+
+  if ! is_llama_running; then
+    resolve_model "$MODEL_SELECT"
+    HW_TUNED_DONE=0
+    detect_hardware_and_tune
+    if [[ -f "$MODEL_PATH" && -x "$BIN_DIR/llama-server" ]]; then
+      printf 'Starting llama-server (%s) on http://%s:%s ...\n' "$MODEL_ALIAS" "$HOST" "$LLAMA_PORT"
+      export LD_LIBRARY_PATH="$BIN_DIR:${LD_LIBRARY_PATH:-}"
+      nohup "$BIN_DIR/llama-server" \
+        --model "$MODEL_PATH" \
+        --alias "$MODEL_ALIAS" \
+        --host "$HOST" \
+        --port "$LLAMA_PORT" \
+        --ctx-size "$CTX_SIZE" \
+        --parallel 1 \
+        --context-shift \
+        --no-reasoning-preserve \
+        "${GPU_ARGS[@]}" \
+        "${FEATURE_ARGS[@]}" \
+        "${SAMPLING_GUARD_ARGS[@]}" \
+        --threads "$THREADS" \
+        --threads-batch "$THREADS_BATCH" \
+        --batch-size "$BATCH_SIZE" \
+        --ubatch-size "$UBATCH_SIZE" \
+        --cont-batching \
+        --no-webui \
+        > "$LOG_FILE" 2>&1 &
+      echo $! > "$PID_FILE"
+      echo "$MODEL_ALIAS ($(basename "$MODEL_PATH"))" > "$ACTIVE_MODEL_FILE"
+    fi
+  fi
+  if is_webui_running; then
+    local wpid="active"
+    [[ -f "$WEBUI_PID_FILE" ]] && wpid=$(<"$WEBUI_PID_FILE")
+    printf 'Custom CORA WebUI is already running (PID %s) -> %s\n' "$wpid" "$url"
+    printf 'Verifying local LLM (llama-server) readiness...'
+    if curl -sS -m 90 -X POST "${url}/api/models/start" -H "Content-Type: application/json" -d '{"force_restart":false}' 2>/dev/null | grep -q '"ok":true'; then
+      printf ' ONLINE\n'
+    else
+      printf ' Loading in background...\n'
+    fi
+    if (( open_browser == 1 && no_browser == 0 )) && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]] && command -v xdg-open >/dev/null 2>&1; then
+      xdg-open "$url" >/dev/null 2>&1 &
+    fi
+    return 0
+  fi
+
+  # Ensure no stale process is holding port 1337 before starting the single WebUI instance
+  if command -v fuser >/dev/null 2>&1; then
+    fuser -k "${WEBUI_PORT}/tcp" >/dev/null 2>&1 || true
+  fi
+  pkill -f "webui/server.py" >/dev/null 2>&1 || true
+
+  printf 'Starting Custom CORA WebUI (Svelte + FastAPI + 15-Engine Dashboard + Project Files/) on %s ' "$url"
+  nohup python3 "$BASE_DIR/webui/server.py" --host "$HOST" --port "$WEBUI_PORT" > "$WEBUI_LOG_FILE" 2>&1 &
+  local wproc_pid=$!
+  echo "$wproc_pid" > "$WEBUI_PID_FILE"
+  local ready=0
+  for _ in {1..25}; do
+    if ! kill -0 "$wproc_pid" 2>/dev/null; then
+      printf '\nError: Custom CORA WebUI exited during startup. Log output:\n' >&2
+      tail -n 25 "$WEBUI_LOG_FILE" >&2 2>/dev/null || true
+      return 1
+    fi
+    if curl -sS -m 1 "${url}/api/health" 2>/dev/null | grep -q '"ok"'; then
+      ready=1
+      break
+    fi
+    printf '.'
+    sleep 0.4
+  done
+  printf '\n'
+  if (( ready == 1 )); then
+    printf 'Custom CORA WebUI is LIVE (PID %s) -> %s\n' "$wproc_pid" "$url"
+    printf 'Ensuring local LLM (llama-server) is ONLINE and ready...'
+    if curl -sS -m 90 -X POST "${url}/api/models/start" -H "Content-Type: application/json" -d '{"force_restart":false}' 2>/dev/null | grep -q '"ok":true'; then
+      printf ' ONLINE\n'
+    else
+      printf ' Loading in background...\n'
+    fi
+    if (( open_browser == 1 && no_browser == 0 )) && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]] && command -v xdg-open >/dev/null 2>&1; then
+      printf 'Opening %s in your default browser...\n' "$url"
+      xdg-open "$url" >/dev/null 2>&1 &
+    fi
+  else
+    printf 'Custom CORA WebUI process started (PID %s) -> %s\n' "$wproc_pid" "$url"
+  fi
+}
+
+stop_cora_webui() {
+  local stopped_any=0
+  if [[ -f "$WEBUI_PID_FILE" ]]; then
+    local wpid
+    wpid=$(<"$WEBUI_PID_FILE")
+    if [[ -n "$wpid" ]] && kill -0 "$wpid" 2>/dev/null; then
+      printf 'Stopping Custom CORA WebUI (PID %s)...\n' "$wpid"
+      kill "$wpid" 2>/dev/null || true
+      stopped_any=1
+    fi
+  fi
+  if pgrep -f "webui/server.py" >/dev/null 2>&1; then
+    (( stopped_any == 0 )) && printf 'Stopping Custom CORA WebUI process on port %s...\n' "$WEBUI_PORT"
+    pkill -f "webui/server.py" >/dev/null 2>&1 || true
+  fi
+  if command -v fuser >/dev/null 2>&1; then
+    fuser -k "${WEBUI_PORT}/tcp" >/dev/null 2>&1 || true
+  fi
+  rm -f "$WEBUI_PID_FILE" 2>/dev/null || true
+}
+
 start_services() {
   resolve_model "$MODEL_SELECT"
   ensure_selected_model_downloaded
@@ -1023,7 +1187,7 @@ start_services() {
   # and require selecting or creating a project in /Projects and choosing a Session Personality Mode
   # before interacting with the LLM.
   rm -f "$BASE_DIR/Log/active_session_mode.env" 2>/dev/null || true
-  if [[ -t 0 && -t 1 ]]; then
+  if [[ -t 0 && -t 1 && "${CORA_NON_INTERACTIVE:-0}" != "1" ]]; then
     python3 "$BASE_DIR/agent-cli.py" --select-project-only
   fi
   if [[ -f "$BASE_DIR/Log/active_session_mode.env" ]]; then
@@ -1034,7 +1198,7 @@ start_services() {
     export CORA_ACTIVE_PROJECT
     CORA_ACTIVE_PROJECT=$(head -n 1 "$BASE_DIR/Reasoning/data/sessions/active_project.txt" | tr -d '\r\n')
   fi
-  export CORA_ACTIVE_PROJECT="${CORA_ACTIVE_PROJECT:-active_session}"
+  export CORA_ACTIVE_PROJECT="${CORA_ACTIVE_PROJECT:-}"
   export CORA_PERSONALITY_MODE="${CORA_PERSONALITY_MODE:-DEFAULT}"
 
   # Enforce Analyst Mode network isolation & external scan/egress block in WebGUI / llama-server
@@ -1077,7 +1241,7 @@ start_services() {
       "$(<"$PID_FILE")" "$(cat "$ACTIVE_MODEL_FILE" 2>/dev/null || echo unknown)" "$MODEL_KEY"
   else
     printf 'Starting llama-server (%s) on http://%s:%s (Active Project: %s) ...\n' \
-      "$MODEL_ALIAS" "$HOST" "$LLAMA_PORT" "${CORA_ACTIVE_PROJECT:-active_session}"
+      "$MODEL_ALIAS" "$HOST" "$LLAMA_PORT" "${CORA_ACTIVE_PROJECT:-select-in-webui}"
     export LD_LIBRARY_PATH="$BIN_DIR:${LD_LIBRARY_PATH:-}"
     nohup "$BIN_DIR/llama-server" \
       --model "$MODEL_PATH" \
@@ -1097,7 +1261,7 @@ start_services() {
       --batch-size "$BATCH_SIZE" \
       --ubatch-size "$UBATCH_SIZE" \
       --cont-batching \
-      --webui \
+      --no-webui \
       "${srv_extra_args[@]}" \
       > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
@@ -1105,11 +1269,7 @@ start_services() {
     printf 'llama-server started (PID %s, Model: %s). Waiting for model load...\n' "$(<"$PID_FILE")" "$MODEL_ALIAS"
   fi
 
-  if command -v docker >/dev/null 2>&1; then
-    printf 'Starting Open WebUI container on http://%s:%s (Default Model: %s, Active Project: %s) ...\n' \
-      "$HOST" "$WEBUI_PORT" "$MODEL_ALIAS" "${CORA_ACTIVE_PROJECT:-active_session}"
-    (cd "$BASE_DIR" && ACTIVE_MODEL_ALIAS="$MODEL_ALIAS" CORA_ACTIVE_PROJECT="${CORA_ACTIVE_PROJECT:-active_session}" docker compose up -d)
-  fi
+  start_cora_webui
 }
 
 run_cli() {
@@ -1160,7 +1320,7 @@ run_cli() {
       --batch-size "$BATCH_SIZE" \
       --ubatch-size "$UBATCH_SIZE" \
       --cont-batching \
-      --webui \
+      --no-webui \
       > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
     echo "$MODEL_ALIAS ($(basename "$MODEL_PATH"))" > "$ACTIVE_MODEL_FILE"
@@ -1231,10 +1391,7 @@ stop_services() {
     rm -f "$PID_FILE" "$ACTIVE_MODEL_FILE"
   fi
 
-  if command -v docker >/dev/null 2>&1 && [[ -f "$BASE_DIR/docker-compose.yml" ]]; then
-    printf 'Stopping Open WebUI container...\n'
-    (cd "$BASE_DIR" && docker compose down)
-  fi
+  stop_cora_webui
 }
 
 status_services() {
@@ -1245,16 +1402,14 @@ status_services() {
     active_mod=$(cat "$ACTIVE_MODEL_FILE" 2>/dev/null || echo "$MODEL_ALIAS")
     printf '  llama-server: RUNNING (PID %s)\n' "$(<"$PID_FILE")"
     printf '  Active Model: %s\n' "$active_mod"
-    printf '  Agent WebUI:  http://%s:%s (Built-in fast WebUI with host Agent tools & OpenAI API)\n' "$HOST" "$LLAMA_PORT"
+    printf '  Llama API:    http://%s:%s (OpenAI-compatible API & llama.cpp server)\n' "$HOST" "$LLAMA_PORT"
   else
     printf '  llama-server: STOPPED\n'
   fi
-  if command -v docker >/dev/null 2>&1; then
-    if docker ps --format '{{.Names}}' | grep -q '^local-open-webui$'; then
-      printf '  Open WebUI:   RUNNING -> http://%s:%s\n' "$HOST" "$WEBUI_PORT"
-    else
-      printf '  Open WebUI:   STOPPED\n'
-    fi
+  if is_webui_running; then
+    printf '  CORA WebUI:   RUNNING (PID %s) -> http://%s:%s (Custom Svelte/FastAPI Dashboard)\n' "$(<"$WEBUI_PID_FILE")" "$HOST" "$WEBUI_PORT"
+  else
+    printf '  CORA WebUI:   STOPPED (Start with: ./run_cora_NIX.sh webui  or  ./run_cora_NIX.sh start)\n'
   fi
   if command -v nvidia-smi >/dev/null 2>&1; then
     printf '\nGPU Memory Usage:\n'
@@ -1267,6 +1422,7 @@ case "$ACTION" in
   stop)           stop_services ;;
   restart)        stop_services; sleep 1; start_services ;;
   status)         status_services ;;
+  webui)          start_cora_webui ;;
   models)         list_models ;;
   download)       cmd_download_models "${EXTRA_ARGS[0]:-$MODEL_SELECT}" ;;
   tune|detect)    print_hardware_profile ;;

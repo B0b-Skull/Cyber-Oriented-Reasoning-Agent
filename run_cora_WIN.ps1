@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    run_cora_WIN.ps1 -- Windows Service, Hardware Auto-Tuner & Agent CLI Manager for CORA (llama.cpp CUDA/CPU + Open WebUI + 15-Engine Reasoning)
+    run_cora_WIN.ps1 -- Windows Service, Hardware Auto-Tuner & Agent CLI Manager for CORA (llama.cpp CUDA/CPU + Custom CORA WebUI + 15-Engine Reasoning)
 
 .DESCRIPTION
-    Manages the CORA server (core\bin\llama-server.exe) + Open WebUI + CORA Agent CLI on Windows.
+    Manages the CORA server (core\bin\llama-server.exe) + Custom CORA WebUI (Svelte/FastAPI) + CORA Agent CLI on Windows.
     Supports switching between:
       - qwen3.8 (DEFAULT):  Qwen3.8-27B-Uncensored-Q3_K_M.gguf (~12.4 GiB)
       - qwen3.5 (FAST):     Qwen3.5-9B-Uncensored-Q4_K_M.gguf (~5.2 GiB, HauhauCS-Aggressive)
@@ -50,6 +50,13 @@ foreach ($d in @($LogDir, $ProjectsDir, $ModelsDir, $TrainingDir)) {
         New-Item -ItemType Directory -Path $d -Force | Out-Null
     }
 }
+# Ensure every existing project in Projects\ has a Files\ subdirectory
+if (Test-Path $ProjectsDir) {
+    Get-ChildItem -Path $ProjectsDir -Directory -ErrorAction SilentlyContinue | Where-Object { -not $_.Name.StartsWith(".") } | ForEach-Object {
+        $fSub = Join-Path $_.FullName "Files"
+        if (-not (Test-Path $fSub)) { New-Item -ItemType Directory -Path $fSub -Force | Out-Null }
+    }
+}
 
 # Automatically migrate any legacy root-level pid/model/log files into Log\
 foreach ($legacy in @("llama-server.pid", "llama-server.model", "llama-server.log")) {
@@ -64,10 +71,12 @@ $PidFile = Join-Path $LogDir "llama-server.pid"
 $ActiveModelFile = Join-Path $LogDir "llama-server.model"
 $LogFile = Join-Path $LogDir "llama-server.log"
 $StdoutFile = Join-Path $LogDir "llama-server.stdout.log"
+$WebuiPidFile = Join-Path $LogDir "webui.pid"
+$WebuiLogFile = Join-Path $LogDir "webui.log"
 
 $BindHost = if ($env:HOST) { $env:HOST } else { "127.0.0.1" }
 $LlamaPort = if ($env:LLAMA_PORT) { $env:LLAMA_PORT } else { "8080" }
-$WebuiPort = if ($env:WEBUI_PORT) { $env:WEBUI_PORT } else { "3000" }
+$WebuiPort = if ($env:WEBUI_PORT) { $env:WEBUI_PORT } else { "1337" }
 
 $Qwen38Url             = "https://huggingface.co/0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF/resolve/main/RVN-Q3_K_M-multilingual.gguf"
 $Qwen38File            = "Qwen3.8-27B-Uncensored-Q3_K_M.gguf"
@@ -106,13 +115,14 @@ $ContinueSession = if ($env:LLM_CONTINUE_SESSION) { $env:LLM_CONTINUE_SESSION } 
 
 function Show-Usage {
     Write-Host @"
-Usage: .\run_cora_WIN.ps1 {start|stop|restart|status|models|download|tune|cli|continue|reason|train|posture|troubleshoot|logs} [-m MODEL] [options...]
+Usage: .\run_cora_WIN.ps1 {start|stop|restart|status|webui|webgui|models|download|tune|cli|continue|reason|train|posture|troubleshoot|logs} [-m MODEL] [options...]
 
 Commands:
-  start        Start llama-server.exe (with Agent tools + auto-detected tuning) and Open WebUI
-  stop         Stop llama-server.exe and Open WebUI
+  start        Start llama-server.exe (with Agent tools + auto-detected tuning) and Custom CORA WebUI (port 1337)
+  stop         Stop llama-server.exe and Custom CORA WebUI
   restart      Restart both services (optionally switching models with -m)
   status       Show service status, active model, auto-detected hardware profile, and GPU VRAM usage
+  webui|webgui Start & open the Custom CORA WebUI Dashboard (http://127.0.0.1:1337)
   models       List installed & available models and show which model is active / default
   download     Download/verify a specific model (-m turbo | -m turbo-q6 | -m turbo-q8 | -m all-turbo | -m all)
   tune         Display the auto-detected hardware profile and exact flags without starting
@@ -197,10 +207,12 @@ while ($i -lt $args.Count) {
     $arg = [string]$args[$i]
     $argLower = $arg.ToLowerInvariant()
     switch -Regex ($argLower) {
-        '^(start|stop|restart|status|models|download|pull|tune|detect|cli|continue|resume|reason|reasoning|train|-train|--train|posture|troubleshoot|diag|diagnostics|logs|-h|--help|help)$' {
+        '^(start|stop|restart|status|webui|webgui|-webui|--webui|-webgui|--webgui|gui|-gui|--gui|ui|dashboard|-dashboard|--dashboard|models|download|pull|tune|detect|cli|continue|resume|reason|reasoning|train|-train|--train|posture|troubleshoot|diag|diagnostics|logs|-h|--help|help)$' {
             if (-not $ActionSet) {
                 if ($argLower -eq "-train" -or $argLower -eq "--train") {
                     $Action = "train"
+                } elseif ($argLower -in @("webui", "webgui", "-webui", "--webui", "-webgui", "--webgui", "gui", "-gui", "--gui", "ui", "dashboard", "-dashboard", "--dashboard")) {
+                    $Action = "webui"
                 } elseif ($argLower -eq "pull") {
                     $Action = "download"
                 } elseif ($argLower -eq "continue" -or $argLower -eq "resume") {
@@ -713,13 +725,13 @@ function Detect-HardwareAndTune {
     $script:SamplingGuardArgs.Add("--repeat-last-n")
     $script:SamplingGuardArgs.Add($repeatLastN)
     if ($script:TotalRamMib -ge 120000 -or $script:GpuTotalMib -ge 24000 -or $script:LogicalCpus -ge 36) {
-        $script:ReasoningHwTier = "ULTRA_SERVER_DATACENTER (15 Core Engines: 32,768-D VSA, 80x H-MDP, 1,200 RL eps, 32x K-Means++)"
+        $script:ReasoningHwTier = "ULTRA_SERVER_DATACENTER (15 Core Engines: 1,024-D VSA, 80x H-MDP, 1,200 RL eps, 32x K-Means++)"
     } elseif ($script:TotalRamMib -ge 24000 -and $script:LogicalCpus -ge 16) {
-        $script:ReasoningHwTier = "EXTREME_WORKSTATION (15 Core Engines: 16,384-D VSA, 80x H-MDP, 600 RL eps, 20x K-Means++)"
+        $script:ReasoningHwTier = "EXTREME_WORKSTATION (15 Core Engines: 1,024-D VSA, 80x H-MDP, 600 RL eps, 20x K-Means++)"
     } elseif ($script:TotalRamMib -ge 12000 -and $script:LogicalCpus -ge 8) {
-        $script:ReasoningHwTier = "HIGH_PERFORMANCE (15 Core Engines: 10,000-D VSA, 60x H-MDP, 400 RL eps, 12x K-Means++)"
+        $script:ReasoningHwTier = "HIGH_PERFORMANCE (15 Core Engines: 1,024-D VSA, 60x H-MDP, 400 RL eps, 12x K-Means++)"
     } else {
-        $script:ReasoningHwTier = "PORTABLE_CONSERVATIVE (15 Core Engines: 4,096-D VSA, 40x H-MDP, 200 RL eps, 8x K-Means++)"
+        $script:ReasoningHwTier = "PORTABLE_CONSERVATIVE (15 Core Engines: 1,024-D VSA, 40x H-MDP, 200 RL eps, 8x K-Means++)"
     }
 }
 
@@ -862,11 +874,169 @@ function Build-LlamaServerArgumentList([bool]$IncludeServerAgent = $true) {
         "--batch-size", "$($script:BatchSize)",
         "--ubatch-size", "$($script:UbatchSize)",
         "--cont-batching",
-        "--webui"
+        "--no-webui"
     )) {
         $argList.Add($a)
     }
     return $argList
+}
+
+function Test-WebuiRunning {
+    try {
+        $resp = Invoke-WebRequest -Uri "http://${BindHost}:${WebuiPort}/api/health" -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+        if ($resp.StatusCode -eq 200 -and $resp.Content -match '"cora-webui"') {
+            return $true
+        }
+    } catch {}
+    if (Test-Path $WebuiPidFile) {
+        $rawPid = (Get-Content $WebuiPidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
+        if ($rawPid -and ($rawPid.Trim() -match '^\d+$')) {
+            $proc = Get-Process -Id ([int]$rawPid.Trim()) -ErrorAction SilentlyContinue
+            if ($proc -and (-not $proc.HasExited)) {
+                return $true
+            }
+        }
+    }
+    return $false
+}
+
+function Stop-CoraWebui {
+    $stoppedAny = $false
+    if (Test-Path $WebuiPidFile) {
+        $rawPid = (Get-Content $WebuiPidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
+        if ($rawPid -and ($rawPid.Trim() -match '^\d+$')) {
+            $wPid = [int]$rawPid.Trim()
+            $proc = Get-Process -Id $wPid -ErrorAction SilentlyContinue
+            if ($proc -and (-not $proc.HasExited)) {
+                Write-Host "Stopping Custom CORA WebUI (PID $wPid)..."
+                Stop-Process -Id $wPid -Force -ErrorAction SilentlyContinue
+                $stoppedAny = $true
+            }
+        }
+    }
+    try {
+        $conns = Get-NetTCPConnection -LocalPort ([int]$WebuiPort) -State Listen -ErrorAction SilentlyContinue
+        foreach ($c in $conns) {
+            if ($c.OwningProcess -gt 0) {
+                if (-not $stoppedAny) {
+                    Write-Host "Stopping Custom CORA WebUI on port $WebuiPort (PID $($c.OwningProcess))..."
+                }
+                Stop-Process -Id $c.OwningProcess -Force -ErrorAction SilentlyContinue
+                $stoppedAny = $true
+            }
+        }
+    } catch {}
+    Remove-Item -Path $WebuiPidFile -Force -ErrorAction SilentlyContinue
+}
+
+function Start-CoraWebui([bool]$OpenBrowser = $true) {
+    $webuiPy = Join-Path $BaseDir "webui\server.py"
+    if (-not (Test-Path $webuiPy)) {
+        Write-Host "Custom CORA WebUI server not found at $webuiPy" -ForegroundColor Yellow
+        return
+    }
+    $noBrowser = ($ExtraArgs -contains "--no-browser") -or ($ExtraArgs -contains "-no-browser")
+    $url = "http://${BindHost}:${WebuiPort}"
+
+    if (Test-WebuiRunning) {
+        $wPid = if (Test-Path $WebuiPidFile) { (Get-Content $WebuiPidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim() } else { "active" }
+        Write-Host "Custom CORA WebUI is already running (PID $wPid) -> $url" -ForegroundColor Green
+        Write-Host -NoNewline "Verifying local LLM (llama-server) readiness..."
+        try {
+            $llmRes = Invoke-RestMethod -Uri "$url/api/models/start" -Method POST -ContentType "application/json" -Body '{"force_restart":false}' -TimeoutSec 90 -ErrorAction Stop
+            if ($llmRes.ok) {
+                Write-Host " ONLINE ($($llmRes.models.llama_server.active_model))" -ForegroundColor Green
+            } else {
+                Write-Host " Loading in background..." -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host " Loading in background..." -ForegroundColor Yellow
+        }
+        if ($OpenBrowser -and (-not $noBrowser) -and [Environment]::UserInteractive) {
+            try { Start-Process $url | Out-Null } catch {}
+        }
+        return
+    }
+
+    # Ensure no stale process is holding port 1337 before starting the single WebUI instance
+    try {
+        $staleConns = Get-NetTCPConnection -LocalPort ([int]$WebuiPort) -State Listen -ErrorAction SilentlyContinue
+        foreach ($sc in $staleConns) {
+            if ($sc.OwningProcess -gt 0) {
+                Stop-Process -Id $sc.OwningProcess -Force -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {}
+
+    $pyExe = Resolve-PythonExe
+    $activeProj = if ($env:CORA_ACTIVE_PROJECT) { $env:CORA_ACTIVE_PROJECT.Trim() } else { "" }
+    if ($activeProj -and ($activeProj.ToLowerInvariant() -notin @("active_session", "default"))) {
+        $projFilesDir = Join-Path $ProjectsDir "$activeProj\Files"
+        if (-not (Test-Path $projFilesDir)) {
+            New-Item -ItemType Directory -Path $projFilesDir -Force | Out-Null
+        }
+    }
+    try {
+        & $pyExe -c "import fastapi, uvicorn, psutil, pydantic" 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            $reqFile = Join-Path $BaseDir "webui\requirements.txt"
+            if (Test-Path $reqFile) {
+                Write-Host "Installing CORA WebUI Python dependencies ($reqFile)..." -ForegroundColor Cyan
+                & $pyExe -m pip install -q -r $reqFile 2>$null
+            }
+        }
+    } catch {}
+    Write-Host -NoNewline "Starting Custom CORA WebUI (Svelte + FastAPI + 15-Engine Dashboard + Project Files/) on $url "
+    $wProc = Start-Process -FilePath $pyExe `
+        -ArgumentList @($webuiPy, "--host", $BindHost, "--port", "$WebuiPort") `
+        -WorkingDirectory $BaseDir `
+        -WindowStyle Hidden `
+        -RedirectStandardError $WebuiLogFile `
+        -RedirectStandardOutput (Join-Path $LogDir "webui.stdout.log") `
+        -PassThru
+    Set-Content -Path $WebuiPidFile -Value $wProc.Id -Encoding ASCII
+
+    $ready = $false
+    for ($t = 0; $t -lt 25; $t++) {
+        if ($wProc.HasExited) {
+            Write-Host ""
+            Write-Host "Error: Custom CORA WebUI exited during startup. Log output:" -ForegroundColor Red
+            if (Test-Path $WebuiLogFile) {
+                Get-Content $WebuiLogFile -Tail 25 | Write-Host
+            }
+            return
+        }
+        try {
+            $resp = Invoke-WebRequest -Uri "$url/api/health" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop
+            if ($resp.StatusCode -eq 200 -and $resp.Content -match '"ok"') {
+                $ready = $true
+                break
+            }
+        } catch {}
+        Write-Host -NoNewline "."
+        Start-Sleep -Milliseconds 400
+    }
+    Write-Host ""
+    if ($ready) {
+        Write-Host "Custom CORA WebUI is LIVE (PID $($wProc.Id)) -> $url" -ForegroundColor Green
+        Write-Host -NoNewline "Ensuring local LLM (llama-server) is ONLINE and ready..."
+        try {
+            $llmRes = Invoke-RestMethod -Uri "$url/api/models/start" -Method POST -ContentType "application/json" -Body '{"force_restart":false}' -TimeoutSec 90 -ErrorAction Stop
+            if ($llmRes.ok) {
+                Write-Host " ONLINE ($($llmRes.models.llama_server.active_model))" -ForegroundColor Green
+            } else {
+                Write-Host " Loading in background..." -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host " Loading in background..." -ForegroundColor Yellow
+        }
+        if ($OpenBrowser -and (-not $noBrowser) -and [Environment]::UserInteractive) {
+            Write-Host "Opening $url in your default browser..." -ForegroundColor Cyan
+            try { Start-Process $url | Out-Null } catch {}
+        }
+    } else {
+        Write-Host "Custom CORA WebUI process started (PID $($wProc.Id)) -> $url" -ForegroundColor Yellow
+    }
 }
 
 function Start-Services {
@@ -877,7 +1047,9 @@ function Start-Services {
         Write-Error "Error: Model file not found at $($script:ModelPath). Run .\setup_cora_WIN.ps1 or .\run_cora_WIN.ps1 download -m $($script:ModelKey) to download models."
         exit 1
     }
-    if ([Environment]::UserInteractive -and (-not $env:CORA_ACTIVE_PROJECT)) {
+    $actModeFile = Join-Path $BaseDir "Log\active_session_mode.env"
+    if ([Environment]::UserInteractive -and (-not $env:CORA_ACTIVE_PROJECT) -and ($env:CORA_NON_INTERACTIVE -ne "1") -and ($ExtraArgs -notcontains "--no-browser")) {
+        Remove-Item -Path $actModeFile -Force -ErrorAction SilentlyContinue
         $pyExe = Resolve-PythonExe
         $agentCliPy = Join-Path $BaseDir "agent-cli.py"
         & $pyExe $agentCliPy "--select-project-only"
@@ -886,16 +1058,47 @@ function Start-Services {
         if (Test-Path $actProjFile) {
             $env:CORA_ACTIVE_PROJECT = (Get-Content $actProjFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
         }
-        $actModeFile = Join-Path $BaseDir "Log\active_session_mode.env"
         if (Test-Path $actModeFile) {
             foreach ($line in (Get-Content $actModeFile -ErrorAction SilentlyContinue)) {
-                if ($line -match "^([A-Za-z0-9_]+)=(.*)$") {
-                    Set-Item -Path "Env:\$($Matches[1])" -Value $Matches[2]
+                if ($line -match "^(?:export\s+)?([A-Za-z0-9_]+)=(.*)$") {
+                    $val = $Matches[2].Trim().Trim('"', "'")
+                    Set-Item -Path "Env:\$($Matches[1])" -Value $val
                 }
             }
         }
     }
+    $includeServerAgent = $true
+    if ($env:CORA_PERSONALITY_MODE -eq "ANALYST") {
+        $env:LLM_ISOLATION_MODE = "WHITE"
+        $env:LLM_POSTURE_OVERRIDE = "WHITE"
+        $env:LLM_ALLOWED_IFACES = "lo"
+        $BindHost = "127.0.0.1"
+        $includeServerAgent = $false
+        Write-Host "  [ANALYST MODE ENFORCED] WebGUI / llama-server locked to WHITE isolation (127.0.0.1 loopback only; external network scanning & agent shell tools disabled)."
+    }
     Show-HardwareProfile
+
+    $srvExtraArgs = New-Object System.Collections.Generic.List[string]
+    $skipNext = 0
+    for ($ei = 0; $ei -lt $ExtraArgs.Count; $ei++) {
+        if ($skipNext -gt 0) {
+            $skipNext--
+            continue
+        }
+        $eArg = [string]$ExtraArgs[$ei]
+        if ($eArg -in @("-netiso", "--netiso", "--network-isolation", "-network-isolation")) {
+            if (($ei + 1) -lt $ExtraArgs.Count -and ([string]$ExtraArgs[$ei + 1]).ToLowerInvariant() -eq "blue" -and ($ei + 2) -lt $ExtraArgs.Count -and (-not ([string]$ExtraArgs[$ei + 2]).StartsWith("-"))) {
+                $skipNext = 2
+            } else {
+                $skipNext = 1
+            }
+            continue
+        } elseif ($eArg -in @("--continue", "-c")) {
+            continue
+        } else {
+            $srvExtraArgs.Add($eArg)
+        }
+    }
 
     if (Test-LlamaRunning) {
         $curPid = (Get-Content $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
@@ -903,8 +1106,8 @@ function Start-Services {
         Write-Host "llama-server is already running (PID $curPid, Model: $curMod). Use '.\run_cora_WIN.ps1 restart -m $($script:ModelKey)' to switch models."
     } else {
         $serverExe = Get-LlamaServerBinary
-        $argList = Build-LlamaServerArgumentList -IncludeServerAgent $true
-        foreach ($extra in $ExtraArgs) { $argList.Add($extra) }
+        $argList = Build-LlamaServerArgumentList -IncludeServerAgent $includeServerAgent
+        foreach ($extra in $srvExtraArgs) { $argList.Add($extra) }
 
         Write-Host "Starting llama-server ($($script:ModelAlias)) on http://${BindHost}:${LlamaPort} ..."
         $env:PATH = "$BinDir;$env:PATH"
@@ -920,6 +1123,7 @@ function Start-Services {
         Set-Content -Path $ActiveModelFile -Value "$($script:ModelAlias) ($modelLeaf)" -Encoding UTF8
         Write-Host "llama-server started (PID $($proc.Id), Model: $($script:ModelAlias)). Waiting for model load..."
     }
+    Start-CoraWebui
 }
 
 function Stop-Services {
@@ -934,6 +1138,7 @@ function Stop-Services {
         Write-Host "llama-server is not running."
         Remove-Item -Path $PidFile, $ActiveModelFile -Force -ErrorAction SilentlyContinue
     }
+    Stop-CoraWebui
 }
 
 function Show-Status {
@@ -944,9 +1149,15 @@ function Show-Status {
         $curMod = if (Test-Path $ActiveModelFile) { (Get-Content $ActiveModelFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim() } else { $script:ModelAlias }
         Write-Host "  llama-server: RUNNING (PID $curPid)"
         Write-Host "  Active Model: $curMod"
-        Write-Host "  Agent WebUI:  http://${BindHost}:${LlamaPort} (Built-in fast WebUI with host Agent tools & OpenAI API)"
+        Write-Host "  Llama API:    http://${BindHost}:${LlamaPort} (OpenAI-compatible API & llama.cpp server)"
     } else {
         Write-Host "  llama-server: STOPPED"
+    }
+    if (Test-WebuiRunning) {
+        $wPid = if (Test-Path $WebuiPidFile) { (Get-Content $WebuiPidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim() } else { "active" }
+        Write-Host "  CORA WebUI:   RUNNING (PID $wPid) -> http://${BindHost}:$($script:WebuiPort) (Custom Svelte/FastAPI Dashboard)"
+    } else {
+        Write-Host "  CORA WebUI:   STOPPED (Start with: .\run_cora_WIN.ps1 webgui  or  .\run_cora_WIN.ps1 webui  or  .\run_cora_WIN.ps1 start)"
     }
 
     $nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
@@ -1050,6 +1261,7 @@ switch ($Action) {
     "stop" { Stop-Services }
     "restart" { Stop-Services; Start-Sleep -Seconds 1; Start-Services }
     "status" { Show-Status }
+    "webui" { Start-CoraWebui }
     "models" { Show-Models }
     "download" {
         $dlTarget = if ($ExtraArgs.Count -gt 0) { $ExtraArgs[0] } else { $ModelSelect }

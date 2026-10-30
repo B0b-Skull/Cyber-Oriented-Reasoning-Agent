@@ -288,8 +288,10 @@ def sense_live_local_network_topology(
                 ip_forward = Path("/proc/sys/net/ipv4/ip_forward").read_text(encoding="utf-8").strip() == "1"
         except Exception:
             pass
-    else:
-        # Windows network topology sensing
+    elif is_windows and iso_level != "white":
+        # Windows network topology sensing (respecting WHITE / BLUE isolation)
+        for sub_cidr in ctx.get("local_subnets", []):
+            interfaces.append(f"{ctx.get('primary_interface', 'Ethernet')} (UP): {sub_cidr}")
         try:
             out_arp = subprocess.check_output(
                 ["arp", "-a"],
@@ -301,7 +303,7 @@ def sense_live_local_network_topology(
                 m = re.search(r"(\d+\.\d+\.\d+\.\d+)\s+([0-9a-fA-F\-]{17})\s+(\w+)", ln)
                 if m:
                     arp_neighbors.append(
-                        {"ip": m.group(1), "dev": "eth0", "mac": m.group(2), "state": m.group(3).upper()}
+                        {"ip": m.group(1), "dev": ctx.get("primary_interface", "Ethernet"), "mac": m.group(2), "state": m.group(3).upper()}
                     )
         except Exception:
             pass
@@ -690,7 +692,7 @@ def _classify_command_to_rl_action(command: str) -> Optional[str]:
         return "A2_OOB_SERIAL_LUA_PROBE"
     if any(k in c for k in ("ip route add", "ip route replace", "route add", "ip_forward", "iptables", "nft ")):
         return "A3_INJECT_STATIC_ROUTE_AND_FWD"
-    if any(k in c for k in ("nmap", "test-netconnection", "ss -tulpn", "netstat", "nc -z", "ncat ")):
+    if any(k in c for k in ("nmap", "scan_target", "test-netconnection", "ss -tulpn", "netstat", "nc -z", "ncat ")):
         return "A4_NMAP_NOPING_TCP_SCAN"
     if any(k in c for k in ("x-forwarded-for", "-x options", "authorization:", "bearer ")):
         return "A5_HTTP_AUTH_HEADER_PROBE"
@@ -716,7 +718,7 @@ def _classify_command_to_rl_action(command: str) -> Optional[str]:
             toks.pop(0)
         if not toks:
             continue
-        b = toks[0].rsplit("/", 1)[-1]
+        b = re.sub(r"\.exe$", "", re.split(r"[\\/]", toks[0])[-1], flags=re.I)
         if b in ("cd", "echo", "printf", "export", "true") and len(segs) > 1:
             eff_bin = b
             continue
@@ -931,7 +933,7 @@ def predict_rl_next_step_rollout(
         "q_star": 15.0,
         "q_lcb": 14.2,
         "policy_mode": "PESSIMISTIC_Q_LCB",
-        "command": "ip -br addr show && ip route show && ip neigh show",
+        "command": "ipconfig & route print & arp -a" if is_windows else "ip -br addr show && ip route show && ip neigh show",
         "expected_next_stage": "STAGE_1_L2_NEIGHBOR_DISCOVERY",
     }
 
@@ -1030,7 +1032,7 @@ def _export_rl_playbook_to_vault(
         "### Engine 19: Converged Trajectory RL (`TD(lambda)` + UCB1) & Live Network World-Model Playbooks",
         f"- **Total Digital-Twin RL Episodes Trained**: **`{store.get('episodes_trained', 0)}`** (`{store.get('online_transitions_recorded', 0)}` live CLI transitions | Avg Return = **`+{store.get('average_episode_return', 0.0):.2f}`**)",
         f"- **RL Hyperparameters**: Discount $\\gamma = {store.get('gamma_discount', 0.92)}$, Eligibility Trace $\\lambda = {store.get('lambda_trace', 0.85)}$, Learning Rate $\\alpha = {store.get('alpha_lr', 0.18)}$, UCB1 $c = {store.get('ucb_exploration_c', 1.45)}$",
-        f"- **Live Host Network Snapshot (`[[targets/local_network_topology]]`)**: Primary NIC `{topo.get('primary_interface')}`, Local Subnets `{topo.get('local_subnets')}`, Default GW `{topo.get('default_gateway')}`, Reachable L2 ARP Neighbors = `{topo.get('reachable_neighbors_count')}`, IPv4 Forwarding = `{topo.get('ip_forward_enabled')}`\n",
+        f"- **Live Host Network Snapshot (`[[targets/local_network_topology]]`)**: Primary NIC `<PRIMARY_NIC>`, Local Subnets `['<LOCAL_SUBNET>/24']`, Default GW `<GATEWAY_IP>`, Reachable L2 ARP Neighbors = `{topo.get('reachable_neighbors_count', 0)}`, IPv4 Forwarding = `{topo.get('ip_forward_enabled', False)}`\n",
         "#### 1. Active State 3-Step Optimal Trajectory Rollout ($\\pi^*(s_t)$)",
         "| Step | Network Stage ($s_t$) | Optimal Action ($a_t^*$) | Learned $Q^*(s,a)$ | Concrete Next Command |",
         "| :---: | :--- | :--- | :---: | :--- |",

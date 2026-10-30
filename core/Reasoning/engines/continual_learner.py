@@ -47,7 +47,7 @@ from .vsa import record_somatic_valence_marker
 
 CONTINUAL_STATE_FILE = os.path.join(str(DATA_DIR), "continual_learning_state.json")
 LEARNED_CBR_FILE = os.path.join(str(DATA_DIR), "learned_cbr_cases.json")
-BAYESIAN_PROFILES_FILE = os.path.join(str(DATA_DIR), "bayesian_profiles.json")
+BAYESIAN_PROFILES_FILE = os.path.join(str(DATA_DIR), "bayesian_priors.json")
 
 VALID_MODES = ("AUTO", "START", "STOP")
 
@@ -63,12 +63,9 @@ def _parameterize_tactical_template(text: str) -> str:
     before persisting online learned CBR rules so long-term tactical memory grows in reusable tactics
     without ever storing dirty local network IPs or host paths.
     """
-    if not text:
-        return ""
-    s = _IPV4_SUB_RE.sub("<TARGET_IP>", text)
-    s = re.sub(r"/home/[^/\s'\"]+/Projects/CORA/Projects/[^/\s'\"]+", "$PROJECT_DIR", s)
-    s = re.sub(r"/home/[^/\s'\"]+", "~", s)
-    return s
+    from .vault_bridge import parameterize_tactical_template
+
+    return parameterize_tactical_template(text)
 
 
 def get_continual_learning_state() -> Dict[str, Any]:
@@ -93,9 +90,9 @@ def get_continual_learning_state() -> Dict[str, Any]:
         "memory_tiers_status": {
             "1_working_memory": "ACTIVE (ZeroLossContextVM + SpeculativeLookaheadCache < 1 ms)",
             "2_episodic_memory": "ACTIVE (temporal_fluents + shadow_archive + ObsidianVault/reasoning/)",
-            "3_semantic_memory": "ACTIVE (32,768-D VSA Somatic Markers + FCA Lattices + Bipartite Graph)",
-            "4_procedural_memory": "ACTIVE (H-MDP 5,039 Transitions + Clingo ASP + CBR Library)",
-            "5_experimental_memory": "ACTIVE (ablation_ledger.json + SuggestedImprovements/)",
+            "3_semantic_memory": "ACTIVE (1,024-D VSA Somatic Markers + Bipartite Graph)",
+            "4_procedural_memory": "ACTIVE (H-MDP 5,039 Transitions + TD(lambda) RL + CBR Library)",
+            "5_experimental_memory": "ACTIVE (Meta-Learner Calibration + SuggestedImprovements/)",
         },
     }
     loaded = load_json_state(CONTINUAL_STATE_FILE, {})
@@ -176,7 +173,7 @@ def _extract_effective_binary(cmd_clean: str) -> str:
             tokens.pop(0)
         if not tokens:
             continue
-        b = tokens[0].rsplit("/", 1)[-1].lower()
+        b = re.sub(r"\.exe$", "", re.split(r"[\\/]", tokens[0])[-1], flags=re.I).lower()
         if b in ("cd", "echo", "printf", "export", "true") and len(segments) > 1 and idx < len(segments) - 1:
             chosen_bin = b
             continue
@@ -218,21 +215,63 @@ def record_live_command_experience(
 
     succeeded = exit_code == 0
     out_low = (output_text or "").lower()
-    # Only treat stdout timeout/refused strings as command failure when running a network/OOB probe,
-    # NEVER when reading local text/log files with `cat`, `head`, `grep`, `ls`, or `find`.
-    has_timeout_or_refused = is_network_probe and any(
-        k in out_low for k in ("timed out", "timeout", "100% packet loss", "connection refused", "network is unreachable", "no route to host")
+    has_positive_probe_hit = any(
+        k in out_low
+        for k in (
+            "0% packet loss",
+            "(0% loss)",
+            "reply from ",
+            "bytes from ",
+            "/tcp: open",
+            "/tcp open",
+            "-> http 200",
+            "-> http 30",
+            "-> http 401",
+            "http/1.1 200",
+            "http/2 200",
+            "tcptestsucceeded : true",
+        )
+    )
+    # Only treat stdout timeout/refused strings as command failure when running a network/OOB probe
+    # that did NOT achieve any positive host/service hit, NEVER when reading local text/log files.
+    has_timeout_or_refused = (
+        is_network_probe
+        and not has_positive_probe_hit
+        and any(
+            k in out_low
+            for k in (
+                "timed out",
+                "timeout",
+                "100% packet loss",
+                "(100% loss)",
+                "connection refused",
+                "network is unreachable",
+                "no route to host",
+            )
+        )
     )
     effective_success = succeeded and not has_timeout_or_refused and not has_serial_drop
 
-    # 1. Update MDP Dirichlet counts (only for tactical/network commands or non-trivial operations)
+    # 1. Update MDP Dirichlet counts and Meta-Learner Hedge forecast calibration
     mdp_upd = None
+    meta_upd = None
     if is_network_probe or first_bin not in _LOCAL_READER_BINS:
         mdp_upd = record_mdp_transition_outcome(
             command=cmd_clean,
             succeeded=effective_success,
             context_text=f"{problem_context} {output_text[:300]}",
         )
+        try:
+            from .meta_learner import record_engine_forecast_outcome
+
+            pred_p = float((mdp_upd or {}).get("transition_prob_success", 0.82) or 0.82)
+            meta_upd = record_engine_forecast_outcome(
+                engine_family="mdp_tactical",
+                succeeded=effective_success,
+                predicted_prob=pred_p,
+            )
+        except Exception:
+            meta_upd = None
 
     # 2. Update Somatic Marker Valence (only for tactical/network probes, never for local file/dir readers)
     somatic_upd = {}
@@ -340,6 +379,7 @@ def record_live_command_experience(
     return {
         "effective_success": effective_success,
         "mdp_updated": mdp_upd,
+        "meta_updated": meta_upd,
         "somatic_updated": somatic_upd,
         "learned_cbr_case": learned_cbr,
         "channel_telemetry": channel_telemetry,

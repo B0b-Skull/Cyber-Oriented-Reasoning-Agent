@@ -145,7 +145,7 @@ def extract_structured_facts(command: str, raw_output: str) -> Dict[str, Any]:
         )
         summary_lines.append(f"ARP Neighbors: {arp_str}")
 
-    # 4. `nmap`, `ss -tulpn`, Windows `netstat -ano`, or `Test-NetConnection` open ports
+    # 4. `nmap`, `ss -tulpn`, Windows `netstat -ano`, `Test-NetConnection`, or `scan_target` open ports
     for m_nmap in re.finditer(r"^(\d+)/(tcp|udp)\s+(open|filtered|closed)\s+(\S+)", text, re.MULTILINE):
         facts["open_ports"].append(
             {
@@ -155,6 +155,21 @@ def extract_structured_facts(command: str, raw_output: str) -> Dict[str, Any]:
                 "service": m_nmap.group(4),
             }
         )
+    for m_scan in re.finditer(
+        r"^PORT\s+(\d+)/(tcp|udp):\s*(OPEN|closed/filtered)(?:\s*\|\s*Banner:\s*([^\r\n]+))?",
+        text,
+        re.MULTILINE | re.IGNORECASE,
+    ):
+        st_raw = m_scan.group(3).upper()
+        if st_raw == "OPEN":
+            facts["open_ports"].append(
+                {
+                    "port": int(m_scan.group(1)),
+                    "proto": m_scan.group(2).lower(),
+                    "state": "open",
+                    "service": (m_scan.group(4) or "scan_target").strip(),
+                }
+            )
     for m_ss in re.finditer(
         r"^(tcp|udp)\s+LISTEN\s+\d+\s+\d+\s+(\S+):(\d+)\s+\S+(?:\s+users:\(\(\"([^\"]+)\")?",
         text,
@@ -225,9 +240,11 @@ def extract_structured_facts(command: str, raw_output: str) -> Dict[str, Any]:
             facts["ping_stats"].append({"tx": tx, "rx": rx, "loss_pct": loss})
             summary_lines.append(f"ICMP Ping: tx={tx}, rx={rx}, loss={loss}%")
 
-    # 6. HTTP status lines (`curl -i` / `-I`)
+    # 6. HTTP status lines (`curl -i` / `-I` and `scan_target` `[url] -> HTTP 200`)
     for m_http in re.finditer(r"^HTTP/\d(?:\.\d)?\s+(\d{3})\s*([^\r\n]*)", text, re.MULTILINE):
         facts["http_responses"].append({"status": int(m_http.group(1)), "reason": m_http.group(2).strip()})
+    for m_shttp in re.finditer(r"\[https?://[^\]]+\]\s*->\s*HTTP\s+(\d{3})\s*([^\r\n]*)", text, re.IGNORECASE):
+        facts["http_responses"].append({"status": int(m_shttp.group(1)), "reason": m_shttp.group(2).strip()})
     if facts["http_responses"]:
         http_str = ", ".join(f"HTTP {h['status']} {h['reason']}" for h in facts["http_responses"][:4])
         summary_lines.append(f"HTTP: {http_str}")

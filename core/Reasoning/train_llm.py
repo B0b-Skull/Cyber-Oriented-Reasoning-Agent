@@ -177,7 +177,9 @@ def check_and_install_dependencies(auto_install: bool = True) -> Dict[str, Any]:
             status[mod_name] = False
             missing_pkgs.append(pip_pkg)
 
-    if missing_pkgs and auto_install:
+    iso_white = os.environ.get("LLM_ISOLATION_MODE", "").strip().lower() == "white"
+    mode_analyst = os.environ.get("CORA_PERSONALITY_MODE", "").strip().upper() == "ANALYST"
+    if missing_pkgs and auto_install and not iso_white and not mode_analyst:
         print(f"  [Auto-Installer] Installing missing extraction/OCR packages: {', '.join(missing_pkgs)} ...", flush=True)
         in_venv = (sys.prefix != getattr(sys, "base_prefix", sys.prefix)) or bool(os.environ.get("VIRTUAL_ENV"))
         flag_sets = ([], ["--break-system-packages"]) if in_venv else ([], ["--user"], ["--break-system-packages"], ["--user", "--break-system-packages"])
@@ -1804,6 +1806,7 @@ def run_training_pipeline(
     force: bool = False,
     use_llm: bool = True,
     auto_install_deps: bool = True,
+    quiet: bool = False,
 ) -> Dict[str, Any]:
     """
     Discover all supported documents, PDFs, and diagram images in `target_path`
@@ -1926,9 +1929,10 @@ def run_training_pipeline(
             ver_file = LOG_DIR / "cora_version.json"
             if ver_file.is_file():
                 v_data = json.loads(ver_file.read_text(encoding="utf-8", errors="replace"))
-                v_data["patch_rev"] = int(v_data.get("patch_rev", 8)) + 1
-                v_data["version"] = f"{v_data.get('major_cli', 5)}.{v_data.get('engine_rev', 11)}.{v_data['patch_rev']}"
+                v_data["patch_rev"] = int(v_data.get("patch_rev", 12)) + 1
+                v_data["version"] = f"{v_data.get('major_cli', 5)}.{v_data.get('engine_rev', 15)}.{v_data['patch_rev']}"
                 v_data["updated_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                v_data["patch_tree_sha256"] = ""
                 v_data["last_update_reason"] = f"Retrained on {len(trained_results)} document(s) via train_llm.py"
                 ver_file.write_text(json.dumps(v_data, indent=2) + "\n", encoding="utf-8")
         except Exception:

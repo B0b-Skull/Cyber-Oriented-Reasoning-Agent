@@ -154,7 +154,7 @@ def extract_feature_vector_from_context(
 
     f0_iface = 1.0 if ctx.get("local_subnets") else 0.5
     f1_route = 1.0 if ("route" not in p_low or "via" in p_low or "replace" in p_low) and "network is unreachable" not in p_low else 0.4
-    f2_arp = 1.0 if (ev.get("arp_resolved_mac_present") or bool(re.search(r"\breachable\b", p_low)) or "lladdr" in p_low or "exit 7" in p_low) else 0.5
+    f2_arp = 1.0 if (ev.get("arp_resolved_mac_present") or ev.get("arp_resolved_ok") or ev.get("icmp_ping_responds") or ev.get("ping_icmp_ok") or bool(re.search(r"\breachable\b", p_low)) or "lladdr" in p_low or "exit 7" in p_low) else 0.5
     f3_local_l2 = (
         0.0
         if (
@@ -169,13 +169,19 @@ def extract_feature_vector_from_context(
     f6_icmp_drop = (
         1.0
         if (
-            "packet loss" in p_low
+            "100% packet loss" in p_low
             or "100% loss" in p_low
-            or bool(re.search(r"\bicmp\s+(?:drop|filter|block|filtered|unreachable|timeout|prohibited|fail)", p_low))
+            or bool(
+                re.search(
+                    r"\b(?:[1-9]\d*(?:\.\d+)?%\s*(?:packet\s+)?loss|icmp\s+(?:drop|filter|block|filtered|unreachable|timeout|prohibited|fail))",
+                    p_low,
+                )
+            )
             or ev.get("icmp_timeout")
             or ev.get("icmp_ping_fails")
             or ev.get("ping_100pct_packet_loss")
         )
+        and not ev.get("icmp_ping_responds")
         else 0.0
     )
     f7_refused = 1.0 if ("exit 7" in p_low or "refused" in p_low or ev.get("curl_exit_7_Immediate_refused")) else 0.0

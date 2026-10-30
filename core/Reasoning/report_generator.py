@@ -177,9 +177,55 @@ def harvest_project_evidence(
         if df.is_file()
     ][:20]
 
-    # 3. Load session attempt ledger & active goal (preferring project's latest goal in `goals.md`)
+    # 3. Load session attempt ledger & active goal (preferring project's latest goal in `goals.md` + WebUI SQLite history)
     ledger_disk = load_json_state(os.path.join(str(DATA_DIR), "sessions", "relentless_ledger.json"), {})
     attempts = list(attempt_ledger) if attempt_ledger is not None else list(ledger_disk.get("attempts", []))
+    webui_findings_excerpts: List[str] = []
+    webui_db_path = REASONING_DIR.parent / "Log" / "cora_webui.db"
+    if webui_db_path.is_file():
+        try:
+            import sqlite3
+
+            with sqlite3.connect(str(webui_db_path), timeout=3.0) as conn:
+                conn.row_factory = sqlite3.Row
+                if not active_goal:
+                    row_g = conn.execute("SELECT value FROM settings WHERE key = 'active_goal'").fetchone()
+                    if row_g and row_g["value"]:
+                        active_goal = str(row_g["value"]).strip()
+                rows_m = conn.execute(
+                    "SELECT role, content, command_executed, command_output, created_at FROM messages WHERE project_slug = ? ORDER BY id DESC LIMIT 16",
+                    (proj_slug,),
+                ).fetchall()
+                if not rows_m:
+                    rows_m = conn.execute(
+                        "SELECT role, content, command_executed, command_output, created_at FROM messages ORDER BY id DESC LIMIT 16"
+                    ).fetchall()
+                for rm in reversed(rows_m):
+                    role_s = str(rm["role"] or "")
+                    content_s = str(rm["content"] or "").strip()
+                    if role_s == "assistant" and content_s and not content_s.startswith("⚠️"):
+                        webui_findings_excerpts.append(content_s[:900])
+                        cmd_exec = str(rm["command_executed"] or "").strip()
+                        cmd_out = str(rm["command_output"] or "").strip()
+                        if cmd_exec:
+                            for c_part in [p.strip() for p in re.split(r"\s*(?:;|&&)\s*", cmd_exec) if p.strip()]:
+                                c_layer = (
+                                    "L4_Port_Service"
+                                    if "scan_target" in c_part
+                                    else ("L7_HTTP_Web_Exploit" if "curl" in c_part.lower() else "L3_Routing_NAT")
+                                )
+                                attempts.append(
+                                    {
+                                        "wave": 1,
+                                        "status": "OK",
+                                        "layer": c_layer,
+                                        "tool": "scan_target" if "scan_target" in c_part else "run_shell_command",
+                                        "target_or_cmd": c_part[:120],
+                                        "summary": cmd_out[:140].replace("\n", " "),
+                                    }
+                                )
+        except Exception:
+            pass
     last_proj_goal = ""
     goals_md_path = proj_dir / "goals.md"
     if goals_md_path.is_file():
@@ -234,10 +280,14 @@ def harvest_project_evidence(
     except Exception:
         pass
 
+    if not verified_data_sec and webui_findings_excerpts:
+        verified_data_sec = "\n\n---\n\n".join(webui_findings_excerpts[-3:])
+
     # Extract concrete IPv4 addresses and ports mentioned in project memory / notes / attempts
     combined_corpus = "\n".join(
         [
             mem_body,
+            verified_data_sec,
             resolved_goal,
             "\n".join(t["excerpt"] for t in target_notes),
             "\n".join(n["excerpt"] for n in project_notes),
@@ -307,7 +357,7 @@ def generate_report_svg(evidence: Dict[str, Any]) -> Path:
     svg_path = proj_dir / "assets" / "report_dashboard.svg"
     svg_path.parent.mkdir(parents=True, exist_ok=True)
 
-    proj_slug = html.escape(str(evidence.get("project_slug", "active_session")))
+    proj_slug = html.escape(str(evidence.get("project_slug") or proj_dir.name))
     status_str = html.escape(str(evidence.get("overall_status", "ACTIVE")))
     gen_time = html.escape(str(evidence.get("generated_at", "")))
     goal_short = html.escape(str(evidence.get("active_goal", ""))[:88])
@@ -579,7 +629,8 @@ def _try_llm_narrative_enrichment(
                 {"role": "user", "content": json.dumps(prompt_context, indent=2)},
             ],
             "temperature": 0.2,
-            "max_tokens": 1100,
+            "max_tokens": 1400,
+            "chat_template_kwargs": {"enable_thinking": False},
         }
     ).encode("utf-8")
 
@@ -677,7 +728,7 @@ def generate_project_report(
         [
             "```mermaid",
             "flowchart LR",
-            f'    CLI["CORA Agent CLI\\nProject: {proj_slug}"] --> MM["Engine 17 META-MIND\\n& CEGAR Safety Verifier"]',
+            f'    CLI["CORA Agent CLI\\nProject: {proj_slug}"] --> MM["Engine 13 META-MIND\\n& Engine 9 CEGAR Safety Verifier"]',
             f'    MM -->|"Paced L1 UART (-o 15 -O 120)"| L1["Serial OOB Console\\n{ser_devs[:28]}"]',
             f'    MM -->|"L2/L3 Routing & ARP"| L3["Network Interface {prim_nic}\\n{local_subs[:28]}"]',
             f'    MM -->|"L4/L7 Probes & Scans"| TGT["Target Environment\\n{safe_ips_node}"]',
@@ -824,7 +875,7 @@ tags: [report, executive-summary, high-school-overview, technical-findings, {pro
 | **Active Project Workspace** | `Projects/{proj_slug}/` | Strict Tier-2 data isolation |
 | **Primary Objective** | `{evidence['active_goal'][:90]}` | Locked via `/goal` / `project_tracker` |
 | **Milestone Completion** | **`{evidence['task_completion_pct']}%`** (`{len(evidence['tasks_completed'])}` done / `{len(evidence['tasks_pending'])}` pending) | Tracked in `memory.md` |
-| **Tool & Command Accuracy** | **`{evidence['cmd_hit_pct']}%`** (`{len(evidence['ok_attempts'])}` OK / `{len(evidence['attempts'])}` total) | Pre-verified by Engine 12 CEGAR |
+| **Tool & Command Accuracy** | **`{evidence['cmd_hit_pct']}%`** (`{len(evidence['ok_attempts'])}` OK / `{len(evidence['attempts'])}` total) | Pre-verified by Engine 9 CEGAR |
 | **Capability Vectors Probed** | **`{len(tried_set)} / 7`** layers | L1 Serial $\\rightarrow$ L7 HTTP & 15-Engine Core |
 | **Captured Evidence Files** | **`{len(evidence['target_notes']) + len(evidence['project_notes']) + len(evidence['reasoning_notes'])}`** notes (`{len(evidence['downloaded_files'])}` downloads) | Stored in `targets/`, `notes/`, `reasoning/` |
 

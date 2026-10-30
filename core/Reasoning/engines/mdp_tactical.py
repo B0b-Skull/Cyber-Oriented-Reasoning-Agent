@@ -1069,10 +1069,29 @@ def infer_current_mdp_state(
         return "s_initial_shell_or_api_access", fluent_tags
     if "infil" in prob_low or "stage" in prob_low or "injection" in prob_low or "command injection" in prob_low:
         return "s_protocol_chain_established", fluent_tags
-    if "mtls" in prob_low or "client.crt" in prob_low or "certificate" in prob_low or "443" in prob_low or "https://" in prob_low:
+    if (
+        "mtls" in prob_low
+        or "client.crt" in prob_low
+        or "certificate" in prob_low
+        or "443" in prob_low
+        or "https://" in prob_low
+        or ev.get("http_401_or_403_or_tls_alert")
+        or ev.get("http_401_or_403_auth")
+        or ev.get("tls_cert_or_sni_mismatch")
+        or "http_endpoint_status=" in joined_fluents
+    ):
         return "s_credentials_or_certs_acquired", fluent_tags
     if (
-        ev.get("curl_exit_7_Immediate_refused")
+        ev.get("icmp_ping_responds")
+        or ev.get("ping_icmp_ok")
+        or ev.get("arp_resolved_mac_present")
+        or ev.get("arp_resolved_ok")
+        or ev.get("alt_port_open_in_scan")
+        or ev.get("nonstandard_port_open")
+        or ev.get("curl_exit_7_Immediate_refused")
+        or "icmp_reachability=reachable" in joined_fluents
+        or "arp_reachability=reachable" in joined_fluents
+        or "tcp_service_ports=" in joined_fluents
         or "exit 7" in prob_low
         or "connection refused" in prob_low
         or "ttyusb" in prob_low
@@ -1088,6 +1107,7 @@ def infer_current_mdp_state(
         or "172.24." in prob_low
         or "10." in prob_low
         or "172." in prob_low
+        or "192.168." in prob_low
     ):
         return "s_passive_topology_mapped", fluent_tags
 
@@ -1217,9 +1237,12 @@ def record_mdp_transition_outcome(
 
         best_tr = None
         best_score = -1.0
+        matching_tools = {tool_bin}
+        if tool_bin == "scan_target":
+            matching_tools.update({"nmap", "curl", "ping"})
         for tr in transitions:
             tr_tool = str(tr.get("tool", "")).lower()
-            if tr_tool != tool_bin:
+            if tr_tool not in matching_tools:
                 continue
             score = 1.0
             if tr.get("tactic") == tactic:
@@ -1597,7 +1620,7 @@ def run_mdp_tactical_reasoning(
     target_os = str(ctx.get("target_os") or ("windows" if os.name == "nt" else "linux")).lower()
     is_windows = (target_os == "windows")
 
-    max_iters = 25
+    max_iters = int(get_hardware_reasoning_limits().get("mdp_bellman_sweeps", 25))
     store, V_star, enriched_all, iters_run = _get_cached_solved_mdp(max_iters)
     transitions = store.get("transitions", DEFAULT_MDP_TRANSITIONS)
     gamma = float(store.get("discount_gamma", 0.92))
@@ -1689,22 +1712,35 @@ def run_mdp_tactical_reasoning(
             k in prob_low for k in ("c:\\", "cmd.exe", "powershell", "ipconfig", "whoami /priv", "route print")
         )
         if is_windows and local_shell_is_windows and item.get("source") == "seed_core":
-            if item.get("id") == "MDP_PASSIVE_IFACE_ARP":
+            tid = item.get("id")
+            if tid == "MDP_PASSIVE_IFACE_ARP":
                 cmd_inst = "ipconfig /all & route print -4 & arp -a"
                 item["tool"] = "ipconfig"
-            elif item.get("id") == "MDP_PASSIVE_SOCKET_INSPECT":
+            elif tid == "MDP_PASSIVE_SOCKET_INSPECT":
                 cmd_inst = "netstat -ano"
                 item["tool"] = "netstat"
-            elif item.get("id") == "MDP_ACTIVE_L2_L3_ROUTE_PROBE":
+            elif tid == "MDP_PASSIVE_LOCAL_WORKSPACE":
+                cmd_inst = "dir /b %PROJECT_DIR%"
+                item["tool"] = "dir"
+            elif tid == "MDP_RECON_VERIFY_REACHABILITY":
+                cmd_inst = f"ping -n 3 -w 1500 {resolved_target}"
+                item["tool"] = "ping"
+            elif tid == "MDP_SERIAL_UART_DETECTION":
+                cmd_inst = r"reg query HKLM\HARDWARE\DEVICEMAP\SERIALCOMM"
+                item["tool"] = "reg"
+            elif tid == "MDP_ACTIVE_L2_L3_ROUTE_PROBE":
                 cmd_inst = f"route print -4 & ping -n 2 -w 1000 {resolved_target}"
                 item["tool"] = "ping"
-            elif item.get("id") == "MDP_LATERAL_CROSS_SUBNET_ROUTE":
+            elif tid == "MDP_PRIV_ESC_LOCAL_ENUM":
+                cmd_inst = "whoami /all & systeminfo"
+                item["tool"] = "whoami"
+            elif tid == "MDP_LATERAL_CROSS_SUBNET_ROUTE":
                 cmd_inst = f"route add {remote_subnet} {resolved_target} && ping -n 2 -w 1000 {resolved_secondary}"
                 item["tool"] = "route"
-            elif item.get("id") == "MDP_POST_EXPLOIT_VERIFY_A":
+            elif tid == "MDP_POST_EXPLOIT_VERIFY_A":
                 cmd_inst = f"route print -4 & ping -n 2 -w 1000 {resolved_secondary}"
                 item["tool"] = "ping"
-            elif item.get("id") == "MDP_POST_EXPLOIT_VERIFY_B":
+            elif tid == "MDP_POST_EXPLOIT_VERIFY_B":
                 cmd_inst = "ipconfig /all & netstat -ano"
                 item["tool"] = "ipconfig"
         item["instantiated_command"] = cmd_inst

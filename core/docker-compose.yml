@@ -1,23 +1,23 @@
+# NOTE: Open WebUI (ghcr.io/open-webui/open-webui:main) has been replaced in CORA v5.15.12
+# by the Custom CORA Svelte + TypeScript + Tailwind CSS + FastAPI WebUI located in:
+#   core/webui/server.py  &  core/webui/frontend/
+# Run directly on the host (with native NVML GPU + psutil telemetry & 15-Engine reasoning):
+#   python core/webui/server.py --host 127.0.0.1 --port 1337
+# or via:
+#   .\run_cora_WIN.ps1 webgui  /  .\run_cora_WIN.ps1 webui  /  ./run_cora_NIX.sh webgui
 services:
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: local-open-webui
+  cora-webui:
+    image: python:3.11-slim
+    container_name: local-cora-webui
     network_mode: host
+    working_dir: /workspace/core
+    command: python3 webui/server.py --host 127.0.0.1 --port 1337
     environment:
       - HOST=127.0.0.1
-      - PORT=3000
-      - ENABLE_OLLAMA_API=false
-      - OPENAI_API_BASE_URL=http://127.0.0.1:8080/v1
-      - OPENAI_API_KEY=sk-local-llama-cpp
-      - WEBUI_AUTH=false
-      - DEFAULT_MODELS=${ACTIVE_MODEL_ALIAS:-Qwen3.8-27B-Uncensored-Q3_K_M}
-      - TASK_MODEL=${ACTIVE_MODEL_ALIAS:-Qwen3.8-27B-Uncensored-Q3_K_M}
-      - ENABLE_AUTOCOMPLETE_GENERATION=false
-      - ENABLE_TAGS_GENERATION=false
-      - ENABLE_SEARCH_QUERY_GENERATION=false
-      - ENABLE_FOLLOW_UP_GENERATION=false
-      - ENABLE_WEB_SEARCH=false
-      - OFFLINE_MODE=true
+      - WEBUI_PORT=1337
+      - LLAMA_PORT=8080
+      - ACTIVE_MODEL_ALIAS=${ACTIVE_MODEL_ALIAS:-Qwen3.8-27B-Uncensored-Q3_K_M}
+      - CORA_ACTIVE_PROJECT=${CORA_ACTIVE_PROJECT:-active_session}
     volumes:
-      - ./open-webui-data:/app/backend/data
+      - ..:/workspace
     restart: unless-stopped

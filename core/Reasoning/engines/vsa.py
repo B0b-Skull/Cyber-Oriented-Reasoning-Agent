@@ -207,7 +207,7 @@ def record_somatic_valence_marker(
             tokens.pop(0)
         if not tokens:
             continue
-        b = tokens[0].rsplit("/", 1)[-1].lower()
+        b = re.sub(r"\.exe$", "", re.split(r"[\\/]", tokens[0])[-1], flags=re.I).lower()
         if b in ("cd", "echo", "printf", "export", "true") and len(segments) > 1 and idx < len(segments) - 1:
             first_tok = b
             continue
@@ -415,7 +415,9 @@ def run_vsa_conceptual_leap(
                 for k in (
                     "401", "403", "405", "auth", "token", "header", "forbidden", "mtls",
                     "client.crt", "https://", "http://", "api", "endpoint", "injection",
-                    "443", "active directory", "ldap", "smb", "suid", "sudoers", "capabilities",
+                    "443", "8443", "8080", "login", "portal", "web", "cve", "version",
+                    "firmware", "fortinet", "fortigate", "admin", "ssl", "tls", "cert",
+                    "active directory", "ldap", "smb", "suid", "sudoers", "capabilities",
                     "privesc", "privilege",
                 )
             ):

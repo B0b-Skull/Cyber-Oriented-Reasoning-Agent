@@ -256,10 +256,25 @@ foreach ($rootSub in @("models", "Projects", "Training", "Troubleshooting", "cor
         New-Item -ItemType Directory -Path $rPath -Force | Out-Null
     }
 }
+$ProjectsPath = Join-Path $CoraRoot "Projects"
+if (Test-Path $ProjectsPath) {
+    Get-ChildItem -Path $ProjectsPath -Directory -ErrorAction SilentlyContinue | Where-Object { -not $_.Name.StartsWith(".") } | ForEach-Object {
+        $fSub = Join-Path $_.FullName "Files"
+        if (-not (Test-Path $fSub)) { New-Item -ItemType Directory -Path $fSub -Force | Out-Null }
+    }
+}
+$WebuiReq = Join-Path $BaseDir "webui\requirements.txt"
+if ((-not $Offline) -and (Test-Path $WebuiReq)) {
+    try {
+        $pyCmd = Get-Command python -ErrorAction SilentlyContinue
+        if ($pyCmd) {
+            & $pyCmd.Source -m pip install -q -r $WebuiReq 2>$null
+        }
+    } catch {}
+}
 $SubDirs = @(
     "Log",
     "bin",
-    "open-webui-data",
     "ObsidianVault\.obsidian",
     "ObsidianVault\targets",
     "ObsidianVault\commands",
@@ -563,9 +578,10 @@ Write-Host "`n==================================================================
 Write-Host "  [COMPLETE] C.O.R.A. Windows Setup Finished Successfully!" -ForegroundColor Green
 Write-Host "==============================================================================" -ForegroundColor Green
 Write-Host "  Quick Start Commands (PowerShell in $CoraRoot):"
+Write-Host "    .\run_cora_WIN.ps1 webui                                       # Launch C.O.R.A. WebUI + local llama-server (http://127.0.0.1:1337)"
 Write-Host "    .\run_cora_WIN.ps1 cli                                         # Launch interactive C.O.R.A. CLI (Default 3.8 27B)"
 Write-Host "    .\run_cora_WIN.ps1 cli -m 3.5 --dangerously-skip-permissions   # Launch fast Qwen3.5-9B Agent CLI"
-Write-Host "    .\run_cora_WIN.ps1 start                                       # Start background llama-server + Open WebUI"
+Write-Host "    .\run_cora_WIN.ps1 start                                       # Start background llama-server + Custom CORA WebUI (port 1337)"
 Write-Host "    .\run_cora_WIN.ps1 -train                                      # Distill & OCR .\Training\"
 Write-Host "    .\run_cora_WIN.ps1 status                                      # Check server & GPU VRAM status"
 Write-Host "==============================================================================" -ForegroundColor Green

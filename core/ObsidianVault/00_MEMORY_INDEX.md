@@ -97,3 +97,9 @@
 - [[reasoning/pipeline15_target_ip_l2_l3_routing_blackhole]] — 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `ip neigh show <TARGET_IP>`, RL Next `sudo ip route replace <REMOTE_SUBNET> via <GATEWAY_IP> && sudo sysctl -w net.ipv4.ip_forward=1` (Q*=+36.8), K-Means Cluster `C2_CROSS_SUBNET_L3_PIVOT`, Top Cause `asymmetric_missing_return_route_or_nat` (28%)
 - [[reasoning/rl_network_policy_playbooks]] — Engine 19 TD(lambda) RL Policy (5200 eps, Avg Return +40.1, 34.86 ms)
 - [[reasoning/spectral_pca_kmeans_manifold]] — Engine 20 PCA (68.6% var) & K-Means++ Cluster `C1_OOB_SERIAL_LOOPBACK_APPLIANCE` (Chokepoint: `Node:<TARGET_IP>`)
+
+## Indexed Vault Notes
+<!-- AUTO-INDEX-START -->
+- [[reasoning/spectral_pca_kmeans_manifold]] — Engine 20 PCA (74.3% var) & K-Means++ Cluster `C0_LOCAL_LAN_DISCOVERY` (Chokepoint: `Node:<TARGET_IP>`) (#reasoning #spectral_pca_kmeans #pca #kmeans #spectral-laplacian #manifold #clustering)
+- [[reasoning/rl_network_policy_playbooks]] — Engine 19 TD(lambda) RL Policy (1200 eps, Avg Return +40.2, 55.54 ms) (#reasoning #rl_network_policy #reinforcement-learning #td-lambda #network-topology #next-step-policy)
+<!-- AUTO-INDEX-END -->

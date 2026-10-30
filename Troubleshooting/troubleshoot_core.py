@@ -98,8 +98,14 @@ def audit_layer_a_runtime(api_base: str = "http://127.0.0.1:8080") -> Dict[str, 
     concerns: List[str] = []
     faults: List[str] = []
 
-    # 1. Bytecode syntax check on agent-cli.py and Reasoning/*.py
-    py_targets = [CORA_CORE_DIR / "agent-cli.py", *sorted(REASONING_DIR.rglob("*.py"))]
+    # 1. Bytecode syntax check on agent-cli.py, webui/server.py, Network_Isolation, Tools, and Reasoning/*.py
+    py_targets = [
+        CORA_CORE_DIR / "agent-cli.py",
+        CORA_CORE_DIR / "webui" / "server.py",
+        CORA_CORE_DIR / "Network_Isolation" / "console_posture.py",
+        CORA_ROOT / "Tools" / "tool_manager.py",
+        *sorted(REASONING_DIR.rglob("*.py")),
+    ]
     syntax_errors = []
     for pt in py_targets:
         if pt.is_file():
@@ -112,7 +118,7 @@ def audit_layer_a_runtime(api_base: str = "http://127.0.0.1:8080") -> Dict[str, 
             print(fail_tag(f"Python syntax error in {se}"))
             faults.append(f"Syntax error: {se}")
     else:
-        print(ok_tag(f"All {len(py_targets)} Python files (`agent-cli.py` + `Reasoning/`) passed bytecode compilation."))
+        print(ok_tag(f"All {len(py_targets)} Python files (`agent-cli.py`, `webui/server.py`, `Tools/`, `Reasoning/`) passed bytecode compilation."))
 
     # 2. Hardware & RAM/VRAM/Disk pressure check
     from Reasoning.engines.vault_bridge import get_hardware_reasoning_limits
@@ -165,6 +171,42 @@ def audit_layer_a_runtime(api_base: str = "http://127.0.0.1:8080") -> Dict[str, 
                     concerns.append(msg)
         except Exception as exc:
             msg = f"Could not query `{api_base}/props`: {exc}"
+            print(warn_tag(msg))
+            concerns.append(msg)
+
+    # 3b. Check WebUI Backend (/api/bootstrap) and SQLite Database (core/Log/cora_webui.db)
+    webui_online = False
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:1337/api/bootstrap", timeout=2.0) as w_resp:
+            w_data = json.loads(w_resp.read().decode("utf-8", errors="replace"))
+            webui_online = True
+            w_llm_ok = bool(w_data.get("models", {}).get("llama_server", {}).get("online") or w_data.get("models", {}).get("ollama", {}).get("online"))
+            w_proj = w_data.get("settings", {}).get("active_project") or w_data.get("active_project")
+            print(
+                ok_tag(
+                    f"CORA WebUI Backend is ONLINE at http://127.0.0.1:1337/api/bootstrap "
+                    f"(LLM Backend Online={w_llm_ok}, Project=`{w_proj}`)"
+                )
+            )
+    except Exception:
+        print(info_tag("CORA WebUI Backend (`http://127.0.0.1:1337`) is not currently running."))
+
+    webui_db = LOGS_DIR / "cora_webui.db"
+    if webui_db.is_file():
+        try:
+            import sqlite3
+
+            with sqlite3.connect(str(webui_db)) as conn:
+                ic = conn.execute("PRAGMA integrity_check").fetchone()[0]
+                msg_cnt = conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
+                if ic == "ok":
+                    print(ok_tag(f"WebUI SQLite Database (`core/Log/cora_webui.db`): integrity=`ok`, stored messages=`{msg_cnt}`."))
+                else:
+                    msg = f"WebUI SQLite Database integrity check returned: {ic}"
+                    print(fail_tag(msg))
+                    faults.append(msg)
+        except Exception as exc:
+            msg = f"Failed to inspect WebUI SQLite Database (`core/Log/cora_webui.db`): {exc}"
             print(warn_tag(msg))
             concerns.append(msg)
 
@@ -256,14 +298,17 @@ def audit_layer_b_state_stores(auto_fix: bool = False) -> Dict[str, Any]:
     if not corrupt_files:
         print(ok_tag(f"Verified {len(json_files)} JSON state files across `Reasoning/data/` — 0 corrupted files."))
 
-    # Check Shadow Archive count & size
+    # Check Shadow Archive count & size (including isolated Projects/<project>/shadow_archive/)
     shadow_dir = DATA_DIR / "shadow_archive"
     shadow_logs = list(shadow_dir.glob("sha256_*.log")) if shadow_dir.is_dir() else []
+    projects_dir = CORA_ROOT / "Projects"
+    if projects_dir.is_dir():
+        shadow_logs.extend(projects_dir.glob("*/shadow_archive/sha256_*.log"))
     shadow_bytes = sum(f.stat().st_size for f in shadow_logs)
     print(
         ok_tag(
-            f"Shadow Archive (`Reasoning/data/shadow_archive/`): {len(shadow_logs)} lossless log file(s) "
-            f"({shadow_bytes / 1024:.1f} KiB total)."
+            f"Shadow Archive (`Projects/*/shadow_archive/` + `Reasoning/data/shadow_archive/`): "
+            f"{len(shadow_logs)} lossless log file(s) ({shadow_bytes / 1024:.1f} KiB total)."
         )
     )
 
@@ -786,7 +831,8 @@ def explain_arbiter_decision(problem: str) -> None:
             f"Ignorance m(Theta) = `{res.get('dempster_shafer_ignorance', 0.0):.3f}`"
         )
     )
-    print(info_tag(f"ASP Multi-Step Plan ({res.get('asp_solver')}): {res.get('asp_plan_commands')}"))
+    rl_cmds = [s.get("command") for s in (res.get("rl_rollout_steps") or []) if s.get("command")]
+    print(info_tag(f"RL Multi-Step Trajectory ({res.get('rl_state_key')}): {rl_cmds}"))
 
 
 def main() -> None:

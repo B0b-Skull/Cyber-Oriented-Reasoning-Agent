@@ -182,14 +182,25 @@ printf '========================================================================
 
 # 1. Create folder structure & ensure executable permissions
 printf '[Step 1/7] Creating CORA directory structure & initializing Obsidian Knowledge Vault...\n'
-mkdir -p "$CORA_ROOT/Projects" "$CORA_ROOT/Training" "$CORA_ROOT/Troubleshooting" "$CORA_ROOT/models" \
+mkdir -p "$CORA_ROOT/Projects" \
+  "$CORA_ROOT/Training" "$CORA_ROOT/Troubleshooting" "$CORA_ROOT/models" \
   "$BASE_DIR/Log" "$BASE_DIR/Explained/assets" \
-  "$BASE_DIR/bin" "$BASE_DIR/open-webui-data" \
+  "$BASE_DIR/bin" \
   "$BASE_DIR/ObsidianVault/.obsidian" "$BASE_DIR/ObsidianVault/targets" \
   "$BASE_DIR/ObsidianVault/commands" "$BASE_DIR/ObsidianVault/projects" \
   "$BASE_DIR/ObsidianVault/knowledge" "$BASE_DIR/ObsidianVault/reasoning" \
   "$BASE_DIR/Reasoning" "$BASE_DIR/Network_Isolation"
 chmod 775 "$BASE_DIR/Log" "$CORA_ROOT/Projects" 2>/dev/null || true
+for _pdir in "$CORA_ROOT/Projects"/*/; do
+  if [[ -d "$_pdir" ]]; then
+    mkdir -p "${_pdir%/}/Files" 2>/dev/null || true
+  fi
+done
+
+if (( OFFLINE == 0 )) && [[ -f "$BASE_DIR/webui/requirements.txt" ]]; then
+  python3 -m pip install -q -r "$BASE_DIR/webui/requirements.txt" 2>/dev/null || \
+    python3 -m pip install --break-system-packages -q -r "$BASE_DIR/webui/requirements.txt" 2>/dev/null || true
+fi
 
 # Initialize ObsidianVault/.obsidian/app.json and 00_MEMORY_INDEX.md if missing
 if [[ ! -f "$BASE_DIR/ObsidianVault/.obsidian/app.json" ]]; then
@@ -437,9 +448,10 @@ printf '\nSetup complete! Verifying installed models and hardware profile:\n\n'
 printf '\n'
 "$CORA_ROOT/run_cora_NIX.sh" tune
 printf '\nQuick Start Commands (Bash in %s):\n' "$CORA_ROOT"
+printf '  ./run_cora_NIX.sh webui                                      # Launch C.O.R.A. WebUI + local llama-server (http://127.0.0.1:1337)\n'
 printf '  ./run_cora_NIX.sh cli                                        # Launch interactive C.O.R.A. CLI (Default 3.8 27B)\n'
 printf '  ./run_cora_NIX.sh cli -m 3.5 --dangerously-skip-permissions  # Launch fast Qwen3.5-9B Agent CLI (Auto-run)\n'
 printf '  ./run_cora_NIX.sh cli -m turbo --dangerously-skip-permissions # Launch Qwen3.8-27B Turbo MTP Q4_K_M Agent CLI\n'
-printf '  ./run_cora_NIX.sh start                                      # Start background llama-server + Open WebUI\n'
+printf '  ./run_cora_NIX.sh start                                      # Start background llama-server + Custom CORA WebUI (port 1337)\n'
 printf '  ./run_cora_NIX.sh -train                                     # Distill & OCR ./Training/\n'
 printf '  ./run_cora_NIX.sh status                                     # Check server & GPU VRAM status\n'

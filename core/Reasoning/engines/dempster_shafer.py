@@ -188,7 +188,14 @@ def run_dempster_shafer_reasoning(
         canonical_map = {
             "curl_exit_28_Timeout": "curl_exit_28_timeout",
             "arp_mac_resolved": "arp_resolved_mac_present",
+            "arp_resolved_ok": "arp_resolved_mac_present",
+            "ping_icmp_ok": "icmp_ping_responds",
             "ping_100pct_packet_loss": "icmp_ping_fails",
+            "arp_incomplete": "arp_incomplete_or_missing",
+            "nonstandard_port_open": "alt_port_open_in_scan",
+            "open_tcp_port": "alt_port_open_in_scan",
+            "http_401_or_403_auth": "http_401_or_403_or_tls_alert",
+            "tls_cert_or_sni_mismatch": "http_401_or_403_or_tls_alert",
         }
         norm_ev: Dict[str, bool] = {}
         for k, v in ev.items():

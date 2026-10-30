@@ -186,12 +186,33 @@ def check_missing_modules() -> List[Tuple[str, str, bool]]:
     return missing
 
 
+def _is_airgap_or_readonly_active() -> bool:
+    """Check whether WHITE network isolation or ANALYST read-only mode is active."""
+    env_iso = os.environ.get("CORA_NETWORK_ISOLATION", "").strip().upper()
+    env_mode = os.environ.get("CORA_OPERATIONAL_MODE", "").strip().upper()
+    if env_iso == "WHITE" or env_mode in ("2", "ANALYST"):
+        return True
+    posture_file = CORA_CORE_DIR / "Network_Isolation" / "console_posture.json"
+    if posture_file.is_file():
+        try:
+            pdata = json.loads(posture_file.read_text(encoding="utf-8", errors="replace"))
+            if str(pdata.get("mode", "")).strip().upper() == "WHITE":
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def install_dependencies(offline: bool = False) -> bool:
     banner(f"Checking & Installing 15-Engine Python Dependencies ({platform.system()} {platform.release()})")
     missing = check_missing_modules()
     if not missing:
         print("  [OK] All 6 packages (numpy, scipy, networkx, sympy, z3-solver, shapely) are installed.")
         return True
+
+    if _is_airgap_or_readonly_active() and not offline:
+        print("  [AIR-GAP / WHITE ISOLATION] Forcing offline wheelhouse installation (--no-index).")
+        offline = True
 
     pkgs = [spec for _, spec, _ in missing]
     print(f"  Installing missing packages: {', '.join(pkgs)}")
@@ -312,6 +333,9 @@ def verify_bytecode_syntax() -> bool:
 
 def download_offline_wheels() -> bool:
     banner(f"Downloading Offline Wheelhouse to {WHEELHOUSE_DIR}")
+    if _is_airgap_or_readonly_active():
+        print("  [BLOCKED] Cannot download wheels from PyPI while WHITE Air-Gap or ANALYST mode is active.", file=sys.stderr)
+        return False
     try:
         WHEELHOUSE_DIR.mkdir(parents=True, exist_ok=True)
         cmd = [

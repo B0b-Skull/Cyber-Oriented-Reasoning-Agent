@@ -56,10 +56,11 @@ When starting the **C.O.R.A. (Cyber Oriented Reasoning Agent)** CLI (`./run_cora
 
 You can also open this interactive menu at any time inside the CLI with `/project` (or `/project menu`), or pass `-h` to any switch (`/project -h`) to view all options.
 
-Whenever `CORA` works on a project (`/project <doc_or_dir> [name]` or `project_tracker`) or runs an active test session (`Projects/active_session/`), [`ensure_project_workspace()`](../core/agent-cli.py) automatically creates:
+Whenever `CORA` works on an active project (`/project <doc_or_dir> [name]` or `project_tracker`), [`ensure_project_workspace()`](../core/agent-cli.py) automatically creates:
 
 ```text
 CORA/Projects/<project_name>/
+├── Files/           # Custom user scripts, uploads & project files (auto-visible to LLM, $PROJECT_FILES_DIR & PATH)
 ├── memory.md        # Project-specific memory, verified architecture, open questions, task checklist & note index
 ├── goals.md         # Chronological project goals file (every new /goal is appended; /goal displays the very last goal)
 ├── REPORT.md        # 5-Section Status & Findings Report (Executive Summary, High-School Overview, SVG/Mermaid & Technical Write-Up)
@@ -71,6 +72,16 @@ CORA/Projects/<project_name>/
 ├── reasoning/       # Session-specific 15-Engine Neuro-Symbolic diagnostic reports (pipeline15_*)
 └── artifacts/       # Temporary scripts or test files created for the current project
 ```
+
+### Local Project `Files/` Directory (`CORA/Projects/<project_name>/Files/`)
+Every project workspace automatically includes a dedicated **`Files/`** directory (`Projects/<project_name>/Files/`):
+* **Automatic LLM Visibility & Interaction:** Anything placed in `Projects/<project_name>/Files/` (either manually on disk, via the WebGUI **`📤 + Upload / Add File`** button or drag-and-drop console dropzone, or via `/files -add:<path>` / `/upload <path>`) is automatically indexed into the LLM's system prompt and project context.
+* **Natural Language Reference:** If you place custom scripts, logs, configs, or payloads in `Projects/<project_name>/Files/` and tell the LLM *"go to the local Files directory and inspect or run `my_script.py`"*, the LLM automatically resolves `Files/` (`$PROJECT_FILES_DIR`, which is also prepended to `PATH` during shell execution) and can read, edit, or execute those files in all modes (including `ANALYST` mode for reading/analyzing files).
+* **Console & CLI Commands:**
+  * `/files` (or `/files list`) — Lists all files in `Projects/<project_name>/Files/`.
+  * `/files -add:<local_file_or_folder_path>` (or `/upload <path>`, `/add <path>`) — Copies a file or directory from the host into `Projects/<project_name>/Files/`.
+  * `/files -read:<filename>` — Displays the contents of a file inside `Projects/<project_name>/Files/`.
+  * `/files -rm:<filename>` — Deletes a file from `Projects/<project_name>/Files/`.
 
 When a goal is set inside a project (`/goal "<objective>"` or `/relentless "<objective>" -max:100`), it is automatically appended chronologically to `CORA/Projects/<project_name>/goals.md` (`### Goal #N — <timestamp>`). Running `/goal` (or `/goal status`) displays the **very last goal** from that project's `goals.md` file, while `/goal list` displays all historical goals for the project.
 

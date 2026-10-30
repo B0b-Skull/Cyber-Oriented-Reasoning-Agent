@@ -137,7 +137,7 @@ def seed_all_data_and_vault() -> str:
     seed_default_cbr_library()
     status = check_environment_status()
     res_pca = run_spectral_pca_reasoning(
-        problem="Initial 20-Engine SVD PCA, K-Means++ Regime Clustering & Graph Laplacian Manifold",
+        problem="Initial 15-Engine SVD PCA, K-Means++ Regime Clustering & Graph Laplacian Manifold",
         force_recompute=True,
         export_to_vault=True,
     )
@@ -165,18 +165,17 @@ def seed_all_data_and_vault() -> str:
         save_to_vault=True,
     )
     res_meta = run_meta_learning_reasoning(
-        problem="Initial 20-Engine Hedge Meta-Arbiter Calibration & Suggested Improvements Audit",
+        problem="Initial 15-Engine Hedge Meta-Arbiter Calibration & Suggested Improvements Audit",
         write_suggested_improvement=True,
         export_to_vault=True,
     )
     return (
-        f"Seeded 20-Engine Reasoning data directory ({status['data_dir']}) and ObsidianVault/:\n"
+        f"Seeded 15-Engine Reasoning data directory ({status['data_dir']}) and ObsidianVault/:\n"
         f"  - Hardware Tier: {status['hardware_reasoning_limits'].get('tier')} "
         f"(VSA={status['hardware_reasoning_limits'].get('vsa_hypervector_dim')}-D, "
-        f"MAP-Elites={status['hardware_reasoning_limits'].get('evolutionary_generations')} gens, "
         f"RL={hw_ep} episodes, K-Means++={status['hardware_reasoning_limits'].get('kmeans_n_init')} iters)\n"
-        f"  - Engine 20 Spectral PCA & K-Means++ Manifold: {res_pca.get('vault_note')}\n"
-        f"  - Engine 19 RL Playbooks & Live Topology: {res_rl.get('vault_note')} + [[targets/local_network_topology]]\n"
+        f"  - Engine 15 Spectral PCA & K-Means++ Manifold: {res_pca.get('vault_note')}\n"
+        f"  - Engine 14 RL Playbooks & Live Topology: {res_rl.get('vault_note')} + [[targets/local_network_topology]]\n"
         f"  - API Abduction & OOB Playbook: {res_api['vault_note']}\n"
         f"  - L2/L3 Cross-Subnet Routing Playbook: {res_route['vault_note']}\n"
         f"  - Meta-Learner Suggested Improvement Note: {res_meta.get('suggested_improvement_note')}"

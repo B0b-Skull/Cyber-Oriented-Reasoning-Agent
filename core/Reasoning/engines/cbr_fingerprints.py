@@ -90,6 +90,10 @@ SEED_EXECUTABLE_FIX_MAP: Dict[str, Dict[str, str]] = {
         "linux": "tio -b 115200 -o 15 -O 120 --mute --script-run once --script 'write(\"\\r\"); msleep(500); write(\"id\\r\"); while read(4096, 600) > 0 do end; exit(0)' {serial_device}",
         "windows": "powershell -NoProfile -Command \"Get-WmiObject Win32_SerialPort | Select-Object DeviceID,Description\"",
     },
+    "CBR-013": {
+        "linux": "curl -k -i -sS --connect-timeout 5 https://{target_ip}/",
+        "windows": "curl.exe -k -i -sS --connect-timeout 5 https://{target_ip}/",
+    },
 }
 
 
@@ -174,10 +178,10 @@ DEFAULT_SEED_CASES: List[Dict[str, Any]] = [
         "case_id": "CBR-004",
         "binary": "ping",
         "exit_code": 1,
-        "error_pattern": "100% packet loss|Destination Host Unreachable",
+        "error_pattern": "100% packet loss|100% loss|Request timed out|Destination Host Unreachable",
         "symptom": "ICMP ping shows 100% packet loss or Destination Host Unreachable",
         "root_cause": "Target host blocks ICMP, lacks a return route back to our source IP, or L2 ARP resolution failed (`INCOMPLETE` / `FAILED`).",
-        "verified_fix": "1. Check `ip neigh show` to see if ARP resolved a MAC address (if MAC is present, host is alive at L2!). 2. Check `sudo iptables -t nat -L -n -v` to ensure MASQUERADE is enabled if routing across subnets. 3. Probe TCP ports (`nmap -Pn -p 22,80,443 <ip>`).",
+        "verified_fix": "1. Check `ip neigh show` (Linux) or `arp -a` (Windows) to see if ARP resolved a MAC address (if MAC is present, host is alive at L2!). 2. Probe TCP ports (`nmap -Pn -p 22,80,443 <ip>` or `scan_target`).",
         "success_count": 7,
     },
     {
@@ -260,6 +264,16 @@ DEFAULT_SEED_CASES: List[Dict[str, Any]] = [
         "verified_fix": "Use hardware UART pacing `-o 15 -O 120` and send ONLY ONE command per session: `tio -b 115200 -o 15 -O 120 --mute --script-run once --script 'write(\"\\r\"); msleep(500); write(\"id\\r\"); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0`.",
         "success_count": 9,
     },
+    {
+        "case_id": "CBR-013",
+        "binary": "curl",
+        "exit_code": 35,
+        "error_pattern": "CRYPT_E_NO_REVOCATION_CHECK|SSL certificate problem|schannel: next InitializeSecurityContext failed|self[- ]signed certificate",
+        "symptom": "curl fails TLS handshake with CRYPT_E_NO_REVOCATION_CHECK or self-signed certificate error",
+        "root_cause": "Target appliance uses a self-signed or private CA TLS certificate without reachable CRL/OCSP revocation endpoints.",
+        "verified_fix": "Add `-k` (`--insecure`) to `curl` (`curl -k -i -sS --connect-timeout 5 https://<target_ip>/`) or use `scan_target`.",
+        "success_count": 6,
+    },
 ]
 
 
@@ -295,8 +309,17 @@ def load_cbr_library() -> Dict[str, Any]:
         }
         save_json_state(CBR_LIBRARY_FILE, data)
     else:
-        existing_seed_ids = {c.get("case_id") for c in data.get("cases", []) if isinstance(c, dict)}
+        seed_by_id = {sc["case_id"]: sc for sc in DEFAULT_SEED_CASES}
+        existing_seed_ids = set()
         seed_added = False
+        for c in data.get("cases", []):
+            if isinstance(c, dict) and c.get("case_id") in seed_by_id:
+                sc_ref = seed_by_id[c["case_id"]]
+                existing_seed_ids.add(c["case_id"])
+                if c.get("error_pattern") != sc_ref["error_pattern"]:
+                    c["error_pattern"] = sc_ref["error_pattern"]
+                    c["verified_fix"] = sc_ref["verified_fix"]
+                    seed_added = True
         for sc in DEFAULT_SEED_CASES:
             if sc["case_id"] not in existing_seed_ids:
                 data["cases"].append(dict(sc))
@@ -402,6 +425,8 @@ def _extract_binary(command: str) -> str:
         if not tokens:
             continue
         b = os.path.basename(tokens[0]).lower()
+        if b.endswith(".exe"):
+            b = b[:-4]
         if b in ("cd", "echo", "printf", "export", "true") and len(segments) > 1 and idx < len(segments) - 1:
             chosen = b
             continue
@@ -422,7 +447,7 @@ def match_failure_fingerprint(
     if exit_code == 0 and (
         binary in ("ls", "cat", "head", "tail", "grep", "egrep", "fgrep", "find", "locate", "stat", "file", "wc", "pwd", "cd", "echo")
         or not re.search(
-            r"(RTNETLINK answers:|Network is unreachable|100% packet loss|Destination Host Unreachable|Connection refused|"
+            r"(RTNETLINK answers:|Network is unreachable|100% packet loss|100% loss|Request timed out|Destination Host Unreachable|Connection refused|"
             r"Command completed with exit code 0|Disconnected|Device or resource busy|Resource temporarily unavailable|Input/output error)",
             output_text or "",
             re.IGNORECASE,

@@ -97,6 +97,7 @@ def _solve_network_geometry(spec: Dict[str, Any]) -> Dict[str, Any]:
                         closest_subnet = n["cidr"]
 
             suggested_24 = str(ipaddress.ip_network(f"{ip_Host}/24", strict=False)) if ip_Host.version == 4 else str(ip_Host)
+            suggested_net_ip = suggested_24.split("/")[0]
             target_analysis.append(
                 {
                     "target_ip": str(ip_Host),
@@ -108,7 +109,11 @@ def _solve_network_geometry(spec: Dict[str, Any]) -> Dict[str, Any]:
                     "geometric_requirement": (
                         f"Direct L2 ARP reachable on {containing[0]}"
                         if containing
-                        else f"Disjoint from local L2 space; requires L3 static route (`ip route add {suggested_24} via <gateway>`) or interface IP alias in `{suggested_24}`."
+                        else (
+                            f"Disjoint from local L2 space; requires L3 static route "
+                            f"(`route add {suggested_net_ip} mask 255.255.255.0 <gateway>` on Windows / "
+                            f"`ip route add {suggested_24} via <gateway>` on Linux) or interface IP alias in `{suggested_24}`."
+                        )
                     ),
                 }
             )

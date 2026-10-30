@@ -206,6 +206,7 @@ def save_current_cli_session(messages: list | None = None) -> None:
             "saved_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "model_name": MODEL_NAME,
             "active_project": ACTIVE_PROJECT,
+            "personality_mode": ACTIVE_PERSONALITY_MODE,
             "active_goal": ACTIVE_GOAL,
             "relentless_mode": RELENTLESS_MODE,
             "current_wave": CURRENT_WAVE,
@@ -266,6 +267,26 @@ def restore_last_cli_session(messages: list) -> dict:
             ensure_project_workspace(ACTIVE_PROJECT)
         except Exception:
             pass
+    saved_iso = str(data.get("isolation_mode") or "").strip().lower()
+    saved_ifaces = data.get("allowed_interfaces")
+    saved_ifaces_str = ""
+    if isinstance(saved_ifaces, list) and saved_ifaces:
+        saved_ifaces_str = ",".join(str(x).strip() for x in saved_ifaces if str(x).strip())
+    elif isinstance(saved_ifaces, str) and saved_ifaces.strip():
+        saved_ifaces_str = saved_ifaces.strip()
+    if saved_ifaces_str:
+        os.environ["LLM_ALLOWED_IFACES"] = saved_ifaces_str
+    if saved_iso:
+        try:
+            apply_network_isolation_level(saved_iso, saved_ifaces_str)
+        except Exception:
+            pass
+    if data.get("personality_mode"):
+        saved_pmode = str(data["personality_mode"]).strip().upper()
+        try:
+            set_personality_mode(saved_pmode, netiso_group=saved_iso)
+        except Exception:
+            pass
     if data.get("active_goal"):
         ACTIVE_GOAL = str(data["active_goal"]).strip()
     if isinstance(data.get("current_wave"), int):
@@ -303,7 +324,7 @@ def restore_last_cli_session(messages: list) -> dict:
             {
                 "role": "assistant",
                 "content": (
-                    f"Session restored for project `{ACTIVE_PROJECT or 'active_session'}` "
+                    f"Session restored for project `{ACTIVE_PROJECT or 'None'}` "
                     f"with active goal `{ACTIVE_GOAL}` and `{len(ATTEMPT_LEDGER)}` recorded tool attempts. "
                     "Ready to continue from where we left off."
                 ),
@@ -394,7 +415,8 @@ def _shutdown_cli_and_engines(stop_llm: bool = True, quiet: bool = False) -> Non
 
     if stop_llm and not KEEP_SERVER_ON_EXIT:
         pid_file = BASE_DIR / "Log" / "llama-server.pid"
-        active_mod_file = BASE_DIR / "Log" / "active-model.txt"
+        active_mod_file = BASE_DIR / "Log" / "llama-server.model"
+        legacy_mod_file = BASE_DIR / "Log" / "active-model.txt"
         if pid_file.is_file():
             try:
                 pid_str = pid_file.read_text(encoding="utf-8", errors="ignore").strip().splitlines()[0].strip()
@@ -409,10 +431,10 @@ def _shutdown_cli_and_engines(stop_llm: bool = True, quiet: bool = False) -> Non
                 else:
                     os.kill(pid, signal.SIGTERM)
                 if not quiet:
-                    print(f"\033[1;33m[Shutdown]\033[0m Stopped llama-server (PID {pid}) and Engine 16 continual learning.")
+                    print(f"\033[1;33m[Shutdown]\033[0m Stopped llama-server (PID {pid}) and Engine 12 continual learning.")
             except Exception:
                 pass
-            for f_clean in (pid_file, active_mod_file):
+            for f_clean in (pid_file, active_mod_file, legacy_mod_file):
                 try:
                     f_clean.unlink(missing_ok=True)
                 except Exception:
@@ -468,6 +490,8 @@ class BottomPinnedHUD:
         self._metrics = {"cpu": 0, "mem": 0, "gpu": 0, "vram": 0, "disk": 0}
         self._last_cols = 0
         self._last_rows = 0
+        self._pending_resize_dims = (0, 0)
+        self._pending_resize_ts = 0.0
         # Default both Linux and Windows to 'pin' mode (pins the HUD metric bar to the very bottom
         # row of the terminal window, BELOW the `[POSTURE] You>` input prompt).
         # On Windows PowerShell/ConPTY, we combine `cols - 1` bottom-right wrap prevention (`\033[?7l`),
@@ -820,16 +844,36 @@ class BottomPinnedHUD:
             try:
                 sz = shutil.get_terminal_size((80, 24))
                 cols, rows = max(20, sz.columns), max(6, sz.lines)
+                if cols < 24 or rows < 6:
+                    return
+
+                # Debounce active drag-resizing from background thread so ConPTY/PowerShell
+                # never receives DECSTBM/cursor escape sequences mid-reflow.
+                size_changed = (cols != self._last_cols or rows != self._last_rows)
+                if size_changed and not force_region and self._last_rows > 0:
+                    now_m = time.monotonic()
+                    if (cols, rows) != self._pending_resize_dims:
+                        self._pending_resize_dims = (cols, rows)
+                        self._pending_resize_ts = now_m
+                        return
+                    if (now_m - self._pending_resize_ts) < 0.45:
+                        return
+
                 posture = ACTIVE_POSTURE or _refresh_active_posture()
                 hud_bg = posture.get("ansi_hud_bar", "\033[48;5;235m")
                 bar = self._build_centered_bar(cols)
+                cleanup_old_row = ""
+                if self._last_rows > 0 and self._last_rows != rows:
+                    old_r = min(self._last_rows, rows)
+                    cleanup_old_row = f"\033[{old_r};1H\033[2K"
                 prefix = ""
                 if self._last_rows > 0 and rows < self._last_rows:
                     # Terminal shrunk vertically; nudge cursor up 1 row in case it was clamped to new bottom row
                     prefix = "\033[1A"
-                if force_region or cols != self._last_cols or rows != self._last_rows:
+                if force_region or size_changed:
                     self._last_cols, self._last_rows = cols, rows
-                    seq = f"{prefix}\0337\033[1;{rows - 1}r\033[?7l\033[{rows};1H{hud_bg}\033[2K{bar}\033[0m\033[?7h\0338"
+                    self._pending_resize_dims = (cols, rows)
+                    seq = f"{prefix}\0337{cleanup_old_row}\033[1;{rows - 1}r\033[?7l\033[{rows};1H{hud_bg}\033[2K{bar}\033[0m\033[?7h\0338"
                 else:
                     seq = f"\0337\033[?7l\033[{rows};1H{hud_bg}\033[2K{bar}\033[0m\033[?7h\0338"
                 sys.stdout.write(seq)
@@ -954,65 +998,74 @@ def slugify(name: str) -> str:
     return s[:64] or "note"
 
 
+_INVALID_PROJECT_NAMES = {"active_session", "active-session", "default", "default-project", "default_session"}
+
+
 def slugify_project_name(name: str) -> str:
     """
     Sanitize a project name for `Projects/<project_name>/`:
     Spaces, strange characters, and special characters are automatically converted to dashes (`-`).
-    If an existing directory with that exact name (e.g. `active_session`) already exists in `Projects/`,
+    If an existing directory with that exact name already exists in `Projects/`,
     preserve its exact folder name.
     """
     raw = str(name or "").strip()
-    if not raw:
-        return "default-project"
+    if not raw or raw.lower() in _INVALID_PROJECT_NAMES:
+        return ""
     if (PROJECTS_DIR / raw).is_dir() and re.match(r"^[a-zA-Z0-9_\-]+$", raw):
         return raw
     s = re.sub(r"[^a-zA-Z0-9\-]+", "-", raw).strip("-")
     s = re.sub(r"-{2,}", "-", s)
-    return s[:64].strip("-") or "default-project"
+    clean = s[:64].strip("-")
+    return "" if clean.lower() in _INVALID_PROJECT_NAMES else clean
 
 
 def get_active_project_slug() -> str:
     """Return the active project slug, resolving from ACTIVE_PROJECT, env, session state, or existing `Projects/` folders."""
     if ACTIVE_PROJECT and ACTIVE_PROJECT.strip():
-        return slugify_project_name(ACTIVE_PROJECT)
-    env_proj = os.environ.get("CORA_ACTIVE_PROJECT", "").strip()
-    if env_proj and env_proj not in ("active_session", "active-session"):
-        cand = slugify_project_name(env_proj)
-        if (PROJECTS_DIR / cand).is_dir():
+        cand = slugify_project_name(ACTIVE_PROJECT)
+        if cand:
             return cand
-    try:
-        ap_file = SESSION_STATE_DIR / "active_project.txt"
-        if ap_file.is_file():
-            saved_p = ap_file.read_text(encoding="utf-8", errors="replace").strip()
-            if saved_p and (PROJECTS_DIR / saved_p).is_dir():
-                return saved_p
-    except Exception:
-        pass
+    env_proj = os.environ.get("CORA_ACTIVE_PROJECT", "").strip()
+    if env_proj and env_proj.lower() not in _INVALID_PROJECT_NAMES:
+        cand = slugify_project_name(env_proj)
+        if cand and (PROJECTS_DIR / cand).is_dir():
+            return cand
+    for ap_file in (LOG_DIR / "active-project.txt", SESSION_STATE_DIR / "active_project.txt"):
+        try:
+            if ap_file.is_file():
+                saved_p = ap_file.read_text(encoding="utf-8", errors="replace").strip()
+                if saved_p and saved_p.lower() not in _INVALID_PROJECT_NAMES and (PROJECTS_DIR / saved_p).is_dir():
+                    return saved_p
+        except Exception:
+            pass
     if PROJECTS_DIR.is_dir():
         existing = [
             d.name
             for d in sorted(PROJECTS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True)
-            if d.is_dir() and not d.name.startswith(".")
+            if d.is_dir() and not d.name.startswith(".") and d.name.lower() not in _INVALID_PROJECT_NAMES
         ]
         if existing:
             return existing[0]
-    if env_proj and env_proj not in ("active_session", "active-session"):
+    if env_proj and env_proj.lower() not in _INVALID_PROJECT_NAMES:
         return slugify_project_name(env_proj)
-    return "active_session"
+    return ""
 
 
 def ensure_project_workspace(project_slug: str = "") -> Path:
     """
     Ensure `CORA/Projects/<project_slug>/` exists with isolated subdirectories
-    (`downloads/`, `artifacts/`, `targets/`, `notes/`, `reasoning/`), `memory.md`, and `goals.md`.
-    All downloaded data, temporary scripts, target scans, project goals, and project-specific memory
-    stay inside `Projects/<project_slug>/` so `ObsidianVault/` is never polluted.
+    (`Files/`, `downloads/`, `artifacts/`, `targets/`, `notes/`, `reasoning/`), `memory.md`, and `goals.md`.
+    Never creates a dummy `active_session` or `default` folder inside `Projects/`.
     """
     ensure_vault_structure()
     slug = slugify_project_name(project_slug) if project_slug.strip() else get_active_project_slug()
-    os.environ["CORA_ACTIVE_PROJECT"] = slug
-    proj_dir = PROJECTS_DIR / slug
-    for sub in ("downloads", "artifacts", "targets", "notes", "reasoning"):
+    if slug:
+        os.environ["CORA_ACTIVE_PROJECT"] = slug
+        proj_dir = PROJECTS_DIR / slug
+    else:
+        slug = "unassigned"
+        proj_dir = SESSION_STATE_DIR / "_unassigned_workspace"
+    for sub in ("Files", "downloads", "artifacts", "targets", "notes", "reasoning"):
         (proj_dir / sub).mkdir(parents=True, exist_ok=True)
     mem_file = proj_dir / "memory.md"
     if not mem_file.exists():
@@ -1022,14 +1075,15 @@ def ensure_project_workspace(project_slug: str = "") -> Path:
             f"title: Project Memory ({slug})\n"
             "category: project_workspace\n"
             f"project: {slug}\n"
-            f"summary: Isolated project memory, downloaded artifacts, target scans & test state for {slug}\n"
+            f"summary: Isolated project memory, custom Files/, downloaded artifacts, target scans & test state for {slug}\n"
             f"updated: {now_str}\n"
             "---\n"
             f"# Project Workspace Memory (`Projects/{slug}/memory.md`)\n\n"
-            "> **Two-Tier Memory Isolation:** Ephemeral test data, target scans, downloaded files (`downloads/`), "
-            "and session notes for this project are isolated here so long-term universal knowledge in `ObsidianVault/` is never polluted.\n\n"
+            "> **Two-Tier Memory Isolation:** Custom scripts and uploaded files (`Files/`), ephemeral test data, target scans, "
+            "downloaded files (`downloads/`), and session notes for this project are isolated here so long-term universal knowledge in `ObsidianVault/` is never polluted.\n\n"
             "## 1. Verified Data & Architecture\n"
             f"- Workspace initialized at `Projects/{slug}/`\n"
+            f"- Local Project Files & Custom Scripts directory: `Projects/{slug}/Files/`\n"
             f"- Project goals log: `Projects/{slug}/goals.md`\n"
             f"- Downloaded files directory: `Projects/{slug}/downloads/`\n\n"
             "## 2. Open Verification Questions\n"
@@ -1888,13 +1942,17 @@ def render_simplified_switches_table(posture: dict | None = None, table_width: i
 
 
 def get_existing_project_dirs() -> list[Path]:
-    """Return sorted list of project directories inside `CORA/Projects/`."""
+    """Return sorted list of project directories inside `CORA/Projects/`, ensuring each has a `Files/` directory."""
     ensure_vault_structure()
     if not PROJECTS_DIR.is_dir():
         return []
     out = []
     for pdir in sorted(PROJECTS_DIR.iterdir(), key=lambda x: x.name.lower()):
-        if pdir.is_dir() and not pdir.name.startswith("."):
+        if pdir.is_dir() and not pdir.name.startswith(".") and pdir.name.lower() not in _INVALID_PROJECT_NAMES:
+            try:
+                (pdir / "Files").mkdir(parents=True, exist_ok=True)
+            except Exception:
+                pass
             out.append(pdir)
     return out
 
@@ -2032,7 +2090,7 @@ def write_active_session_mode_env() -> None:
         ACTIVE_SESSION_MODE_FILE.parent.mkdir(parents=True, exist_ok=True)
         iso_lvl = os.environ.get("LLM_ISOLATION_MODE", "RED")
         allow_if = os.environ.get("LLM_ALLOWED_IFACES", "")
-        proj = ACTIVE_PROJECT or os.environ.get("CORA_ACTIVE_PROJECT", "active_session")
+        proj = ACTIVE_PROJECT or get_active_project_slug()
         pmode = ACTIVE_PERSONALITY_MODE or "DEFAULT"
         lines = [
             f'export CORA_ACTIVE_PROJECT="{proj}"',
@@ -2436,7 +2494,10 @@ def interactive_project_selection_menu(require_selection: bool = True, prompt_mo
         # (e.g., `printf "/relentless status\n/exit\n" | ./run_cora_NIX.sh cli`), select the first existing
         # project automatically and queue the slash command for immediate execution.
         if not sys.stdin.isatty() and choice.startswith("/"):
-            default_slug = proj_dirs[0].name if proj_dirs else "active_session"
+            if not proj_dirs:
+                print("\n\033[1;31m[Project Selection Required]\033[0m Please create or select a project first.\n")
+                continue
+            default_slug = proj_dirs[0].name
             _persist_selected_project(default_slug)
             _PENDING_FIRST_COMMAND = choice
             apply_personality_mode("DEFAULT")
@@ -2538,6 +2599,7 @@ def interactive_project_selection_menu(require_selection: bool = True, prompt_mo
                     print(
                         f"\n\033[1;32m[New Project Created]\033[0m `{new_slug}` created in `{proj_ws}`\n"
                         f"  Memory File:  `{proj_ws / 'memory.md'}`\n"
+                        f"  Project Files:`{proj_ws / 'Files'}`\n"
                         f"  Downloads:    `{proj_ws / 'downloads'}`\n"
                     )
                     created_project_slug = new_slug
@@ -2690,6 +2752,117 @@ def get_live_hardware_summary() -> str:
 _STATIC_HW_SUMMARY = ""
 
 
+def resolve_cli_project_file_path(raw_path: str, for_write: bool = False) -> Path:
+    """
+    Resolve a file or directory path referenced by the LLM or user inside the active project's
+    `Projects/<project>/Files/` directory, `Projects/<project>/`, or the local filesystem.
+    """
+    proj_ws = ensure_project_workspace()
+    files_dir = proj_ws / "Files"
+    files_dir.mkdir(parents=True, exist_ok=True)
+
+    clean = (raw_path or "").strip().strip('"').strip("'")
+    if not clean:
+        return files_dir.resolve()
+
+    norm = clean.replace("\\", "/")
+    while norm.startswith("./"):
+        norm = norm[2:]
+
+    if norm.lower() in (
+        "files", "files/", "file", "file/", "local files", "local file",
+        "local files directory", "local file directory",
+    ):
+        return files_dir.resolve()
+
+    if norm.lower().startswith("files/"):
+        return (files_dir / norm[6:]).resolve()
+    if norm.lower().startswith("file/"):
+        return (files_dir / norm[5:]).resolve()
+    if norm.lower().startswith(f"projects/{proj_ws.name.lower()}/"):
+        sub_p = norm[len(f"projects/{proj_ws.name.lower()}/"):]
+        return (proj_ws / sub_p).resolve()
+
+    expanded = Path(os.path.expanduser(clean))
+    if str(expanded).startswith("/tmp/"):
+        return (proj_ws / "downloads" / expanded.name).resolve()
+    if expanded.is_absolute():
+        return expanded.resolve()
+
+    cand_files = (files_dir / expanded).resolve()
+    cand_proj = (proj_ws / expanded).resolve()
+    cand_cwd = (Path.cwd() / expanded).resolve()
+    cand_root = (CORA_ROOT / expanded).resolve()
+
+    if for_write:
+        if norm.startswith("Projects/"):
+            return cand_root
+        if cand_cwd.exists():
+            return cand_cwd
+        if "/" not in norm:
+            return cand_files
+        return cand_proj
+
+    if cand_files.exists():
+        return cand_files
+    if cand_proj.exists():
+        return cand_proj
+    if cand_cwd.exists():
+        return cand_cwd
+    if cand_root.exists():
+        return cand_root
+    return cand_files
+
+
+def get_cli_project_files_block(proj_dir: Path, query_text: str = "") -> str:
+    """
+    Build a structured manifest and optional content preview of `Projects/<slug>/Files/`
+    so the CLI LLM always knows where the local `Files` directory is and what is inside it.
+    """
+    slug = proj_dir.name
+    files_dir = proj_dir / "Files"
+    files_dir.mkdir(parents=True, exist_ok=True)
+    all_files = sorted([f for f in files_dir.rglob("*") if f.is_file()], key=lambda p: p.name.lower())
+
+    lines = [
+        f"\nLOCAL PROJECT `Files` DIRECTORY (`Projects/{slug}/Files/` | `$PROJECT_FILES_DIR` = `{files_dir}`):",
+        f"  - Anything placed or uploaded into `Projects/{slug}/Files/` is directly accessible to you.",
+        f"  - If the user tells you to go to the local `Files` or `File` directory to look at, inspect, or use a custom script or file, look inside `{files_dir}` (`Projects/{slug}/Files/`).",
+        f"  - You can read files there with `read_file(path=\"Files/<name>\")`, list it with `list_directory(path=\"Files\")`, edit/create files with `edit_file` / `write_file(path=\"Files/<name>\", ...)`, or run scripts via `run_shell_command` (`$PROJECT_FILES_DIR` is exported and `{files_dir}` is prepended to `PATH`).",
+    ]
+    if not all_files:
+        lines.append(f"  - Current Files in `Projects/{slug}/Files/`: (empty — 0 files currently in Files/)")
+        return "\n".join(lines)
+
+    lines.append(f"  - Current Files in `Projects/{slug}/Files/` ({len(all_files)} file{'s' if len(all_files) != 1 else ''}):")
+    for idx, f in enumerate(all_files[:40], 1):
+        rel = f.relative_to(files_dir).as_posix()
+        lines.append(f"    {idx}. `Files/{rel}` (`Projects/{slug}/Files/{rel}`, {f.stat().st_size} bytes)")
+
+    q_low = (query_text or "").lower()
+    preview_list: list[Path] = []
+    for f in all_files:
+        if f.name.lower() in q_low or (len(f.stem) >= 3 and f.stem.lower() in q_low):
+            preview_list.append(f)
+    if not preview_list and len(all_files) <= 3:
+        preview_list = all_files[:3]
+
+    for f in preview_list[:3]:
+        try:
+            if f.stat().st_size <= 80000:
+                raw_b = f.read_bytes()[:1024]
+                if b"\x00" not in raw_b:
+                    rel = f.relative_to(files_dir).as_posix()
+                    txt_snip = f.read_text(encoding="utf-8", errors="replace")[:3500]
+                    lines.append(
+                        f"\n  [Preview of `Projects/{slug}/Files/{rel}`]:\n```text\n{txt_snip}\n```"
+                    )
+        except Exception:
+            pass
+
+    return "\n".join(lines)
+
+
 def build_system_prompt(force_refresh_hw: bool = False) -> str:
     global _STATIC_HW_SUMMARY
     if not _STATIC_HW_SUMMARY or force_refresh_hw:
@@ -2704,9 +2877,11 @@ def build_system_prompt(force_refresh_hw: bool = False) -> str:
     proj_menu_lines.append(f"  [{len(existing_projs) + 1}] Rename Current Project")
     proj_menu_lines.append(f"  [{len(existing_projs) + 2}] CREATE NEW PROJECT")
     proj_menu_str = "\n".join(proj_menu_lines)
+    proj_files_block = get_cli_project_files_block(active_proj_dir)
     active_proj_block = (
         f"\nCURRENT PROJECTS IN `{PROJECTS_DIR}`:\n{proj_menu_str}\n"
-        f"\nACTIVE PROJECT WORKSPACE (`Projects/{active_slug}/` | Memory: `{active_proj_dir / 'memory.md'}` | Downloads: `{active_proj_dir / 'downloads'}`):\n"
+        f"{proj_files_block}\n"
+        f"\nACTIVE PROJECT WORKSPACE (`Projects/{active_slug}/` | Files: `{active_proj_dir / 'Files'}` | Memory: `{active_proj_dir / 'memory.md'}` | Downloads: `{active_proj_dir / 'downloads'}`):\n"
         f"{compact_text(proj_note, 1600)}\n"
     )
     os_label = "Windows" if os.name == "nt" else "Linux"
@@ -2717,17 +2892,18 @@ def build_system_prompt(force_refresh_hw: bool = False) -> str:
         f"cybersecurity, networking & coding agent for Red Team and Blue Team operations running directly on the user's {os_label} workstation "
         "(NOT on a cloud server). You have full, direct access to the user's hardware, operating system, "
         f"network, filesystem, {shell_label}, a long-term universal Obsidian Knowledge Vault (`ObsidianVault/`), "
-        f"and an isolated Project Workspace (`Projects/{active_slug}/`).\n"
+        f"and an isolated Project Workspace (`Projects/{active_slug}/`) with a dedicated local `Files` directory (`Projects/{active_slug}/Files/`).\n"
         f"{personality_block}\n"
         "PROJECT SELECTION & WORKSPACE ISOLATION RULES:\n"
         f"  - Every session operates inside a dedicated project folder under `{PROJECTS_DIR}` (currently `{active_proj_dir}`). "
         "Any spaces or special characters in project names are automatically converted to dashes (`-`).\n"
+        f"  - **Local Project `Files` Directory (`{active_proj_dir / 'Files'}` / `Projects/{active_slug}/Files/`)**: Every project has a `Files` directory. Anything placed or uploaded into `Projects/{active_slug}/Files/` is directly visible and usable by you. When the user tells you to go to the local `Files` or `File` directory to look at or use a custom script or file, inspect `{active_proj_dir / 'Files'}` (`Projects/{active_slug}/Files/`).\n"
         "  - In the Web Interface (or if the user asks to view, select, create, or rename a project), present the numbered list of "
         f"current projects in `{PROJECTS_DIR}` (`1..{len(existing_projs)}`), followed by `[{len(existing_projs) + 1}] Rename Current Project` "
         f"and `[{len(existing_projs) + 2}] CREATE NEW PROJECT`, and use `project_tracker` (`action='select'|'create'|'rename'|'update'`) to switch, create, or rename the project.\n"
         f"  - Tier-1 Long-Term Universal Knowledge (`{VAULT_DIR}`): Contains universal playbooks, trained reference docs (`00_TRAINED_INDEX.md`), "
         "and cross-system rules. Read from it anytime with `vault_search` / `vault_read_note`, but NEVER pollute it with temporary test data or internal local network state.\n"
-        f"  - Tier-2 Isolated Project Workspace (`{active_proj_dir}`): Put ALL downloaded files (`{active_proj_dir / 'downloads'}`), "
+        f"  - Tier-2 Isolated Project Workspace (`{active_proj_dir}`): Put custom user scripts/uploads in `{active_proj_dir / 'Files'}`, downloaded files in `{active_proj_dir / 'downloads'}`, "
         f"temporary test scripts/files, target scans, and project-specific memory (`{active_proj_dir / 'memory.md'}`) inside `{active_proj_dir}`.\n\n"
         "YOUR BUILT-IN TOOLS:\n"
         f"  1. `project_tracker`: Select, create, rename, or update an isolated project in `Projects/<project_name>/memory.md` "
@@ -2742,8 +2918,8 @@ def build_system_prompt(force_refresh_hw: bool = False) -> str:
         "  6. `neuro_symbolic_reason`: Deterministic 15-Engine CPU-based Neuro-Symbolic, Somatic Intuition, Optimal-Stopping Forecasting, "
         "Continual, Meta-Learning, Trajectory RL & Spectral PCA/K-Means++ Reasoning Suite (0 MB GPU VRAM). "
         f"Returns a single authoritative `>>> CONSENSUS IMMEDIATE ACTION <<<` + Speculative Next-Tool Branches + 3-Step RL Rollout and saves session reports to `Projects/{active_slug}/reasoning/`.\n"
-        f"  7. `run_shell_command`: Execute any {shell_label} command (pre-verified by CEGAR; save downloaded files to `{active_proj_dir / 'downloads'}`; outputs > 2,500 chars are losslessly archived to `Reasoning/data/shadow_archive/`).\n"
-        f"  8. `write_file` / `edit_file` / `read_file` / `list_directory`: Full local filesystem access (store temporary/project files inside `{active_proj_dir}`).\n"
+        f"  7. `run_shell_command`: Execute any {shell_label} command or custom script in `{active_proj_dir / 'Files'}` (`$PROJECT_FILES_DIR`, which is on `PATH`; pre-verified by CEGAR; save downloaded files to `{active_proj_dir / 'downloads'}`; outputs > 2,500 chars are losslessly archived to `Reasoning/data/shadow_archive/`).\n"
+        f"  8. `write_file` / `edit_file` / `read_file` / `list_directory`: Full local filesystem access, including direct shorthand access to `Files/<filename>` inside `{active_proj_dir / 'Files'}`.\n"
         f"  9. `generate_project_report`: Generate a comprehensive 5-section Project Status & Findings Report (`Projects/{active_slug}/REPORT.md` + standalone SVG graphic `assets/report_dashboard.svg`) containing an Executive Summary, a High-School Reading Level Walkthrough, Visual Graphics/Mermaid Diagrams, a Technical Evidence Write-Up, and a Final Conclusion.\n\n"
         "PEAK PERFORMANCE & MEMORY RULES:\n"
         "- NEVER say you are a cloud AI or that you cannot access local files, network targets, hardware, or commands.\n"
@@ -3520,6 +3696,21 @@ def execute_tool(name: str, args: dict) -> str:
                     print(f"\n\033[1;35m{msg}\033[0m", flush=True)
                     return msg
 
+            # Normalize HTTPS curl self-signed cert handling (`-k`) and Windows CLI flag syntax before CEGAR
+            if re.match(r"^\s*curl(?:\.exe)?\b", cmd, re.I) and "https://" in cmd.lower():
+                if not re.search(r"(?:\s-[a-zA-Z]*k\b|\s--insecure\b)", cmd):
+                    cmd = re.sub(r"^(\s*curl(?:\.exe)?)\b", r"\1 -k", cmd, count=1, flags=re.I)
+            if os.name == "nt":
+                if re.match(r"^\s*ping(?:\.exe)?\b", cmd, re.I):
+                    cmd = re.sub(r"\s-c\s+(\d+)", r" -n \1", cmd)
+                    cmd = re.sub(
+                        r"\s-W\s+(\d+)",
+                        lambda m: f" -w {int(m.group(1)) * 1000 if int(m.group(1)) < 50 else int(m.group(1))}",
+                        cmd,
+                    )
+                elif re.match(r"^\s*ip\s+neigh(?:\s+show)?\s*$", cmd, re.I):
+                    cmd = "arp -a"
+
             # Engine 12: CEGAR Pre-Execution Verifier + Hardware UART Pacing Auto-Transform
             cegar_advisories = []
             try:
@@ -3531,18 +3722,29 @@ def execute_tool(name: str, args: dict) -> str:
 
                 cegar_res = verify_command_cegar(cmd)
                 if cegar_res.get("blocked"):
-                    print(
-                        f"\n\033[1;31m[CEGAR Pre-Verifier Blocked]\033[0m {cegar_res.get('reason')}",
-                        flush=True,
+                    repaired = cegar_res.get("repaired_command") or cegar_res.get("auto_repaired_command")
+                    same_bin = (
+                        bool(repaired)
+                        and not is_analyst_mode()
+                        and cmd.split()[0].lower().removesuffix(".exe")
+                        == str(repaired).split()[0].lower().removesuffix(".exe")
                     )
-                    res_blk = (
-                        f"[CEGAR Pre-Execution Verifier BLOCKED Command]: `{cmd}`\n"
-                        f"- Reason: {cegar_res.get('reason')}\n"
-                        f"- Counterexample: {cegar_res.get('counterexample')}\n"
-                        f"- Suggested Fix: {cegar_res.get('suggested_fix')}"
-                    )
-                    _record_attempt("run_shell_command", cmd, "BLOCKED", res_blk)
-                    return res_blk
+                    if same_bin and not verify_command_cegar(str(repaired)).get("blocked"):
+                        cmd = str(repaired)
+                        cegar_res = verify_command_cegar(cmd)
+                    else:
+                        print(
+                            f"\n\033[1;31m[CEGAR Pre-Verifier Blocked]\033[0m {cegar_res.get('reason')}",
+                            flush=True,
+                        )
+                        res_blk = (
+                            f"[CEGAR Pre-Execution Verifier BLOCKED Command]: `{cmd}`\n"
+                            f"- Reason: {cegar_res.get('reason')}\n"
+                            f"- Counterexample: {cegar_res.get('counterexample')}\n"
+                            f"- Suggested Fix: {cegar_res.get('suggested_fix')}"
+                        )
+                        _record_attempt("run_shell_command", cmd, "BLOCKED", res_blk)
+                        return res_blk
                 cegar_advisories.extend(cegar_res.get("advisories") or [])
             except Exception:
                 pass
@@ -3559,6 +3761,17 @@ def execute_tool(name: str, args: dict) -> str:
                 if 0.0 <= since_last_ser < 1.6:
                     time.sleep(1.6 - since_last_ser)
 
+            if os.name == "nt" and "tio " not in cmd:
+                cmd = re.sub(r"\barp\s+-accepteula\b", "arp -a", cmd, flags=re.I)
+                cmd = re.sub(r"\bping\s+-c\s+(\d+)\s+-W\s+\d+\b", r"ping -n \1 -w 1200", cmd)
+                cmd = re.sub(r"\bping\s+-c\s+(\d+)\b", r"ping -n \1", cmd)
+                cmd = re.sub(r"\bip\s+neigh\s+show\b", "arp -a", cmd)
+            elif os.name != "nt":
+                cmd = re.sub(r"\bping\s+-n\s+(\d+)\b", r"ping -c \1", cmd)
+            if re.search(r"\bcurl(?:\.exe)?\b", cmd, flags=re.I) and "https://" in cmd.lower():
+                if not re.search(r"(?:^|\s)(?:-k|--insecure)\b", cmd):
+                    cmd = re.sub(r"\b(curl(?:\.exe)?)\b", r"\1 -k", cmd, count=1, flags=re.I)
+
             exec_cmd: str | list[str] = cmd
             use_shell = True
             iso_mode_active = ""
@@ -3570,12 +3783,16 @@ def execute_tool(name: str, args: dict) -> str:
             except Exception:
                 pass
 
-            if os.name == "nt" and re.match(
-                r"^(?:Get-|Set-|New-|Remove-|Test-|Invoke-|Restart-|Disable-|Enable-|Start-|Stop-|Select-|Where-|ForEach-)",
-                cmd.strip(),
-                flags=re.I,
+            if os.name == "nt" and not re.match(r"^(?:powershell|pwsh|cmd(?:\.exe)?)\b", cmd.strip(), flags=re.I) and (
+                re.search(
+                    r"\b(?:Get-[A-Za-z]+|Set-[A-Za-z]+|New-[A-Za-z]+|Remove-[A-Za-z]+|Test-[A-Za-z]+|Invoke-[A-Za-z]+|Restart-[A-Za-z]+|Disable-[A-Za-z]+|Enable-[A-Za-z]+|Start-[A-Za-z]+|Stop-[A-Za-z]+|Select-String|Select-Object|Where-Object|ForEach-Object|Out-String|Measure-Object)\b|\$[A-Za-z_]",
+                    cmd.strip(),
+                    flags=re.I,
+                )
+                or (";" in cmd and "&" not in cmd)
             ):
-                exec_cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", cmd]
+                ps_cmd = re.sub(r"\bcurl\b(?!\.exe)", "curl.exe", cmd)
+                exec_cmd = ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", ps_cmd]
                 use_shell = False
             elif os.name != "nt" and iso_mode_active == "white":
                 # WHITE Mode (`-netiso white`): Execute command inside an unprivileged Linux network namespace
@@ -3591,10 +3808,18 @@ def execute_tool(name: str, args: dict) -> str:
                 use_shell = False
             try:
                 child_env = os.environ.copy()
+                files_ws_dir = proj_ws / "Files"
+                files_ws_dir.mkdir(parents=True, exist_ok=True)
                 child_env["CORA_ACTIVE_PROJECT"] = proj_ws.name
                 child_env["PROJECT_DIR"] = str(proj_ws)
+                child_env["PROJECT_FILES_DIR"] = str(files_ws_dir)
                 child_env["PROJECT_DOWNLOADS_DIR"] = str(proj_ws / "downloads")
                 child_env["PROJECT_MEMORY_FILE"] = str(proj_ws / "memory.md")
+                os_tools_dir = CORA_ROOT / "Tools" / ("Windows" if os.name == "nt" else "Linux")
+                path_prefixes = [str(files_ws_dir)]
+                if os_tools_dir.is_dir():
+                    path_prefixes.append(str(os_tools_dir))
+                child_env["PATH"] = os.pathsep.join(path_prefixes) + os.pathsep + child_env.get("PATH", "")
                 popen_kwargs: dict = {
                     "shell": use_shell,
                     "cwd": os.getcwd(),
@@ -3607,6 +3832,10 @@ def execute_tool(name: str, args: dict) -> str:
                 }
                 if os.name != "nt":
                     popen_kwargs["start_new_session"] = True
+                    if use_shell:
+                        bash_bin = shutil.which("bash")
+                        if bash_bin:
+                            popen_kwargs["executable"] = bash_bin
                 proc = subprocess.Popen(exec_cmd, **popen_kwargs)
                 try:
                     out_s, err_s = proc.communicate(timeout=60)
@@ -3717,18 +3946,7 @@ def execute_tool(name: str, args: dict) -> str:
                 return "Error: `path` argument is required for `write_file`."
             content = args.get("content", "")
             proj_ws = ensure_project_workspace()
-            expanded = Path(os.path.expanduser(raw_path))
-            # Route /tmp/ files or new relative project/test files into `CORA/Projects/<project>/`
-            if str(expanded).startswith("/tmp/"):
-                p = (proj_ws / "downloads" / expanded.name).resolve()
-            elif not expanded.is_absolute() and not (Path.cwd() / expanded).exists():
-                rel_str = str(expanded)
-                if rel_str.startswith("Projects/"):
-                    p = (BASE_DIR / expanded).resolve()
-                else:
-                    p = (proj_ws / expanded).resolve()
-            else:
-                p = expanded.resolve()
+            p = resolve_cli_project_file_path(raw_path, for_write=True)
             if p.exists() and p.is_dir():
                 return f"Error: Cannot write file because `{p}` is an existing directory."
             print(f"\n\033[1;32m[Agent Tool -> write_file]\033[0m {p} ({len(content)} bytes)", flush=True)
@@ -3753,7 +3971,7 @@ def execute_tool(name: str, args: dict) -> str:
                 return "Error: `path` argument is required for `edit_file`."
             old_text = args.get("old_text", "")
             new_text = args.get("new_text", "")
-            p = Path(os.path.expanduser(raw_path)).resolve()
+            p = resolve_cli_project_file_path(raw_path, for_write=False)
             print(f"\n\033[1;32m[Agent Tool -> edit_file]\033[0m {p}", flush=True)
             if not p.exists():
                 return f"Error: File not found: {p}"
@@ -3773,7 +3991,7 @@ def execute_tool(name: str, args: dict) -> str:
             raw_path = (args.get("path") or "").strip()
             if not raw_path:
                 return "Error: `path` argument is required for `read_file`."
-            p = Path(os.path.expanduser(raw_path)).resolve()
+            p = resolve_cli_project_file_path(raw_path, for_write=False)
             print(f"\n\033[1;36m[Agent Tool -> read_file]\033[0m {p}", flush=True)
             if not p.exists():
                 _record_attempt("read_file", str(p), "FAIL", "File not found")
@@ -3787,7 +4005,7 @@ def execute_tool(name: str, args: dict) -> str:
 
         elif name == "list_directory":
             raw_path = (args.get("path") or ".").strip() or "."
-            p = Path(os.path.expanduser(raw_path)).resolve()
+            p = Path.cwd().resolve() if raw_path == "." else resolve_cli_project_file_path(raw_path, for_write=False)
             print(f"\n\033[1;36m[Agent Tool -> list_directory]\033[0m {p}", flush=True)
             if not p.exists():
                 _record_attempt("list_directory", str(p), "FAIL", "Directory not found")
@@ -4034,52 +4252,78 @@ def trim_messages_to_fit(
 
 
 def _ensure_llama_server_running() -> bool:
-    """If llama-server on 127.0.0.1:8080 is down (Connection refused), auto-start it and wait for /health."""
+    """If llama-server on 127.0.0.1:8080 is down (Connection refused) or loading (503), auto-start/wait for /health."""
     health_url = API_URL.split("/v1/")[0].rstrip("/") + "/health"
+    already_loading = False
     try:
         with urllib.request.urlopen(health_url, timeout=1.5) as r:
             if r.status == 200:
                 return True
+    except urllib.error.HTTPError as he:
+        if he.code == 503:
+            already_loading = True
     except Exception:
         pass
 
-    model_flag = "3.5" if "3.5" in MODEL_NAME or "9B" in MODEL_NAME else "3.8"
-    manage_ps1 = CORA_ROOT / "run_cora_WIN.ps1"
-    manage_sh = CORA_ROOT / "run_cora_NIX.sh"
+    if not already_loading:
+        m_up = MODEL_NAME.upper()
+        if "TURBO" in m_up and "Q8" in m_up:
+            model_flag = "turbo-q8"
+        elif "TURBO" in m_up and "Q6" in m_up:
+            model_flag = "turbo-q6"
+        elif "TURBO" in m_up:
+            model_flag = "turbo"
+        elif "3.5" in m_up or "9B" in m_up:
+            model_flag = "3.5"
+        else:
+            model_flag = "3.8"
+        manage_ps1 = CORA_ROOT / "run_cora_WIN.ps1"
+        manage_sh = CORA_ROOT / "run_cora_NIX.sh"
 
-    if os.name == "nt" and manage_ps1.is_file():
-        start_cmd = [
-            "powershell",
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-File",
-            str(manage_ps1),
-            "start",
-            "-m",
-            model_flag,
-        ]
-    elif manage_sh.is_file():
-        start_cmd = ["bash", str(manage_sh), "start", "-m", model_flag]
-    else:
-        return False
+        if os.name == "nt" and manage_ps1.is_file():
+            start_cmd = [
+                "powershell",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(manage_ps1),
+                "start",
+                "-m",
+                model_flag,
+                "--no-browser",
+            ]
+        elif manage_sh.is_file():
+            start_cmd = ["bash", str(manage_sh), "start", "-m", model_flag, "--no-browser"]
+        else:
+            return False
 
-    print(
-        f"\n\033[1;33m[Auto-Recovery] `llama-server` is not listening on 127.0.0.1:8080 — starting model `{model_flag}` automatically...\033[0m",
-        flush=True,
-    )
-    try:
-        subprocess.run(
-            start_cmd,
-            cwd=str(BASE_DIR),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=60,
+        print(
+            f"\n\033[1;33m[Auto-Recovery] `llama-server` is not listening on 127.0.0.1:8080 — starting model `{model_flag}` automatically...\033[0m",
+            flush=True,
         )
-    except Exception:
-        pass
+        child_env = os.environ.copy()
+        child_env["CORA_ACTIVE_PROJECT"] = child_env.get("CORA_ACTIVE_PROJECT") or ACTIVE_PROJECT or ""
+        child_env["CORA_NON_INTERACTIVE"] = "1"
+        try:
+            subprocess.run(
+                start_cmd,
+                cwd=str(BASE_DIR),
+                env=child_env,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=60,
+            )
+        except Exception:
+            pass
+    else:
+        print(
+            "\n\033[1;33m[Auto-Recovery] `llama-server` is loading model weights into VRAM/RAM — waiting for readiness...\033[0m",
+            flush=True,
+        )
 
-    for _ in range(30):
+    for _ in range(60):
         try:
             with urllib.request.urlopen(health_url, timeout=1.5) as r:
                 if r.status == 200:
@@ -4114,7 +4358,29 @@ def _build_wire_messages_with_personality_prefix(messages: list) -> list[dict]:
     return wire_msgs
 
 
+LAST_THINKING_TRACE: str = ""
+SHOW_THINKING_EXPANDED_CLI: bool = False
+
+
+def print_last_thinking_trace_cli() -> None:
+    """Display or toggle the last captured LLM <think> thought process & engine trace (Ctrl+O)."""
+    if LAST_THINKING_TRACE.strip():
+        print(
+            "\n\033[1;33m=== 🧠 C.O.R.A. Thought Process & Internal Reasoning Trace (Expanded via Ctrl+O) ===\033[0m\n"
+            f"\033[0;37m{LAST_THINKING_TRACE.strip()}\033[0m\n"
+            "\033[1;33m====================================================================================\033[0m\n",
+            flush=True,
+        )
+    else:
+        print(
+            "\n\033[1;33m[🧠 Thought Process (Ctrl+O)]\033[0m No `<think>` trace recorded yet in this session. "
+            f"(Live thought auto-expansion is currently `{'ON' if SHOW_THINKING_EXPANDED_CLI else 'HIDDEN by default'}`)\n",
+            flush=True,
+        )
+
+
 def chat_step(messages: list) -> dict:
+    global LAST_THINKING_TRACE, SHOW_THINKING_EXPANDED_CLI
     trim_messages_to_fit(messages)
     wire_messages = _build_wire_messages_with_personality_prefix(messages)
 
@@ -4135,9 +4401,12 @@ def chat_step(messages: list) -> dict:
         method="POST",
     )
 
-    content_parts = []
-    tool_calls_by_index = {}
+    content_parts: list[str] = []
+    tool_calls_by_index: dict = {}
     printed_header = False
+    printed_Visible_len = 0
+    in_think_block = False
+    think_start_t = time.monotonic()
 
     spinner_stop = threading.Event()
     spinner_lock = HUD._lock
@@ -4162,7 +4431,7 @@ def chat_step(messages: list) -> dict:
                 frame = frames[idx % len(frames)]
                 idx += 1
                 sys.stdout.write(
-                    f"\r\033[2K\033[0;36m{frame} [{MODEL_NAME} processing prompt / generating tool call... {elapsed:.1f}s | Ctrl+C to cancel]\033[0m"
+                    f"\r\033[2K\033[0;36m{frame} [C.O.R.A. Thinking / Processing... {elapsed:.1f}s | Press Ctrl+O to expand thought process | Ctrl+C to cancel]\033[0m"
                 )
                 sys.stdout.flush()
 
@@ -4176,7 +4445,18 @@ def chat_step(messages: list) -> dict:
             with spinner_lock:
                 _clear_spinner_locked()
             body = err.read().decode("utf-8", errors="replace")
-            if ("exceeds the available context size" in body and len(messages) > 3) or (
+            if err.code == 503 or "loading model" in body.lower():
+                if _ensure_llama_server_running():
+                    req = urllib.request.Request(
+                        API_URL,
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={"Content-Type": "application/json"},
+                        method="POST",
+                    )
+                    resp_ctx = urllib.request.urlopen(req, timeout=300)
+                else:
+                    raise urllib.error.HTTPError(err.url, err.code, body, err.headers, None)
+            elif ("exceeds the available context size" in body and len(messages) > 3) or (
                 "No user query found in messages" in body
             ):
                 print("\n\033[1;33m[Auto-Compacting & Healing Context Window and Retrying...]\033[0m", flush=True)
@@ -4208,6 +4488,18 @@ def chat_step(messages: list) -> dict:
 
         with resp_ctx as resp:
             for raw_line in resp:
+                # Check if user pressed Ctrl+O (\x0f) during streaming on Windows TTY
+                if os.name == "nt":
+                    try:
+                        import msvcrt
+
+                        while msvcrt.kbhit():
+                            k_ch = msvcrt.getwch()
+                            if k_ch == "\x0f":  # Ctrl+O
+                                SHOW_THINKING_EXPANDED_CLI = not SHOW_THINKING_EXPANDED_CLI
+                    except Exception:
+                        pass
+
                 line = raw_line.decode("utf-8", errors="replace").strip()
                 if not line or not line.startswith("data: "):
                     continue
@@ -4226,13 +4518,49 @@ def chat_step(messages: list) -> dict:
 
                 c = delta.get("content")
                 if c:
-                    with spinner_lock:
-                        _clear_spinner_locked()
-                        if not printed_header:
-                            print(f"\n\033[1;34m{MODEL_NAME}>\033[0m ", end="", flush=True)
-                            printed_header = True
-                        print(c, end="", flush=True)
                     content_parts.append(c)
+                    full_so_far = "".join(content_parts)
+                    if "<think>" in full_so_far and "</think>" not in full_so_far:
+                        in_think_block = True
+                        with spinner_lock:
+                            _clear_spinner_locked()
+                            think_elapsed = time.monotonic() - think_start_t
+                            if SHOW_THINKING_EXPANDED_CLI:
+                                if not printed_header:
+                                    print(f"\n\033[1;33m[🧠 Thought Process (Ctrl+O Expanded)]>\033[0m ", end="", flush=True)
+                                    printed_header = True
+                                print(f"\033[2;37m{c}\033[0m", end="", flush=True)
+                            else:
+                                sys.stdout.write(
+                                    f"\r\033[2K\033[1;33m🧠 [C.O.R.A. Thinking & Processing... ({think_elapsed:.1f}s) — Press Ctrl+O to expand thought process]\033[0m"
+                                )
+                                sys.stdout.flush()
+                        continue
+
+                    if in_think_block and "</think>" in full_so_far:
+                        in_think_block = False
+                        m_th = re.search(r"<think>([\s\S]*?)</think>", full_so_far, flags=re.I)
+                        if m_th:
+                            LAST_THINKING_TRACE = m_th.group(1).strip()
+                        think_elapsed = time.monotonic() - think_start_t
+                        with spinner_lock:
+                            sys.stdout.write("\r\033[2K")
+                            print(
+                                f"\n\033[2;33m[🧠 Thought for {think_elapsed:.1f}s — Press Ctrl+O (or type /ctrl-o) to expand thought process]\033[0m",
+                                flush=True,
+                            )
+                            printed_header = False
+
+                    visible_full = re.sub(r"<think>[\s\S]*?</think>", "", full_so_far, flags=re.I).lstrip("\r\n")
+                    if len(visible_full) > printed_Visible_len:
+                        new_vis = visible_full[printed_Visible_len:]
+                        printed_Visible_len = len(visible_full)
+                        with spinner_lock:
+                            _clear_spinner_locked()
+                            if not printed_header:
+                                print(f"\n\033[1;32m🤖 C.O.R.A. ({MODEL_NAME})>\033[0m ", end="", flush=True)
+                                printed_header = True
+                            print(new_vis, end="", flush=True)
 
                 for tc in delta.get("tool_calls") or []:
                     with spinner_lock:
@@ -4262,7 +4590,13 @@ def chat_step(messages: list) -> dict:
     if printed_header:
         print("", flush=True)
 
-    msg = {"role": "assistant", "content": "".join(content_parts) or None}
+    raw_joined = "".join(content_parts)
+    m_final_th = re.search(r"<think>([\s\S]*?)</think>", raw_joined, flags=re.I)
+    if m_final_th:
+        LAST_THINKING_TRACE = m_final_th.group(1).strip()
+    clean_joined = re.sub(r"<think>[\s\S]*?</think>", "", raw_joined, flags=re.I).strip()
+
+    msg = {"role": "assistant", "content": clean_joined or raw_joined or None}
     if tool_calls_by_index:
         msg["tool_calls"] = [tool_calls_by_index[k] for k in sorted(tool_calls_by_index)]
     return msg
@@ -4752,12 +5086,12 @@ def run_relentless_loop(messages: list, max_waves: int | None = None) -> None:
             elif pmode_now == "BERSERKER":
                 mode_wave_rule = (
                     f"3. BERSERKER AGGRESSIVE MODE: Aggressively pursue the target goal with ALL available tools (`run_shell_command`, `scan_target`, `vault_read_note`, `vault_search`, `neuro_symbolic_reason`, `read_file`, `write_file`) across `{', '.join(untried_vecs) if untried_vecs else 'multi-step chain / alternate ports / credentials / OOB serial / routing pivot'}`.\n"
-                    f"   - Immediately chain active probes across Layer-1/2/3/4/7 (`ip -4 addr`, `ip route`, `ip neigh`, `arping`, `nmap -Pn`, `curl`, `[[commands/tio_serial_playbook]]`, `/dev/ttyUSB0`, and `[[projects/{ACTIVE_PROJECT or 'active_session'}]]`).\n"
+                    f"   - Immediately chain active probes across Layer-1/2/3/4/7 (`ip -4 addr`, `ip route`, `ip neigh`, `arping`, `nmap -Pn`, `curl`, `[[commands/tio_serial_playbook]]`, `/dev/ttyUSB0`, and `[[projects/{ACTIVE_PROJECT or get_active_project_slug()}]]`).\n"
                 )
             else:
                 mode_wave_rule = (
                     f"3. TRY UNEXPLORED METHODS & TOOLS NOW: You must immediately invoke your tools (`run_shell_command`, `scan_target`, `vault_read_note`, `vault_search`, `neuro_symbolic_reason`, `read_file`, `write_file`) to test an untried method or capability vector (`{', '.join(untried_vecs) if untried_vecs else 'multi-step chain / alternate ports / credentials / OOB serial / routing pivot'}`).\n"
-                    f"   - If direct HTTP/TCP fails, check Layer-2/Layer-3 (`ip -4 addr`, `ip route`, `ip neigh`, `arping` on Linux or `ipconfig /all`, `route print -4`, `arp -a` on Windows), check alternate ports (`nmap -Pn` or `Test-NetConnection`), check Obsidian Vault playbooks (`[[commands/tio_serial_playbook]]`, `[[commands/curl_playbook]]`, `[[projects/{ACTIVE_PROJECT or 'active_session'}]]`), or check serial OOB (`/dev/ttyUSB0`).\n"
+                    f"   - If direct HTTP/TCP fails, check Layer-2/Layer-3 (`ip -4 addr`, `ip route`, `ip neigh`, `arping` on Linux or `ipconfig /all`, `route print -4`, `arp -a` on Windows), check alternate ports (`nmap -Pn` or `Test-NetConnection`), check Obsidian Vault playbooks (`[[commands/tio_serial_playbook]]`, `[[commands/curl_playbook]]`, `[[projects/{ACTIVE_PROJECT or get_active_project_slug()}]]`), or check serial OOB (`/dev/ttyUSB0`).\n"
                 )
 
             wave_directive = (
@@ -5557,6 +5891,15 @@ SWITCH_HELP_MAP: dict[str, str] = {
         "    -P:<doc_or_project> | -P <doc_path>    : Startup flag to select an existing project or onboard documentation\n"
         "    -P -h | --project --help | /project -h | /project --help : Show this help message"
     ),
+    "files": (
+        "=== Switch Help: /files / /file / /upload / /add ===\n"
+        "  Manage and inspect the active project's local `Files` directory (`Projects/<project>/Files/`) for LLM interaction:\n"
+        "    /files | /files list                   : List all custom scripts and files inside `Projects/<project>/Files/`\n"
+        "    /files add <path> | /upload <path>     : Copy a local file or directory into `Projects/<project>/Files/`\n"
+        "    /files read <filename>                 : Display the contents of `Projects/<project>/Files/<filename>`\n"
+        "    /files rm <filename>                   : Delete a file inside `Projects/<project>/Files/`\n"
+        "    /files -h | /files --help              : Show this help message"
+    ),
     "goal": (
         "=== Switch Help: /goal ===\n"
         "  Set, inspect, or clear project-scoped mission objectives (`Projects/<project>/goals.md`):\n"
@@ -5752,6 +6095,10 @@ def print_switch_help(switch_name: str = "") -> None:
         "p": "project" if switch_name.startswith("-P") else "prompt",
         "project": "project",
         "projects": "project",
+        "files": "files",
+        "file": "files",
+        "upload": "files",
+        "add": "files",
         "mode": "mode",
         "personality": "mode",
         "goal": "goal",
@@ -5799,6 +6146,7 @@ def print_switch_help(switch_name: str = "") -> None:
         "netiso",
         "continue",
         "project",
+        "files",
         "mode",
         "goal",
         "relentless",
@@ -5832,6 +6180,415 @@ def print_switch_help(switch_name: str = "") -> None:
 def _is_help_arg(val: str) -> bool:
     v = val.strip().lower()
     return v in ("-h", "--help", "help", "-?") or v.endswith(":-h") or v.endswith(":--help")
+
+
+CLI_HISTORY_FILE = BASE_DIR / "Log" / "cli_command_history.json"
+_CLI_HISTORY: list[str] = []
+_CLI_BASE_VOCAB: list[str] = [
+    "/help",
+    "/exit",
+    "/quit",
+    "/continue",
+    "/resume",
+    "/project",
+    "/files",
+    "/file",
+    "/upload",
+    "/add",
+    "/mode",
+    "/mode:red_team",
+    "/mode:blue_team",
+    "/mode:hunt",
+    "/mode:research",
+    "/mode:analyst",
+    "/mode:default",
+    "/goal",
+    "/relentless",
+    "/relentless:on",
+    "/relentless:off",
+    "/generate-report",
+    "/netiso",
+    "/netiso:red",
+    "/netiso:blue",
+    "/netiso:white",
+    "/rl",
+    "/pca",
+    "/continual",
+    "/train",
+    "/reason",
+    "/hud",
+    "/scan",
+    "/vault",
+    "/remember",
+    "/search",
+    "/permissions",
+    "/state",
+    "/clear",
+    "/hw",
+    "/think",
+    "procdump.exe",
+    "psexec.exe",
+    "autorunsc.exe",
+    "sysmon.exe",
+    "accesschk.exe",
+    "pslist.exe",
+    "handle.exe",
+    "pipelist.exe",
+    "tcpvcon.exe",
+    "sigcheck.exe",
+    "strings.exe",
+    "wevtutil.exe",
+    "netstat.exe",
+    "tasklist.exe",
+    "reg.exe",
+    "Get-CimInstance",
+    "Get-Process",
+    "Get-Service",
+    "Get-WinEvent",
+    "Get-NetTCPConnection",
+    "powershell",
+    "reconnaissance",
+    "enumeration",
+    "vulnerability",
+    "exploitation",
+    "privilege",
+    "escalation",
+    "persistence",
+    "credentials",
+    "lateral",
+    "movement",
+    "exfiltration",
+    "telemetry",
+    "mitigation",
+    "remediation",
+    "forensics",
+    "incident",
+    "response",
+    "active_directory",
+    "kerberoasting",
+    "mimikatz",
+    "bloodhound",
+    "wireshark",
+    "nmap",
+    "metasploit",
+    "localhost",
+    "127.0.0.1",
+]
+
+
+def _load_cli_history() -> list[str]:
+    global _CLI_HISTORY
+    if _CLI_HISTORY:
+        return _CLI_HISTORY
+    try:
+        if CLI_HISTORY_FILE.is_file():
+            data = json.loads(CLI_HISTORY_FILE.read_text(encoding="utf-8", errors="ignore"))
+            if isinstance(data, list):
+                _CLI_HISTORY = [str(x).strip() for x in data if str(x).strip()][:150]
+    except Exception:
+        pass
+    return _CLI_HISTORY
+
+
+def _save_cli_history_entry(entry: str) -> None:
+    global _CLI_HISTORY
+    cleaned = (entry or "").strip()
+    if not cleaned:
+        return
+    _load_cli_history()
+    _CLI_HISTORY = [cleaned] + [x for x in _CLI_HISTORY if x != cleaned]
+    _CLI_HISTORY = _CLI_HISTORY[:150]
+    try:
+        CLI_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CLI_HISTORY_FILE.write_text(json.dumps(_CLI_HISTORY, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _get_cli_vocabulary() -> list[str]:
+    words = list(_CLI_BASE_VOCAB)
+    seen = {w.lower() for w in words}
+    try:
+        proj_ws = ensure_project_workspace()
+        files_dir = proj_ws / "Files"
+        if files_dir.is_dir():
+            for f in sorted(files_dir.rglob("*")):
+                if f.is_file():
+                    rel = f.relative_to(files_dir).as_posix()
+                    for cand in (f.name, f"Files/{rel}", f"Projects/{proj_ws.name}/Files/{rel}"):
+                        if cand.lower() not in seen:
+                            seen.add(cand.lower())
+                            words.append(cand)
+    except Exception:
+        pass
+    for hist_item in _load_cli_history():
+        for tok in re.split(r"\s+", hist_item):
+            clean = tok.strip(",.;:()[]{}\"'")
+            if len(clean) >= 3 and clean.lower() not in seen:
+                seen.add(clean.lower())
+                words.append(clean)
+    return words
+
+
+def handle_files_command(arg_str: str, messages: list) -> None:
+    """
+    CLI handler for `/files`, `/file`, `/upload`, and `/add` to manage the active project's
+    `Projects/<project>/Files/` directory so the LLM can inspect and interact with custom files/scripts.
+    """
+    proj_ws = ensure_project_workspace()
+    slug = proj_ws.name
+    files_dir = (proj_ws / "Files").resolve()
+    files_dir.mkdir(parents=True, exist_ok=True)
+
+    clean_arg = (arg_str or "").strip()
+    low_arg = clean_arg.lower()
+
+    if not clean_arg or low_arg in ("list", "-mode:list", "status", "-mode:status"):
+        items = sorted([f for f in files_dir.rglob("*") if f.is_file()], key=lambda p: p.name.lower())
+        print(f"\n\033[1;36m=== Project Local `Files` Directory (`Projects/{slug}/Files/`) ===\033[0m")
+        print(f"  Full Host Path (`$PROJECT_FILES_DIR`): `{files_dir}`")
+        print(f"  Total Files in `Files/`:               `{len(items)}`")
+        if items:
+            for idx, f in enumerate(items, 1):
+                rel = f.relative_to(files_dir).as_posix()
+                mtime = datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                print(f"    [{idx}] \033[1;32mFiles/{rel}\033[0m (`Projects/{slug}/Files/{rel}` — {f.stat().st_size} bytes, {mtime})")
+        else:
+            print(f"    (No files currently in `Projects/{slug}/Files/` — use `/files add <path>` or `/upload <path>` to add files)")
+        print("  \033[2;37mTip: Anything placed in `Projects/" + slug + "/Files/` is automatically visible to the LLM.\033[0m\n")
+        return
+
+    if low_arg.startswith(("add ", "-add:", "-path:")):
+        raw_p = re.sub(r"^(?:add\s+|-add:|-path:)", "", clean_arg, flags=re.I).strip().strip('"').strip("'")
+        if not raw_p:
+            print_switch_help("files")
+            return
+        src = Path(os.path.expandvars(os.path.expanduser(raw_p)))
+        if not src.is_absolute():
+            src = (Path.cwd() / src).resolve() if (Path.cwd() / src).exists() else (CORA_ROOT / src).resolve()
+        else:
+            src = src.resolve()
+        if not src.exists():
+            print(f"\n\033[1;31m[Files Error]\033[0m Local path not found: `{src}`\n")
+            return
+        added_list: list[Path] = []
+        if src.is_file():
+            dest = (files_dir / src.name).resolve()
+            if src != dest:
+                shutil.copy2(src, dest)
+            added_list.append(dest)
+            rel_in_proj = dest.relative_to(proj_ws).as_posix()
+            update_project_memory_index(proj_ws, rel_in_proj, f"Added custom file to Files/ ({dest.stat().st_size} bytes)", ["files"])
+        elif src.is_dir():
+            sub_root = (files_dir / src.name).resolve()
+            sub_root.mkdir(parents=True, exist_ok=True)
+            for f in sorted(src.rglob("*")):
+                if not f.is_file() or len(added_list) >= 100:
+                    continue
+                rel_sub = f.relative_to(src)
+                dest = (sub_root / rel_sub).resolve()
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                if f.resolve() != dest:
+                    shutil.copy2(f, dest)
+                added_list.append(dest)
+            update_project_memory_index(proj_ws, f"Files/{src.name}/", f"Imported directory ({len(added_list)} files) to Files/", ["files"])
+
+        if messages and messages[0].get("role") == "system":
+            messages[0]["content"] = build_system_prompt(force_refresh_hw=False)
+        print(f"\n\033[1;32m[Added {len(added_list)} File(s) to `Projects/{slug}/Files/`]\033[0m")
+        for f_added in added_list[:20]:
+            rel_f = f_added.relative_to(files_dir).as_posix()
+            print(f"  - `Projects/{slug}/Files/{rel_f}` ({f_added.stat().st_size} bytes)")
+        print("  The LLM can now directly inspect, read, edit, or execute these files in `Projects/" + slug + "/Files/`.\n")
+        return
+
+    if low_arg.startswith(("read ", "cat ", "view ")):
+        target_name = clean_arg.split(" ", 1)[1].strip().strip('"').strip("'")
+        resolved = resolve_cli_project_file_path(target_name, for_write=False)
+        if not resolved.is_file():
+            print(f"\n\033[1;31m[Files Error]\033[0m File not found in `Projects/{slug}/Files/`: `{target_name}`\n")
+            return
+        txt = resolved.read_text(encoding="utf-8", errors="replace")
+        print(f"\n\033[1;36m=== `Projects/{slug}/Files/{resolved.name}` ({resolved.stat().st_size} bytes) ===\033[0m\n{txt[:12000]}\n")
+        return
+
+    if low_arg.startswith(("rm ", "del ", "delete ")):
+        target_name = clean_arg.split(" ", 1)[1].strip().strip('"').strip("'")
+        raw_rel = target_name.replace("\\", "/").lstrip("/")
+        if raw_rel.lower().startswith("files/"):
+            raw_rel = raw_rel[6:]
+        target_p = (files_dir / raw_rel).resolve()
+        if not str(target_p).startswith(str(files_dir)) or target_p == files_dir or not target_p.exists():
+            print(f"\n\033[1;31m[Files Error]\033[0m File not found inside `Projects/{slug}/Files/`: `{target_name}`\n")
+            return
+        if target_p.is_file():
+            target_p.unlink()
+        elif target_p.is_dir():
+            shutil.rmtree(target_p)
+        if messages and messages[0].get("role") == "system":
+            messages[0]["content"] = build_system_prompt(force_refresh_hw=False)
+        print(f"\n\033[1;32m[Removed]\033[0m Deleted `Projects/{slug}/Files/{raw_rel}`.\n")
+        return
+
+    # Otherwise, treat `/files <path>` as `/files add <path>` if `<path>` exists on disk
+    cand_p = Path(os.path.expandvars(os.path.expanduser(clean_arg.strip('"').strip("'"))))
+    if cand_p.exists() or (CORA_ROOT / cand_p).exists():
+        handle_files_command(f"add {clean_arg}", messages)
+        return
+
+    print_switch_help("files")
+
+
+def _compute_cli_autocomplete(buf: str, cycle_index: int = 0) -> tuple[str, str, list[str]]:
+    """Return `(token, suffix, matches)` for the word at the end of `buf`."""
+    if not buf:
+        return "", "", []
+    m = re.search(r"([/\\a-zA-Z0-9_.:-]+)$", buf)
+    if not m:
+        return "", "", []
+    token = m.group(1)
+    if len(token) < 2 and not token.startswith("/"):
+        return "", "", []
+    low = token.lower()
+    matches = [w for w in _get_cli_vocabulary() if w.lower().startswith(low) and w.lower() != low][:8]
+    if not matches:
+        return token, "", []
+    chosen = matches[cycle_index % len(matches)]
+    suffix = chosen[len(token):]
+    return token, suffix, matches
+
+
+def _setup_posix_readline_completer() -> None:
+    if readline is None:
+        return
+    try:
+        _load_cli_history()
+        for item in reversed(_CLI_HISTORY):
+            readline.add_history(item)
+
+        def _completer(text: str, state: int) -> str | None:
+            low = (text or "").lower()
+            options = [w for w in _get_cli_vocabulary() if w.lower().startswith(low)]
+            return options[state] if state < len(options) else None
+
+        readline.set_completer_delims(" \t\n;")
+        readline.set_completer(_completer)
+        readline.parse_and_bind("tab: complete")
+    except Exception:
+        pass
+
+
+def _read_interactive_cli_line(prompt_text: str) -> str:
+    """
+    Read an interactive CLI line with:
+      - Up/Down arrow history navigation (`_CLI_HISTORY`)
+      - Live shaded ANSI ghost-text word autocomplete (`\\033[2;36m<suffix>\\033[0m`)
+      - Tab key completion (`Tab` accepts shaded word completion)
+    Falls back cleanly to standard `input(prompt_text)` when stdin/stdout is not a Windows console TTY.
+    """
+    _load_cli_history()
+    if os.name != "nt" or not sys.stdin.isatty() or not sys.stdout.isatty():
+        line = input(prompt_text).strip()
+        if line:
+            _save_cli_history_entry(line)
+        return line
+
+    try:
+        import msvcrt
+    except ImportError:
+        line = input(prompt_text).strip()
+        if line:
+            _save_cli_history_entry(line)
+        return line
+
+    sys.stdout.write(prompt_text)
+    sys.stdout.flush()
+
+    buf: list[str] = []
+    history_idx = -1
+    draft_before_history = ""
+    last_rendered_len = 0
+
+    def _redraw() -> None:
+        nonlocal last_rendered_len
+        current_text = "".join(buf)
+        _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
+        ghost_hint = f"\033[2;36m{suffix}\033[0m" if suffix else ""
+        # Move back to start of user input, write current buffer + shaded ghost suffix, clear trailing chars, and reposition cursor
+        if last_rendered_len > 0:
+            sys.stdout.write(f"\r{prompt_text}{current_text}{ghost_hint}\033[K")
+        else:
+            sys.stdout.write(f"\r{prompt_text}{current_text}{ghost_hint}\033[K")
+        if suffix:
+            sys.stdout.write(f"\033[{len(suffix)}D")
+        sys.stdout.flush()
+        last_rendered_len = len(current_text) + len(suffix)
+
+    while True:
+        ch = msvcrt.getwch()
+        if ch in ("\r", "\n"):
+            current_text = "".join(buf)
+            # Clear ghost suffix before newline
+            sys.stdout.write(f"\r{prompt_text}{current_text}\033[K\n")
+            sys.stdout.flush()
+            result = current_text.strip()
+            if result:
+                _save_cli_history_entry(result)
+            return result
+        if ch == "\x03":  # Ctrl+C
+            raise KeyboardInterrupt
+        if ch == "\x0f":  # Ctrl+O -> Expand/toggle LLM thought process & engine trace
+            sys.stdout.write("\r\033[K\n")
+            print_last_thinking_trace_cli()
+            _redraw()
+            continue
+        if ch == "\x04":  # Ctrl+D / EOF
+            if not buf:
+                raise EOFError
+            continue
+        if ch == "\t":  # Tab -> accept shaded autocomplete suffix
+            current_text = "".join(buf)
+            _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
+            if suffix:
+                buf.extend(list(suffix))
+                if not suffix.endswith((":", "/", "\\", "-")):
+                    buf.append(" ")
+                _redraw()
+            continue
+        if ch in ("\x08", "\x7f"):  # Backspace
+            if buf:
+                buf.pop()
+                _redraw()
+            continue
+        if ch in ("\x00", "\xe0"):  # Special key prefix (arrows, delete, etc.)
+            key2 = msvcrt.getwch()
+            if key2 == "H":  # Up arrow -> older command in history
+                if _CLI_HISTORY:
+                    if history_idx == -1:
+                        draft_before_history = "".join(buf)
+                    if history_idx < len(_CLI_HISTORY) - 1:
+                        history_idx += 1
+                    buf = list(_CLI_HISTORY[history_idx])
+                    _redraw()
+            elif key2 == "P":  # Down arrow -> newer command in history
+                if history_idx > 0:
+                    history_idx -= 1
+                    buf = list(_CLI_HISTORY[history_idx])
+                    _redraw()
+                elif history_idx == 0:
+                    history_idx = -1
+                    buf = list(draft_before_history)
+                    _redraw()
+            elif key2 == "M":  # Right arrow -> accept ghost completion if present
+                current_text = "".join(buf)
+                _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
+                if suffix:
+                    buf.extend(list(suffix))
+                    _redraw()
+            continue
+        if ch >= " ":
+            buf.append(ch)
+            _redraw()
 
 
 def main() -> None:
@@ -6101,6 +6858,7 @@ def main() -> None:
     print(f"  Active Model:   \033[1m{MODEL_NAME}\033[0m")
     print(f"  Obsidian Vault: \033[1;36m{VAULT_DIR}\033[0m (Long-Term Universal Knowledge)")
     print(f"  Projects Dir:   \033[1;36m{PROJECTS_DIR}\033[0m (Isolated Project Downloads, Scans & `memory.md`)")
+    print(f"  Project Files:  \033[1;36mProjects/{get_active_project_slug()}/Files/\033[0m (`/files` or `/upload <path>` to add files for LLM)")
     print(f"  Working Dir:    {os.getcwd()}")
     print(f"  Permissions:    {perm_status}")
     print()
@@ -6127,6 +6885,8 @@ def main() -> None:
     except Exception:
         pass
 
+    _setup_posix_readline_completer()
+
     while True:
         if HUD.active:
             HUD.render_before_prompt()
@@ -6140,9 +6900,10 @@ def main() -> None:
         if _PENDING_FIRST_COMMAND:
             user_input = _PENDING_FIRST_COMMAND
             _PENDING_FIRST_COMMAND = ""
+            _save_cli_history_entry(user_input)
         else:
             try:
-                user_input = input(f"{p_col}[{p_short}:{get_active_project_slug()}] You>{p_rst} ").strip()
+                user_input = _read_interactive_cli_line(f"{p_col}[{p_short}:{get_active_project_slug()}] You>{p_rst} ")
             except (EOFError, KeyboardInterrupt):
                 print("\nExiting...")
                 _shutdown_cli_and_engines(stop_llm=True, quiet=False)
@@ -6293,6 +7054,9 @@ def main() -> None:
             messages = [{"role": "system", "content": build_system_prompt(force_refresh_hw=True)}]
             print("Conversation history cleared (Obsidian Vault memory & L1 Symbolic State remain active).\n")
             continue
+        if user_input.lower() in ("/ctrl-o", "/ctrlo", "/think", "/think-view", "/thinking"):
+            print_last_thinking_trace_cli()
+            continue
         if user_input.lower() in ("/state", "/context"):
             try:
                 from Reasoning.engines.context_vm import build_dynamic_l1_state_block, count_tokens_exact_or_est, query_server_n_ctx
@@ -6300,12 +7064,16 @@ def main() -> None:
 
                 total_toks = count_tokens_exact_or_est(json.dumps(messages))
                 n_ctx = query_server_n_ctx()
-                shadow_files = len(list(Path(SHADOW_ARCHIVE_DIR).glob("sha256_*.log"))) if Path(SHADOW_ARCHIVE_DIR).is_dir() else 0
+                proj_shadow_dir = ensure_project_workspace() / "shadow_archive"
+                shadow_files = (
+                    (len(list(Path(SHADOW_ARCHIVE_DIR).glob("sha256_*.log"))) if Path(SHADOW_ARCHIVE_DIR).is_dir() else 0)
+                    + (len(list(proj_shadow_dir.glob("sha256_*.log"))) if proj_shadow_dir.is_dir() else 0)
+                )
                 l1_block = build_dynamic_l1_state_block()
                 print(
                     f"\n\033[1;36m=== Zero-Loss Context VM & L1 Symbolic State ===\033[0m\n"
                     f"  Context Budget: `{total_toks}` / `{n_ctx}` tokens ({len(messages)} messages in active window)\n"
-                    f"  Shadow Archive: `{shadow_files}` lossless log files in `{SHADOW_ARCHIVE_DIR}`\n"
+                    f"  Shadow Archive: `{shadow_files}` lossless log files in `{proj_shadow_dir}` & `{SHADOW_ARCHIVE_DIR}`\n"
                     f"  {l1_block or '[L1 Symbolic State Register] Ready'}\n"
                 )
             except Exception as exc:
@@ -6425,7 +7193,7 @@ def main() -> None:
                     train_target = resolve_training_target(target_folder)
                     tr_summary = run_training_pipeline(target_path=train_target, force=force_flag, use_llm=True, quiet=False)
                     if tr_summary and tr_summary.get("newly_trained_files", 0) > 0:
-                        v_upd = get_cora_version_info(bump_patch_reason=f"System retrained via /train ({tr_summary.get('newly_trained_files')} file(s))")
+                        v_upd = get_cora_version_info()
                         print(f"  \033[1;35m[C.O.R.A. Version Updated]\033[0m `v{v_upd['version']}` (3rd decimal bumped on retraining)\n")
                     # Refresh system prompt so newly trained rules/index are immediately visible
                     messages[0] = {"role": "system", "content": build_system_prompt(force_refresh_hw=False)}
@@ -6440,6 +7208,16 @@ def main() -> None:
         ):
             arg_str = re.sub(r"^/projects?(?:\s+|/|$)", "", user_input, flags=re.I).strip()
             handle_project_command(arg_str, messages)
+            continue
+        if (
+            user_input.lower() in ("/files", "/file", "/upload", "/add")
+            or user_input.lower().startswith(("/files ", "/file ", "/upload ", "/add "))
+        ):
+            cmd_head = user_input.split(maxsplit=1)[0].lower()
+            arg_str = user_input.split(maxsplit=1)[1].strip() if " " in user_input else ""
+            if cmd_head in ("/upload", "/add") and arg_str and not arg_str.lower().startswith(("add ", "list", "read ", "rm ")):
+                arg_str = f"add {arg_str}"
+            handle_files_command(arg_str, messages)
             continue
         if (
             user_input.lower() == "/continual"
@@ -6635,6 +7413,25 @@ def main() -> None:
                 print("\n\033[1;35m=== Running 15-Engine + Guardrail Self-Tests ===\033[0m")
                 print(json.dumps(run_self_tests(), indent=2) + "\n")
                 continue
+            _SINGLE_ENGINE_KEYS = (
+                "associative",
+                "geometric",
+                "bayesian",
+                "dempster_shafer",
+                "dst",
+                "causal",
+                "mdp",
+                "temporal",
+                "cbr",
+                "vsa",
+                "sygus",
+                "cegar",
+                "continual",
+                "meta",
+                "rl",
+                "pca",
+                "kmeans",
+            )
             if r_arg.lower().startswith(("-engine:", "--engine:")):
                 parts_r = r_arg.split(maxsplit=1)
                 eng_key = parts_r[0].split(":", 1)[1].strip().lower()
@@ -6645,13 +7442,24 @@ def main() -> None:
                 mdp_report = execute_reasoning_tool("mdp", {"problem": mdp_prob, "save_to_vault": True})
                 print(f"\n\033[1;35m{mdp_report}\033[0m\n")
                 continue
-            if r_arg.lower() in ("continual", "meta", "rl", "pca", "kmeans") or any(
-                r_arg.lower().startswith(f"{k} ") for k in ("continual", "meta", "rl", "pca", "kmeans")
+            if r_arg.lower() in _SINGLE_ENGINE_KEYS or any(
+                r_arg.lower().startswith(f"{k} ") for k in _SINGLE_ENGINE_KEYS
             ):
                 parts_r = r_arg.split(maxsplit=1)
                 eng_key = parts_r[0].lower()
+                if eng_key == "dst":
+                    eng_key = "dempster_shafer"
                 sub_prob = parts_r[1].strip() if len(parts_r) > 1 else (ACTIVE_GOAL or f"Run {eng_key} engine analysis")
-                sub_rep = execute_reasoning_tool(eng_key, {"problem": sub_prob, "save_to_vault": True, "write_suggested_improvement": (eng_key == "meta")})
+                sub_rep = execute_reasoning_tool(
+                    eng_key,
+                    {
+                        "problem": sub_prob,
+                        "command": sub_prob,
+                        "raw_output": sub_prob,
+                        "save_to_vault": True,
+                        "write_suggested_improvement": (eng_key == "meta"),
+                    },
+                )
                 print(f"\n\033[1;35m{sub_rep}\033[0m\n")
                 continue
             report = execute_reasoning_tool("pipeline", {"problem": r_arg, "save_to_vault": True})
@@ -6716,6 +7524,8 @@ def main() -> None:
                     print(f"\n\033[1;31m[Error]\033[0m {exc}\n")
             continue
 
+        if messages and messages[0].get("role") == "system":
+            messages[0]["content"] = build_system_prompt(force_refresh_hw=False)
         messages.append({"role": "user", "content": user_input})
         try:
             if RELENTLESS_MODE:

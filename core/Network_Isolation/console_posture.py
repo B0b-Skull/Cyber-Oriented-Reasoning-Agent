@@ -33,6 +33,7 @@ import datetime
 import json
 import os
 import platform
+import re
 import subprocess
 import sys
 import time
@@ -46,6 +47,20 @@ POSTURE_LOG_FILE = LOG_DIR / "console_posture.log"
 NETISO_CONF_FILE = SCRIPT_DIR / "network_isolation.conf"
 
 
+def _parse_iface_list(raw_val: str) -> List[str]:
+    """Parse interface list preserving spaces in Windows adapter names when comma-delimited."""
+    s = (raw_val or "").strip().strip("\"'")
+    if not s:
+        return []
+    if "," in s:
+        parts = [x.strip() for x in s.split(",")]
+    elif re.search(r"\b(?:vEthernet|Adapter|Connection|Loopback)\b", s, re.I):
+        parts = [s]
+    else:
+        parts = [x.strip() for x in s.split()]
+    return [p for p in parts if p and p.lower() != "lo"]
+
+
 def load_network_isolation_config() -> Dict[str, Any]:
     """
     Read static defaults from `Network_Isolation/network_isolation.conf`.
@@ -55,7 +70,7 @@ def load_network_isolation_config() -> Dict[str, Any]:
     cfg: Dict[str, Any] = {
         "default_level": "red",
         "blue_allowed_ifaces": ["eth0", "eth1"],
-        "blue_usb_devices": ["/dev/ttyUSB0", "/dev/ttyUSB1"],
+        "blue_usb_devices": ["COM1", "COM3"] if os.name == "nt" else ["/dev/ttyUSB0", "/dev/ttyUSB1"],
     }
     if NETISO_CONF_FILE.is_file():
         try:
@@ -69,7 +84,7 @@ def load_network_isolation_config() -> Dict[str, Any]:
                 if k == "DEFAULT_ISOLATION_LEVEL" and v:
                     cfg["default_level"] = v.lower()
                 elif k == "BLUE_ALLOWED_IFACES" and v:
-                    ifaces = [x.strip() for x in v.replace(" ", ",").split(",") if x.strip() and x.strip() != "lo"]
+                    ifaces = _parse_iface_list(v)
                     if ifaces:
                         cfg["blue_allowed_ifaces"] = ifaces
                 elif k == "BLUE_USB_DEVICES" and v:
@@ -78,9 +93,17 @@ def load_network_isolation_config() -> Dict[str, Any]:
                         cfg["blue_usb_devices"] = devs
         except Exception:
             pass
+    # On Windows, if static config still has Linux defaults ("eth0,eth1") and no eth0/eth1 exists on host,
+    # resolve to the active primary Windows network adapter(s) unless overridden by LLM_ALLOWED_IFACES.
+    if os.name == "nt" and cfg["blue_allowed_ifaces"] == ["eth0", "eth1"]:
+        win_ifaces = _get_windows_active_interfaces()
+        if win_ifaces and not any(i.lower() in ("eth0", "eth1") for i in win_ifaces):
+            preferred = [i for i in win_ifaces if not i.lower().startswith("vethernet")]
+            cfg["blue_allowed_ifaces"] = preferred[:2] if preferred else win_ifaces[:2]
+
     env_ifaces = os.environ.get("LLM_ALLOWED_IFACES", "").strip()
     if env_ifaces:
-        parsed = [x.strip() for x in env_ifaces.replace(" ", ",").split(",") if x.strip() and x.strip() != "lo"]
+        parsed = _parse_iface_list(env_ifaces)
         if parsed:
             cfg["blue_allowed_ifaces"] = parsed
     return cfg
@@ -311,9 +334,42 @@ def _get_linux_netns() -> str:
     return ""
 
 
+_WIN_ACTIVE_IFACES_CACHE: tuple[float, List[str]] = (0.0, [])
+
+
 def _get_windows_active_interfaces() -> List[str]:
+    global _WIN_ACTIVE_IFACES_CACHE
     if platform.system().lower() != "windows":
         return []
+    now = time.monotonic()
+    if _WIN_ACTIVE_IFACES_CACHE[1] and (now - _WIN_ACTIVE_IFACES_CACHE[0]) < 15.0:
+        return list(_WIN_ACTIVE_IFACES_CACHE[1])
+    # Fast path (<35ms): parse active adapters with IPv4 addresses directly from `ipconfig`
+    try:
+        proc_ip = subprocess.run(
+            ["ipconfig"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=1.5,
+            check=False,
+        )
+        if proc_ip.returncode == 0 and proc_ip.stdout:
+            active_ifaces: List[str] = []
+            cur_iface = ""
+            for ln in proc_ip.stdout.splitlines():
+                s = ln.strip()
+                if s.endswith(":") and "adapter" in s.lower():
+                    cur_iface = re.sub(r"(?i)^.*adapter\s+", "", s[:-1]).strip()
+                elif ("IPv4 Address" in s or "IP Address" in s) and cur_iface:
+                    if cur_iface not in active_ifaces:
+                        active_ifaces.append(cur_iface)
+            if active_ifaces:
+                _WIN_ACTIVE_IFACES_CACHE = (now, active_ifaces)
+                return list(active_ifaces)
+    except Exception:
+        pass
     try:
         proc = subprocess.run(
             ["powershell", "-NoProfile", "-Command", "(Get-NetAdapter | Where-Object Status -eq 'Up').Name"],
@@ -323,7 +379,9 @@ def _get_windows_active_interfaces() -> List[str]:
             check=False,
         )
         if proc.returncode == 0:
-            return [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]
+            res = [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]
+            if res:
+                return res
     except Exception:
         pass
     return ["default"]
