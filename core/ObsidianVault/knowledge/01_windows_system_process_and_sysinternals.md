@@ -17,7 +17,7 @@ updated: 2026-10-30
 > **Target OS Platform:** `windows` | **Primary H-MDP Tactic:** `Passive_Enum` (`s_init_unknown -> s_passive_topology_mapped`)  
 > **Bayesian Root-Cause Alignment (`Engine 4`):** `suspicious_process_lineage, service_misconfiguration, unsigned_dll_injection, resource_exhaustion`  
 > **Network Isolation Compatibility:** `RED, BLUE, WHITE (100% local host telemetry compatible)`  
-> **Backlinks:** [[00_MEMORY_INDEX]] | [[00_TRAINED_INDEX]] | [[commands/windows_master_command_playbook]] | [[commands/linux_master_command_playbook]]
+> **Backlinks:** [[00_MEMORY_INDEX]] | [[00_TRAINED_INDEX]] | [[reasoning/windows_kernel_and_userspace_enumeration_strategy_playbook]] | [[commands/windows_kernel_and_userspace_enumeration_playbook]] | [[commands/windows_master_command_playbook]] | [[commands/linux_master_command_playbook]]
 
 ---
 

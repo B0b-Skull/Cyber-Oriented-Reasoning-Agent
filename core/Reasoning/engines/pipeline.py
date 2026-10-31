@@ -613,6 +613,7 @@ def run_neuro_symbolic_pipeline(
         elif env_mode == "analyst":
             active_team_role = "hunt_team"
     _role_pb_map = {
+        "windows_internals": "reasoning/windows_kernel_and_userspace_enumeration_strategy_playbook",
         "windows_forensics": "reasoning/windows_digital_forensics_strategy_playbook",
         "linux_forensics": "reasoning/linux_digital_forensics_strategy_playbook",
     }

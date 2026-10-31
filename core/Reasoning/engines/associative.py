@@ -60,6 +60,11 @@ KNOWN_TECH_CONCEPTS = {
     "vssadmin", "esentutl", "volatility3", "memprocfs", "winpmem", "hollowshunter", "uac", "avml", "lime",
     "dwarf2json", "sleuthkit", "fls", "icat", "mactime", "plaso", "log2timeline", "tracee", "unhide",
     "zeek", "bpftool", "debugfs", "utmpdump", "ausearch", "aureport", "memfd",
+    "ntoskrnl", "ntdll", "hal", "vbs", "hvci", "vtl0", "vtl1", "securekernel", "smss", "csrss",
+    "wininit", "services", "lsass", "lsaiso", "winlogon", "svchost", "userinit", "fltmc", "driverquery",
+    "srm", "seaccesscheck", "sddl", "dacl", "sacl", "mic", "wdigest", "cloudap", "dsregcmd", "cmdkey",
+    "vaultcmd", "runasppl", "ppl", "eprocess", "ethread", "peb", "teb", "ssdt", "patchguard", "byovd",
+    "ring0", "ring3",
 }
 
 _WIKILINK_RE = re.compile(r"\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]")
@@ -115,10 +120,17 @@ _LINUX_FORENSICS_INTENT_RE = re.compile(
     r"crtime|dtime)\b",
     re.I,
 )
+_WINDOWS_INTERNALS_INTENT_RE = re.compile(
+    r"\b(?:windows[\s_\-]*internals|kernel[\s_\-]*space|user[\s_\-]*space|ring[\s_\-]*0|ring[\s_\-]*3|"
+    r"ring[\s_\-]*-1|ring[\s_\-]*-3|vtl[\s_\-]*0|vtl[\s_\-]*1|ntoskrnl|securekernel|ntdll|smss|csrss|"
+    r"wininit|lsass|lsaiso|winlogon|userinit|seaccesscheck|srm|sddl|dacl|sacl|fltmc|driverquery|"
+    r"deviceguard|hvci|credential[\s_\-]*guard|split[\s_\-]*token|eprocess|ethread|ssdt|patchguard)\b",
+    re.I,
+)
 
 
 def infer_team_role_from_query(query: str) -> str:
-    """Infer whether a query/problem primarily aligns with `blue_team`, `red_team`, `hunt_team`, `reverse_engineering`, `windows_forensics`, or `linux_forensics`."""
+    """Infer whether a query/problem primarily aligns with `windows_internals`, `blue_team`, `red_team`, `hunt_team`, `reverse_engineering`, `windows_forensics`, or `linux_forensics`."""
     q_low = (query or "").lower()
     if not q_low:
         return ""
@@ -128,6 +140,7 @@ def infer_team_role_from_query(query: str) -> str:
     reveng_hits = len(_REVENG_INTENT_RE.findall(q_low))
     win_dfir_hits = len(_WINDOWS_FORENSICS_INTENT_RE.findall(q_low))
     lin_dfir_hits = len(_LINUX_FORENSICS_INTENT_RE.findall(q_low))
+    win_int_hits = len(_WINDOWS_INTERNALS_INTENT_RE.findall(q_low))
     if "blue team" in q_low or "blue_team" in q_low:
         blue_hits += 4
     if "red team" in q_low or "red_team" in q_low:
@@ -136,6 +149,8 @@ def infer_team_role_from_query(query: str) -> str:
         hunt_hits += 4
     if any(k in q_low for k in ("reverse engineer", "reverse_engineer", "revengai", "reveng.ai", "reait")):
         reveng_hits += 5
+    if any(k in q_low for k in ("ring 0", "ring0", "ring 3", "ring3", "kernel space", "user space", "ntoskrnl", "seaccesscheck", "vtl 1", "vtl1", "smss.exe", "wininit.exe")):
+        win_int_hits += 5
     if ("forensic" in q_low or "dfir" in q_low or "volatility" in q_low or "velociraptor" in q_low) and any(
         k in q_low for k in ("windows", "ntfs", "mft", "evtx", "registry", "prefetch", "amcache", "srum")
     ):
@@ -146,6 +161,7 @@ def infer_team_role_from_query(query: str) -> str:
         lin_dfir_hits += 5
     best_role, best_score = "", 0
     for role, sc in (
+        ("windows_internals", win_int_hits),
         ("windows_forensics", win_dfir_hits),
         ("linux_forensics", lin_dfir_hits),
         ("reverse_engineering", reveng_hits),
@@ -563,6 +579,7 @@ def run_associative_vault_reasoning(
 
         inferred_team_role = infer_team_role_from_query(query)
         role_to_playbook = {
+            "windows_internals": "windows_kernel_and_userspace_enumeration_strategy_playbook",
             "windows_forensics": "windows_digital_forensics_strategy_playbook",
             "linux_forensics": "linux_digital_forensics_strategy_playbook",
         }

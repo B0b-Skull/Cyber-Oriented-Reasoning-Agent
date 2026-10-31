@@ -17,7 +17,7 @@ updated: 2026-10-30
 > **Target OS Platform:** `windows` | **Primary H-MDP Tactic:** `Defense_Evasion_Firewall` (`s_oob_serial_enumerated -> s_firewall_or_acl_unlocked`)  
 > **Bayesian Root-Cause Alignment (`Engine 4`):** `restrictive_dacl_or_ownership, missing_audit_policy_coverage, privilege_escalation_via_weak_acl, token_impersonation_hot_potato`  
 > **Network Isolation Compatibility:** `RED, BLUE, WHITE (100% local host telemetry compatible)`  
-> **Backlinks:** [[00_MEMORY_INDEX]] | [[00_TRAINED_INDEX]] | [[commands/windows_master_command_playbook]] | [[commands/linux_master_command_playbook]]
+> **Backlinks:** [[00_MEMORY_INDEX]] | [[00_TRAINED_INDEX]] | [[reasoning/windows_kernel_and_userspace_enumeration_strategy_playbook]] | [[commands/windows_kernel_and_userspace_enumeration_playbook]] | [[commands/windows_master_command_playbook]] | [[commands/linux_master_command_playbook]]
 
 ---
 
