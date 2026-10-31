@@ -10,6 +10,7 @@
       4. Downloads & verifies the GGUF LLM models into `models\` with automatic resume (`curl.exe -C -`):
            - `Qwen3.5-9B-Uncensored-Q4_K_M.gguf` (~5.24 GiB, >= 5.5 GB verified)
            - `Qwen3.8-27B-Uncensored-Q3_K_M.gguf` (~12.40 GiB, >= 13.0 GB verified; auto-selected when RAM >= 15 GiB or `-AllModels` / `-Only38`)
+           - `Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf` (~16.04 GiB Huihui Abliterated; auto-selected when RAM >= 24 GiB or VRAM >= 16 GiB, or `-Huihui` / `-OnlyHuihui` / `-AllModels`)
            - `Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf` (~17.23 GiB Multiple Token Prediction; auto-selected when RAM >= 24 GiB or VRAM >= 16 GiB, or `-Turbo` / `-OnlyTurboQ4` / `-AllTurbo` / `-AllModels`)
            - `Qwen3.8-27B-Turbo-MTP-Q6_K.gguf` (~22.38 GiB Multiple Token Prediction; auto-selected when RAM >= 48 GiB or VRAM >= 24 GiB, or `-OnlyTurboQ6` / `-AllTurbo` / `-AllModels`)
            - `Qwen3.8-27B-Turbo-MTP-Q8_0.gguf` (~28.16 GiB Multiple Token Prediction; auto-selected when RAM >= 64 GiB or VRAM >= 32 GiB, or `-OnlyTurboQ8` / `-AllTurbo` / `-AllModels`)
@@ -36,6 +37,8 @@ param(
     [switch]$AllModels,
     [switch]$AllTurbo,
     [switch]$Turbo,
+    [switch]$Huihui,
+    [switch]$OnlyHuihui,
     [switch]$OnlyTurboQ4,
     [switch]$OnlyTurboQ6,
     [switch]$OnlyTurboQ8,
@@ -60,6 +63,7 @@ for ($i = 0; $i -lt $RemainingArgs.Count; $i++) {
         "--all-models" { $AllModels = $true }
         "--all-turbo" { $AllTurbo = $true }
         "--turbo" { $Turbo = $true }
+        { $_ -in @("--huihui", "--only-huihui", "--only-q2", "-q2", "--q2") } { $OnlyHuihui = $true }
         "--only-turbo-q4" { $OnlyTurboQ4 = $true }
         "--only-turbo-q6" { $OnlyTurboQ6 = $true }
         "--only-turbo-q8" { $OnlyTurboQ8 = $true }
@@ -123,6 +127,10 @@ $Qwen38TurboQ8Url      = "$Qwen38TurboHfBase/Qwen3.8-27B-TurboFCFusion-735-882-H
 $Qwen38TurboQ8File     = "Qwen3.8-27B-Turbo-MTP-Q8_0.gguf"
 $Qwen38TurboQ8HfFile   = "Qwen3.8-27B-TurboFCFusion-735-882-Here-Uncen-NEO-CODER-MAX-MTP-Q8_0.gguf"
 $Qwen38TurboQ8MinBytes = 29500000000L
+
+$HuihuiQ2Url           = "https://huggingface.co/huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF/resolve/main/Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+$HuihuiQ2File          = "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+$HuihuiQ2MinBytes      = 16500000000L
 
 Write-Host "==============================================================================" -ForegroundColor Cyan
 Write-Host "  CORA Windows Master Setup + GGUF Models + 15-Engine Suite (v4.5.0-15Engine-Core)" -ForegroundColor Cyan
@@ -190,6 +198,7 @@ $HwTier = if (($TotalVramMib -ge 24000) -or ($TotalRamMib -ge 120000) -or ($Phys
 
 $Download35 = $false
 $Download38 = $false
+$DownloadHuihuiQ2 = $false
 $DownloadTurboQ4 = $false
 $DownloadTurboQ6 = $false
 $DownloadTurboQ8 = $false
@@ -198,6 +207,8 @@ if ($Only35) {
     $Download35 = $true
 } elseif ($Only38) {
     $Download38 = $true
+} elseif ($OnlyHuihui -or $Huihui) {
+    $DownloadHuihuiQ2 = $true
 } elseif ($OnlyTurboQ4 -or $Turbo) {
     $DownloadTurboQ4 = $true
 } elseif ($OnlyTurboQ6) {
@@ -211,6 +222,7 @@ if ($Only35) {
 } elseif ($AllModels) {
     $Download35 = $true
     $Download38 = $true
+    $DownloadHuihuiQ2 = $true
     $DownloadTurboQ4 = $true
     $DownloadTurboQ6 = $true
     $DownloadTurboQ8 = $true
@@ -220,6 +232,9 @@ if ($Only35) {
         $Download38 = $true
     } else {
         Write-Host "[WARN] System has $TotalRamMib MiB RAM (<15 GB); defaulting to Qwen3.5-9B only (pass -AllModels to force Qwen3.8-27B)." -ForegroundColor Yellow
+    }
+    if (($TotalVramMib -ge 16000) -or (($TotalRamMib -ge 24000) -and ($TotalVramMib -ge 10000))) {
+        $DownloadHuihuiQ2 = $true
     }
     # Auto-select Qwen3.8-27B Turbo MTP models where balanced for both GPU VRAM and host RAM
     if (($TotalVramMib -ge 16000) -or (($TotalRamMib -ge 32000) -and ($TotalVramMib -ge 12000))) {
@@ -235,6 +250,7 @@ if ($Only35) {
 if ($SkipModels -or $Offline) {
     $Download35 = $false
     $Download38 = $false
+    $DownloadHuihuiQ2 = $false
     $DownloadTurboQ4 = $false
     $DownloadTurboQ6 = $false
     $DownloadTurboQ8 = $false
@@ -244,7 +260,7 @@ Write-Host "  Target Directory : $BaseDir"
 Write-Host "  Hardware Tier    : $HwTier (Cores: $PhysCores physical / $LogicalThreads threads, Sockets/NUMA: $CpuSockets)"
 Write-Host "  Detected RAM     : $TotalRamMib MiB"
 Write-Host "  Detected GPU     : $GpuSummary"
-Write-Host "  Models to Ensure : Qwen3.5-9B=$Download35 | Qwen3.8-27B=$Download38 | Turbo-MTP-Q4=$DownloadTurboQ4 | Turbo-MTP-Q6=$DownloadTurboQ6 | Turbo-MTP-Q8=$DownloadTurboQ8"
+Write-Host "  Models to Ensure : Qwen3.5-9B=$Download35 | Qwen3.8-27B=$Download38 | Huihui-Q2=$DownloadHuihuiQ2 | Turbo-MTP-Q4=$DownloadTurboQ4 | Turbo-MTP-Q6=$DownloadTurboQ6 | Turbo-MTP-Q8=$DownloadTurboQ8"
 
 # ------------------------------------------------------------------------------
 # 1. Workspace Directories & Obsidian Vault Initialization
@@ -484,6 +500,11 @@ if ($SkipModels -or $Offline) {
     if ($Download38) {
         $q38Dest = Join-Path $ModelsDir $Qwen38File
         Ensure-GgufModel -Url $Qwen38Url -DestPath $q38Dest -MinBytes $Qwen38MinBytes -Label "Qwen3.8-27B-Uncensored-Q3_K_M.gguf (Default 12.4 GiB)"
+    }
+
+    if ($DownloadHuihuiQ2) {
+        $huihuiDest = Join-Path $ModelsDir $HuihuiQ2File
+        Ensure-GgufModel -Url $HuihuiQ2Url -DestPath $huihuiDest -MinBytes $HuihuiQ2MinBytes -Label "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (Huihui Abliterated 16.0 GiB)"
     }
 
     if ($DownloadTurboQ4) {

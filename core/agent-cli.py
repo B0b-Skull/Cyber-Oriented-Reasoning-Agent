@@ -2267,7 +2267,7 @@ def render_simplified_switches_table(posture: dict | None = None, table_width: i
     print(f"{border_col}├{'─' * (col1_w + 2)}┼{'─' * (col2_w + 2)}┤\033[0m")
     startup_rows = [
         ("cli | start | stop | restart | status", "Launch interactive C.O.R.A. CLI, start/stop background services, or view status"),
-        ("-m <3.8|3.5|turbo|turbo-q6|turbo-q8>", "Select GGUF model (default: 3.8 27B; 3.5 9B fast; turbo MTP Q4/Q6/Q8)"),
+        ("-m <3.8|3.5|huihui|turbo|turbo-q6|turbo-q8>", "Select GGUF model (default: 3.8 27B; 3.5 9B fast; huihui Q2_K_L; turbo MTP)"),
         ("-c | --continue | continue", "Resume directly from the last saved CLI session, active project, goal & wave"),
         ("-netiso <red|white|blue> [eth0,eth1]", "Set Network Isolation posture (Red=Full, White=NetNS Air-Gap, Blue=NIC Lock)"),
         ("-P <project_name_or_doc_path>", "Select/create active project workspace or ingest project documentation"),
@@ -4674,7 +4674,9 @@ def _ensure_llama_server_running() -> bool:
 
     if not already_loading:
         m_up = MODEL_NAME.upper()
-        if "TURBO" in m_up and "Q8" in m_up:
+        if "HUIHUI" in m_up or "ABLITERATED" in m_up or "Q2" in m_up:
+            model_flag = "huihui"
+        elif "TURBO" in m_up and "Q8" in m_up:
             model_flag = "turbo-q8"
         elif "TURBO" in m_up and "Q6" in m_up:
             model_flag = "turbo-q6"
@@ -4698,15 +4700,16 @@ def _ensure_llama_server_running() -> bool:
                 "start",
                 "-m",
                 model_flag,
+                "--no-webui",
                 "--no-browser",
             ]
         elif manage_sh.is_file():
-            start_cmd = ["bash", str(manage_sh), "start", "-m", model_flag, "--no-browser"]
+            start_cmd = ["bash", str(manage_sh), "start", "-m", model_flag, "--no-webui", "--no-browser"]
         else:
             return False
 
         print(
-            f"\n\033[1;33m[Auto-Recovery] `llama-server` is not listening on 127.0.0.1:8080 — starting model `{model_flag}` automatically...\033[0m",
+            f"\n\033[1;33m[Auto-Recovery] `llama-server` backend is not running — starting model `{model_flag}` automatically...\033[0m",
             flush=True,
         )
         child_env = os.environ.copy()
@@ -6262,13 +6265,13 @@ SWITCH_HELP_MAP: dict[str, str] = {
     ),
     "m": (
         "=== Switch Help: -m / --model ===\n"
-        "  Select the active GGUF local LLM model to run on llama-server (127.0.0.1:8080):\n"
+        "  Select the active GGUF local LLM model to run on llama-server:\n"
         "    -m 3.8       | -m:3.8       | --model 3.8       : Qwen3.8-27B-Uncensored-Q3_K_M (~13.5 GB VRAM, default)\n"
-        "    -m q4        | -m:q4        | --model q4        : Qwen3.8-27B-Uncensored-Q4_K_M (~16.7 GB VRAM)\n"
-        "    -m q6        | -m:q6        | --model q6        : Qwen3.8-27B-Uncensored-Q6_K (~22.0 GB VRAM)\n"
-        "    -m 3.5       | -m:3.5       | --model 3.5       : Qwen3.5-9B-Uncensored-Q8_0 (~9.5 GB VRAM, fast)\n"
-        "    -m turbo-q4  | -m:turbo-q4  | --model turbo-q4  : Qwen3.8-27B-Turbo-Uncensored-Q4_K_M (4-step distilled)\n"
-        "    -m turbo-q8  | -m:turbo-q8  | --model turbo-q8  : Qwen3.8-27B-Turbo-Uncensored-Q8_0 (4-step distilled)\n"
+        "    -m 3.5       | -m:3.5       | --model 3.5       : Qwen3.5-9B-Uncensored-Q4_K_M (~5.8 GB VRAM, fast)\n"
+        "    -m huihui    | -m:q2        | --model huihui    : Huihui-Qwen3.8-27B-abliterated-Q2_K_L (~16.8 GB VRAM, Huihui Abliterated)\n"
+        "    -m turbo-q4  | -m:turbo-q4  | --model turbo-q4  : Qwen3.8-27B-Turbo-MTP-Q4_K_M (~18.2 GB VRAM, MTP)\n"
+        "    -m turbo-q6  | -m:turbo-q6  | --model turbo-q6  : Qwen3.8-27B-Turbo-MTP-Q6_K (~23.8 GB VRAM, MTP)\n"
+        "    -m turbo-q8  | -m:turbo-q8  | --model turbo-q8  : Qwen3.8-27B-Turbo-MTP-Q8_0 (~29.8 GB VRAM, MTP)\n"
         "    -m -h        | -m --help    | --model --help    : Show this help message"
     ),
     "netiso": (

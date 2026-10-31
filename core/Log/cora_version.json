@@ -1,10 +1,10 @@
 {
   "major_cli": 5,
-  "engine_rev": 18,
-  "patch_rev": 13,
-  "version": "5.18.13",
-  "updated_at": "2026-10-31 00:56:52",
-  "engine_tree_sha256": "17e1b33d66a4602aef5421563449bddb4241e8310998b72c49c7a43690e0fccd",
-  "patch_tree_sha256": "abc9ee1c4e94e388a075cf527f2c1c6bb8926684c1dfc0619f03e4044e2848d4",
-  "last_update_reason": "Reasoning/logic engine module modified"
+  "engine_rev": 19,
+  "patch_rev": 14,
+  "version": "5.19.14",
+  "updated_at": "2026-10-31 01:54:25",
+  "engine_tree_sha256": "7c3af10419f382da18044b193032a65e531feaeb8682289cbc2436059c4ee196",
+  "patch_tree_sha256": "3e2185b14f80cf892423b15bbd178a9326a03769cff3f86d5ba1a66f6258bef5",
+  "last_update_reason": "Documentation, tools, or training corpus updated"
 }

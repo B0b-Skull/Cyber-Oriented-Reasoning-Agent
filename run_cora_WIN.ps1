@@ -103,6 +103,10 @@ $Qwen38TurboQ8File     = "Qwen3.8-27B-Turbo-MTP-Q8_0.gguf"
 $Qwen38TurboQ8HfFile   = "Qwen3.8-27B-TurboFCFusion-735-882-Here-Uncen-NEO-CODER-MAX-MTP-Q8_0.gguf"
 $Qwen38TurboQ8MinBytes = 29500000000L
 
+$HuihuiQ2Url           = "https://huggingface.co/huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF/resolve/main/Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+$HuihuiQ2File          = "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+$HuihuiQ2MinBytes      = 16500000000L
+
 $ModelSelect = if ($env:MODEL) { $env:MODEL } else { "qwen3.8" }
 $AgentMode = if ($env:AGENT_MODE) { $env:AGENT_MODE } else { "on" }
 $SpecType = if ($env:SPEC_TYPE) { $env:SPEC_TYPE } else { "none" }
@@ -137,6 +141,7 @@ Commands:
 Model Selection Switch (-m / --model or `$env:MODEL):
   -m qwen3.8 | 3.8 | 27b | q3              Use Qwen3.8-27B-Uncensored-Q3_K_M.gguf (~12.4 GiB) [DEFAULT]
   -m qwen3.5 | 3.5 | 9b | fast             Use Qwen3.5-9B-Uncensored-Q4_K_M.gguf (~5.2 GiB, HauhauCS-Aggressive)
+  -m huihui | q2 | q2_k_l | abliterated    Use Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (~16.0 GiB, Huihui Abliterated)
   -m turbo | mtp | turbo-q4 | mtp-q4 | q4  Use Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (~17.2 GiB, Multiple Token Prediction)
   -m turbo-q6 | mtp-q6 | 3.8-q6 | q6       Use Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (~22.4 GiB, Multiple Token Prediction)
   -m turbo-q8 | mtp-q8 | 3.8-q8 | q8       Use Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (~28.2 GiB, Multiple Token Prediction)
@@ -391,6 +396,7 @@ function Resolve-Model([string]$Selector = $ModelSelect) {
     $q38Path = Join-Path $ModelsDir $Qwen38File
     $q35Path = Join-Path $ModelsDir $Qwen35File
     $q35AltPath = Join-Path $ModelsDir $Qwen35AltFile
+    $huihuiQ2Path = Join-Path $ModelsDir $HuihuiQ2File
     $turboQ4Path = Join-Path $ModelsDir $Qwen38TurboQ4File
     $turboQ4AltPath = Join-Path $ModelsDir $Qwen38TurboQ4HfFile
     $turboQ6Path = Join-Path $ModelsDir $Qwen38TurboQ6File
@@ -430,6 +436,14 @@ function Resolve-Model([string]$Selector = $ModelSelect) {
             $script:ModelExpectedMib = 5366
             $script:ModelPath = if (Test-Path $q35Path) { $q35Path } elseif (Test-Path $q35AltPath) { $q35AltPath } else { $q35Path }
         }
+        { $_ -in @("huihui", "q2", "q2_k_l", "abliterated", "huihui-q2", "3.8-q2", "qwen3.8-q2", "27b-q2", "huihui-27b") } {
+            $script:ModelKey = "huihui"
+            $script:ModelAlias = "Huihui-Qwen3.8-27B-abliterated-Q2_K_L"
+            $script:ModelDownloadUrl = $HuihuiQ2Url
+            $script:ModelMinBytes = $HuihuiQ2MinBytes
+            $script:ModelExpectedMib = 16422
+            $script:ModelPath = $huihuiQ2Path
+        }
         { $_ -in @("turbo", "mtp", "turbo-q4", "mtp-q4", "q4", "q4_k_m", "3.8-turbo", "3.8-mtp", "3.8-q4", "3.8-turbo-q4", "3.8-mtp-q4", "qwen3.8-turbo", "qwen3.8-mtp", "qwen3.8-turbo-q4", "qwen3.8-mtp-q4", "27b-turbo", "27b-mtp", "27b-q4") } {
             $script:ModelKey = "turbo-q4"
             $script:ModelAlias = "Qwen3.8-27B-Turbo-MTP-Q4_K_M"
@@ -465,7 +479,7 @@ function Resolve-Model([string]$Selector = $ModelSelect) {
             } elseif (Test-Path $cand2) {
                 $script:ModelPath = (Resolve-Path $cand2).Path
             } else {
-                Write-Error "Error: Unknown model selector '$Selector'. Use -m qwen3.8 (default), -m qwen3.5, -m turbo (MTP Q4_K_M), -m turbo-q6 (MTP Q6_K), or -m turbo-q8 (MTP Q8_0)."
+                Write-Error "Error: Unknown model selector '$Selector'. Use -m qwen3.8 (default), -m qwen3.5, -m huihui (Q2_K_L), -m turbo (MTP Q4_K_M), -m turbo-q6 (MTP Q6_K), or -m turbo-q8 (MTP Q8_0)."
                 exit 2
             }
             $script:ModelAlias = [System.IO.Path]::GetFileNameWithoutExtension($script:ModelPath)
@@ -542,6 +556,7 @@ function Invoke-DownloadModelsCommand([string]$Selector = $ModelSelect) {
         "all" {
             Invoke-ModelDownload -Label "Qwen3.5-9B-Uncensored-Q4_K_M.gguf (5.24 GiB)" -Url $Qwen35Url -DestPath (Join-Path $ModelsDir $Qwen35File) -MinBytes $Qwen35MinBytes -HfAltFile $Qwen35AltFile
             Invoke-ModelDownload -Label "Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.40 GiB)" -Url $Qwen38Url -DestPath (Join-Path $ModelsDir $Qwen38File) -MinBytes $Qwen38MinBytes
+            Invoke-ModelDownload -Label "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.04 GiB)" -Url $HuihuiQ2Url -DestPath (Join-Path $ModelsDir $HuihuiQ2File) -MinBytes $HuihuiQ2MinBytes
             Invoke-ModelDownload -Label "Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.23 GiB MTP)" -Url $Qwen38TurboQ4Url -DestPath (Join-Path $ModelsDir $Qwen38TurboQ4File) -MinBytes $Qwen38TurboQ4MinBytes -HfAltFile $Qwen38TurboQ4HfFile
             Invoke-ModelDownload -Label "Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (22.38 GiB MTP)" -Url $Qwen38TurboQ6Url -DestPath (Join-Path $ModelsDir $Qwen38TurboQ6File) -MinBytes $Qwen38TurboQ6MinBytes -HfAltFile $Qwen38TurboQ6HfFile
             Invoke-ModelDownload -Label "Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (28.16 GiB MTP)" -Url $Qwen38TurboQ8Url -DestPath (Join-Path $ModelsDir $Qwen38TurboQ8File) -MinBytes $Qwen38TurboQ8MinBytes -HfAltFile $Qwen38TurboQ8HfFile
@@ -824,6 +839,8 @@ function Show-Models {
     }
     $q38File = Join-Path $ModelsDir $Qwen38File
     $q35File = Join-Path $ModelsDir $Qwen35File
+    $q35Alt = Join-Path $ModelsDir $Qwen35AltFile
+    $huihuiQ2File = Join-Path $ModelsDir $HuihuiQ2File
     $turboQ4File = Join-Path $ModelsDir $Qwen38TurboQ4File
     $turboQ4Alt = Join-Path $ModelsDir $Qwen38TurboQ4HfFile
     $turboQ6File = Join-Path $ModelsDir $Qwen38TurboQ6File
@@ -832,19 +849,27 @@ function Show-Models {
     $turboQ8Alt = Join-Path $ModelsDir $Qwen38TurboQ8HfFile
 
     Write-Host "=== Installed & Available CORA Models ==="
-    Write-Host "  1. [DEFAULT]  qwen3.8 (-m 3.8 | 27b | q3)            -> Qwen3.8-27B-Uncensored-Q3_K_M.gguf (~12.4 GiB)"
+    Write-Host "  1. [DEFAULT]  qwen3.8 (-m 3.8 | 27b | q3)                 -> Qwen3.8-27B-Uncensored-Q3_K_M.gguf (~12.4 GiB)"
     if (Test-Path $q38File) {
         Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $q38File))
     } else {
         Write-Host "     Status: Not downloaded yet (auto-downloads with: .\run_cora_WIN.ps1 download -m 3.8)"
     }
-    Write-Host "  2. [FAST]     qwen3.5 (-m 3.5 | 9b | fast)           -> Qwen3.5-9B-Uncensored-Q4_K_M.gguf (~5.2 GiB, HauhauCS-Aggressive)"
+    Write-Host "  2. [FAST]     qwen3.5 (-m 3.5 | 9b | fast)                -> Qwen3.5-9B-Uncensored-Q4_K_M.gguf (~5.2 GiB, HauhauCS-Aggressive)"
     if (Test-Path $q35File) {
         Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $q35File))
+    } elseif (Test-Path $q35Alt) {
+        Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $q35Alt))
     } else {
         Write-Host "     Status: Not downloaded yet (auto-downloads with: .\run_cora_WIN.ps1 download -m 3.5)"
     }
-    Write-Host "  3. [MTP-Q4]   turbo (-m turbo | mtp | turbo-q4 | q4) -> Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (~17.2 GiB, Multiple Token Prediction)"
+    Write-Host "  3. [Q2-ABLIT] huihui  (-m huihui | q2 | q2_k_l | abliterated) -> Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (~16.0 GiB, Huihui Abliterated)"
+    if (Test-Path $huihuiQ2File) {
+        Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $huihuiQ2File))
+    } else {
+        Write-Host "     Status: Available for auto-download (.\run_cora_WIN.ps1 download -m huihui  OR  .\run_cora_WIN.ps1 cli -m huihui)"
+    }
+    Write-Host "  4. [MTP-Q4]   turbo (-m turbo | mtp | turbo-q4 | q4)      -> Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (~17.2 GiB, Multiple Token Prediction)"
     if (Test-Path $turboQ4File) {
         Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $turboQ4File))
     } elseif (Test-Path $turboQ4Alt) {
@@ -852,7 +877,7 @@ function Show-Models {
     } else {
         Write-Host "     Status: Available for auto-download (.\run_cora_WIN.ps1 download -m turbo  OR  .\run_cora_WIN.ps1 cli -m turbo)"
     }
-    Write-Host "  4. [MTP-Q6]   turbo-q6 (-m turbo-q6 | mtp-q6 | q6)   -> Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (~22.4 GiB, Multiple Token Prediction)"
+    Write-Host "  5. [MTP-Q6]   turbo-q6 (-m turbo-q6 | mtp-q6 | q6)        -> Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (~22.4 GiB, Multiple Token Prediction)"
     if (Test-Path $turboQ6File) {
         Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $turboQ6File))
     } elseif (Test-Path $turboQ6Alt) {
@@ -860,7 +885,7 @@ function Show-Models {
     } else {
         Write-Host "     Status: Available for auto-download (.\run_cora_WIN.ps1 download -m turbo-q6  OR  .\run_cora_WIN.ps1 cli -m turbo-q6)"
     }
-    Write-Host "  5. [MTP-Q8]   turbo-q8 (-m turbo-q8 | mtp-q8 | q8)   -> Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (~28.2 GiB, Multiple Token Prediction)"
+    Write-Host "  6. [MTP-Q8]   turbo-q8 (-m turbo-q8 | mtp-q8 | q8)        -> Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (~28.2 GiB, Multiple Token Prediction)"
     if (Test-Path $turboQ8File) {
         Write-Host ("     Status: Installed ({0})" -f (Format-FileSize $turboQ8File))
     } elseif (Test-Path $turboQ8Alt) {
@@ -1130,7 +1155,7 @@ function Start-Services {
         } elseif ($eArg -in @("-P", "--project")) {
             $skipNext = 1
             continue
-        } elseif ($eArg -in @("--continue", "-c", "--no-browser", "-no-browser", "--hud", "--no-hud", "--keep-server", "--keep-alive") -or $eArg -match '^(?:-P|--project)[:=]') {
+        } elseif ($eArg -in @("--continue", "-c", "--no-browser", "-no-browser", "--no-webui", "-no-webui", "--hud", "--no-hud", "--keep-server", "--keep-alive") -or $eArg -match '^(?:-P|--project)[:=]') {
             continue
         } else {
             $srvExtraArgs.Add($eArg)
@@ -1146,7 +1171,7 @@ function Start-Services {
         $argList = Build-LlamaServerArgumentList -IncludeServerAgent $includeServerAgent
         foreach ($extra in $srvExtraArgs) { $argList.Add($extra) }
 
-        Write-Host "Starting llama-server ($($script:ModelAlias)) on http://${BindHost}:${LlamaPort} ..."
+        Write-Host "Starting llama-server ($($script:ModelAlias)) ..."
         $env:PATH = "$BinDir;$env:PATH"
         $proc = Start-Process -FilePath $serverExe `
             -ArgumentList $argList `
@@ -1160,7 +1185,9 @@ function Start-Services {
         Set-Content -Path $ActiveModelFile -Value "$($script:ModelAlias) ($modelLeaf)" -Encoding UTF8
         Write-Host "llama-server started (PID $($proc.Id), Model: $($script:ModelAlias)). Waiting for model load..."
     }
-    Start-CoraWebui
+    if (-not (($ExtraArgs -contains "--no-webui") -or ($ExtraArgs -contains "-no-webui") -or ($env:CORA_NON_INTERACTIVE -eq "1"))) {
+        Start-CoraWebui
+    }
 }
 
 function Stop-Services {
@@ -1229,7 +1256,7 @@ function Start-AgentCli {
         Show-HardwareProfile
         $serverExe = Get-LlamaServerBinary
         $argList = Build-LlamaServerArgumentList -IncludeServerAgent $false
-        Write-Host "Starting local llama-server backend ($($script:ModelAlias)) on http://${BindHost}:${LlamaPort} ..."
+        Write-Host "Starting local llama-server backend ($($script:ModelAlias)) ..."
         $env:PATH = "$BinDir;$env:PATH"
         $proc = Start-Process -FilePath $serverExe `
             -ArgumentList $argList `

@@ -75,6 +75,10 @@ QWEN38_TURBO_Q8_FILE="Qwen3.8-27B-Turbo-MTP-Q8_0.gguf"
 QWEN38_TURBO_Q8_HF_FILE="Qwen3.8-27B-TurboFCFusion-735-882-Here-Uncen-NEO-CODER-MAX-MTP-Q8_0.gguf"
 QWEN38_TURBO_Q8_MIN_BYTES=29500000000
 
+HUIHUI_Q2_URL="https://huggingface.co/huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF/resolve/main/Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+HUIHUI_Q2_FILE="Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+HUIHUI_Q2_MIN_BYTES=16500000000
+
 # Default model selection (defaults to qwen3.8 when not specified)
 MODEL_SELECT="${MODEL:-qwen3.8}"
 AGENT_MODE="${AGENT_MODE:-on}"
@@ -113,6 +117,7 @@ Commands:
 Model Selection Switch (-m / --model or MODEL=...):
   -m qwen3.8 | 3.8 | 27b | q3              Use Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.4 GiB) [DEFAULT]
   -m qwen3.5 | 3.5 | 9b | fast             Use Qwen3.5-9B-Uncensored-Q4_K_M.gguf (5.2 GiB, HauhauCS-Aggressive)
+  -m huihui | q2 | q2_k_l | abliterated    Use Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.0 GiB, Huihui Abliterated)
   -m turbo | mtp | turbo-q4 | mtp-q4 | q4  Use Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.2 GiB, Multiple Token Prediction)
   -m turbo-q6 | mtp-q6 | 3.8-q6 | q6       Use Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (22.4 GiB, Multiple Token Prediction)
   -m turbo-q8 | mtp-q8 | 3.8-q8 | q8       Use Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (28.2 GiB, Multiple Token Prediction)
@@ -174,9 +179,10 @@ show_switch_help() {
     m|model)
       cat <<'EOT'
 === Switch Help: -m / --model ===
-  Select the active GGUF CORA model to run on llama-server (127.0.0.1:8080):
+  Select the active GGUF CORA model to run on llama-server:
     -m qwen3.8 | 3.8 | 27b | q3              Use Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.4 GiB) [DEFAULT]
     -m qwen3.5 | 3.5 | 9b | fast             Use Qwen3.5-9B-Uncensored-Q4_K_M.gguf (5.2 GiB, HauhauCS-Aggressive)
+    -m huihui  | q2 | q2_k_l | abliterated   Use Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.0 GiB, Huihui Abliterated)
     -m turbo   | mtp | turbo-q4 | q4         Use Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.2 GiB, Multiple Token Prediction)
     -m turbo-q6| mtp-q6 | 3.8-q6 | q6        Use Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (22.4 GiB, Multiple Token Prediction)
     -m turbo-q8| mtp-q8 | 3.8-q8 | q8        Use Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (28.2 GiB, Multiple Token Prediction)
@@ -527,6 +533,14 @@ resolve_model() {
         MODEL_PATH="$MODELS_DIR/$QWEN35_FILE"
       fi
       ;;
+    huihui|q2|q2_k_l|abliterated|huihui-q2|3.8-q2|qwen3.8-q2|27b-q2|huihui-27b)
+      MODEL_KEY="huihui"
+      MODEL_ALIAS="Huihui-Qwen3.8-27B-abliterated-Q2_K_L"
+      MODEL_DOWNLOAD_URL="$HUIHUI_Q2_URL"
+      MODEL_MIN_BYTES="$HUIHUI_Q2_MIN_BYTES"
+      MODEL_EXPECTED_MIB=16422
+      MODEL_PATH="$MODELS_DIR/$HUIHUI_Q2_FILE"
+      ;;
     turbo|mtp|turbo-q4|mtp-q4|q4|q4_k_m|3.8-turbo|3.8-mtp|3.8-q4|3.8-turbo-q4|3.8-mtp-q4|qwen3.8-turbo|qwen3.8-mtp|qwen3.8-turbo-q4|qwen3.8-mtp-q4|27b-turbo|27b-mtp|27b-q4)
       MODEL_KEY="turbo-q4"
       MODEL_ALIAS="Qwen3.8-27B-Turbo-MTP-Q4_K_M"
@@ -578,7 +592,7 @@ resolve_model() {
       elif [[ -f "$MODELS_DIR/$sel" ]]; then
         MODEL_PATH=$(readlink -f "$MODELS_DIR/$sel")
       else
-        printf 'Error: Unknown model selector "%s". Use -m qwen3.8 (default), -m qwen3.5, -m turbo (MTP Q4_K_M), -m turbo-q6 (MTP Q6_K), or -m turbo-q8 (MTP Q8_0).\n' "$sel" >&2
+        printf 'Error: Unknown model selector "%s". Use -m qwen3.8 (default), -m qwen3.5, -m huihui (Q2_K_L), -m turbo (MTP Q4_K_M), -m turbo-q6 (MTP Q6_K), or -m turbo-q8 (MTP Q8_0).\n' "$sel" >&2
         exit 2
       fi
       MODEL_ALIAS=$(basename "$MODEL_PATH" .gguf)
@@ -662,6 +676,7 @@ cmd_download_models() {
     all)
       download_gguf_model "Qwen3.5-9B-Uncensored-Q4_K_M.gguf (5.24 GiB)" "$QWEN35_URL" "$MODELS_DIR/$QWEN35_FILE" "$QWEN35_MIN_BYTES" "Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf"
       download_gguf_model "Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.40 GiB)" "$QWEN38_URL" "$MODELS_DIR/$QWEN38_FILE" "$QWEN38_MIN_BYTES" ""
+      download_gguf_model "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.04 GiB)" "$HUIHUI_Q2_URL" "$MODELS_DIR/$HUIHUI_Q2_FILE" "$HUIHUI_Q2_MIN_BYTES" ""
       download_gguf_model "Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.23 GiB MTP)" "$QWEN38_TURBO_Q4_URL" "$MODELS_DIR/$QWEN38_TURBO_Q4_FILE" "$QWEN38_TURBO_Q4_MIN_BYTES" "$QWEN38_TURBO_Q4_HF_FILE"
       download_gguf_model "Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (22.38 GiB MTP)" "$QWEN38_TURBO_Q6_URL" "$MODELS_DIR/$QWEN38_TURBO_Q6_FILE" "$QWEN38_TURBO_Q6_MIN_BYTES" "$QWEN38_TURBO_Q6_HF_FILE"
       download_gguf_model "Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (28.16 GiB MTP)" "$QWEN38_TURBO_Q8_URL" "$MODELS_DIR/$QWEN38_TURBO_Q8_FILE" "$QWEN38_TURBO_Q8_MIN_BYTES" "$QWEN38_TURBO_Q8_HF_FILE"
@@ -1001,6 +1016,8 @@ is_llama_running() {
       cmdline=$(tr '\0' ' ' < "/proc/$live_pid/cmdline" 2>/dev/null || true)
       if [[ "$cmdline" == *"Qwen3.5"* ]]; then
         echo "Qwen3.5-9B-Uncensored-Q4_K_M (Qwen3.5-9B-Uncensored-Q4_K_M.gguf)" > "$ACTIVE_MODEL_FILE"
+      elif [[ "$cmdline" == *"Huihui"* || "$cmdline" == *"Q2_K_L"* ]]; then
+        echo "Huihui-Qwen3.8-27B-abliterated-Q2_K_L (Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf)" > "$ACTIVE_MODEL_FILE"
       elif [[ "$cmdline" == *"MTP-Q8_0"* || "$cmdline" == *"Turbo-MTP-Q8_0"* ]]; then
         echo "Qwen3.8-27B-Turbo-MTP-Q8_0 (Qwen3.8-27B-Turbo-MTP-Q8_0.gguf)" > "$ACTIVE_MODEL_FILE"
       elif [[ "$cmdline" == *"MTP-Q6_K"* || "$cmdline" == *"Turbo-MTP-Q6_K"* ]]; then
@@ -1023,19 +1040,27 @@ list_models() {
     running_model=$(<"$ACTIVE_MODEL_FILE")
   fi
   printf '=== Installed & Available CORA Models ===\n'
-  printf '  1. [DEFAULT]  qwen3.8 (-m 3.8 | 27b | q3)            -> Qwen3.8-27B-Uncensored-Q3_K_M.gguf (~12.4 GiB)\n'
+  printf '  1. [DEFAULT]  qwen3.8 (-m 3.8 | 27b | q3)                    -> Qwen3.8-27B-Uncensored-Q3_K_M.gguf (~12.4 GiB)\n'
   if [[ -f "$MODELS_DIR/$QWEN38_FILE" ]]; then
     printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/$QWEN38_FILE" | awk '{print $1}')"
   else
     printf '     Status: Not downloaded yet (auto-downloads with: ./run_cora_NIX.sh download -m 3.8)\n'
   fi
-  printf '  2. [FAST]     qwen3.5 (-m 3.5 | 9b | fast)           -> Qwen3.5-9B-Uncensored-Q4_K_M.gguf (~5.2 GiB, HauhauCS-Aggressive)\n'
+  printf '  2. [FAST]     qwen3.5 (-m 3.5 | 9b | fast)                   -> Qwen3.5-9B-Uncensored-Q4_K_M.gguf (~5.2 GiB, HauhauCS-Aggressive)\n'
   if [[ -f "$MODELS_DIR/$QWEN35_FILE" ]]; then
     printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/$QWEN35_FILE" | awk '{print $1}')"
+  elif [[ -f "$MODELS_DIR/Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf" ]]; then
+    printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf" | awk '{print $1}')"
   else
     printf '     Status: Not downloaded yet (auto-downloads with: ./run_cora_NIX.sh download -m 3.5)\n'
   fi
-  printf '  3. [MTP-Q4]   turbo (-m turbo | mtp | turbo-q4 | q4) -> Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (~17.2 GiB, Multiple Token Prediction)\n'
+  printf '  3. [Q2-ABLIT] huihui  (-m huihui | q2 | q2_k_l | abliterated)-> Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (~16.0 GiB, Huihui Abliterated)\n'
+  if [[ -f "$MODELS_DIR/$HUIHUI_Q2_FILE" ]]; then
+    printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/$HUIHUI_Q2_FILE" | awk '{print $1}')"
+  else
+    printf '     Status: Available for auto-download (./run_cora_NIX.sh download -m huihui  OR  ./run_cora_NIX.sh cli -m huihui)\n'
+  fi
+  printf '  4. [MTP-Q4]   turbo (-m turbo | mtp | turbo-q4 | q4)         -> Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (~17.2 GiB, Multiple Token Prediction)\n'
   if [[ -f "$MODELS_DIR/$QWEN38_TURBO_Q4_FILE" ]]; then
     printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/$QWEN38_TURBO_Q4_FILE" | awk '{print $1}')"
   elif [[ -f "$MODELS_DIR/$QWEN38_TURBO_Q4_HF_FILE" ]]; then
@@ -1043,7 +1068,7 @@ list_models() {
   else
     printf '     Status: Available for auto-download (./run_cora_NIX.sh download -m turbo  OR  ./run_cora_NIX.sh cli -m turbo)\n'
   fi
-  printf '  4. [MTP-Q6]   turbo-q6 (-m turbo-q6 | mtp-q6 | q6)   -> Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (~22.4 GiB, Multiple Token Prediction)\n'
+  printf '  5. [MTP-Q6]   turbo-q6 (-m turbo-q6 | mtp-q6 | q6)           -> Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (~22.4 GiB, Multiple Token Prediction)\n'
   if [[ -f "$MODELS_DIR/$QWEN38_TURBO_Q6_FILE" ]]; then
     printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/$QWEN38_TURBO_Q6_FILE" | awk '{print $1}')"
   elif [[ -f "$MODELS_DIR/$QWEN38_TURBO_Q6_HF_FILE" ]]; then
@@ -1051,7 +1076,7 @@ list_models() {
   else
     printf '     Status: Available for auto-download (./run_cora_NIX.sh download -m turbo-q6  OR  ./run_cora_NIX.sh cli -m turbo-q6)\n'
   fi
-  printf '  5. [MTP-Q8]   turbo-q8 (-m turbo-q8 | mtp-q8 | q8)   -> Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (~28.2 GiB, Multiple Token Prediction)\n'
+  printf '  6. [MTP-Q8]   turbo-q8 (-m turbo-q8 | mtp-q8 | q8)           -> Qwen3.8-27B-Turbo-MTP-Q8_0.gguf (~28.2 GiB, Multiple Token Prediction)\n'
   if [[ -f "$MODELS_DIR/$QWEN38_TURBO_Q8_FILE" ]]; then
     printf '     Status: Installed (%s)\n' "$(du -Lh "$MODELS_DIR/$QWEN38_TURBO_Q8_FILE" | awk '{print $1}')"
   elif [[ -f "$MODELS_DIR/$QWEN38_TURBO_Q8_HF_FILE" ]]; then
@@ -1266,6 +1291,10 @@ start_services() {
 
   local srv_extra_args=()
   local skip_next=0
+  local skip_webui=0
+  if [[ "${CORA_NON_INTERACTIVE:-0}" == "1" ]]; then
+    skip_webui=1
+  fi
   for ((i=0; i<${#EXTRA_ARGS[@]}; i++)); do
     if (( skip_next > 0 )); then
       ((skip_next--))
@@ -1282,6 +1311,9 @@ start_services() {
       -P|--project)
         skip_next=1
         ;;
+      --no-webui|-no-webui)
+        skip_webui=1
+        ;;
       --continue|-c|--no-browser|-no-browser|--hud|--no-hud|--keep-server|--keep-alive|-P:*|--project:*|-P=*|--project=*)
         ;;
       *)
@@ -1294,8 +1326,8 @@ start_services() {
     printf 'llama-server is already running (PID %s, Model: %s). Use "./run_cora_NIX.sh restart -m %s" to switch models.\n' \
       "$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || echo active)" "$(tr -d '\r\n' < "$ACTIVE_MODEL_FILE" 2>/dev/null || echo unknown)" "$MODEL_KEY"
   else
-    printf 'Starting llama-server (%s) on http://%s:%s (Active Project: %s) ...\n' \
-      "$MODEL_ALIAS" "$HOST" "$LLAMA_PORT" "${CORA_ACTIVE_PROJECT:-select-in-webui}"
+    printf 'Starting llama-server (%s) (Active Project: %s) ...\n' \
+      "$MODEL_ALIAS" "${CORA_ACTIVE_PROJECT:-select-in-webui}"
     export LD_LIBRARY_PATH="$BIN_DIR:${LD_LIBRARY_PATH:-}"
     nohup "$BIN_DIR/llama-server" \
       --model "$MODEL_PATH" \
@@ -1323,7 +1355,9 @@ start_services() {
     printf 'llama-server started (PID %s, Model: %s). Waiting for model load...\n' "$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || echo active)" "$MODEL_ALIAS"
   fi
 
-  start_cora_webui
+  if (( skip_webui == 0 )); then
+    start_cora_webui
+  fi
 }
 
 run_cli() {
@@ -1355,7 +1389,7 @@ run_cli() {
       sleep 1
     fi
     print_hardware_profile
-    printf 'Starting local llama-server backend (%s) on http://%s:%s ...\n' "$MODEL_ALIAS" "$HOST" "$LLAMA_PORT"
+    printf 'Starting local llama-server backend (%s) ...\n' "$MODEL_ALIAS"
     export LD_LIBRARY_PATH="$BIN_DIR:${LD_LIBRARY_PATH:-}"
     nohup "$BIN_DIR/llama-server" \
       --model "$MODEL_PATH" \

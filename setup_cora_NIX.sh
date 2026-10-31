@@ -14,6 +14,7 @@
 #      verification where practical for host RAM/VRAM:
 #        - Qwen3.5-9B-Uncensored-Q4_K_M.gguf (5.24 GiB)
 #        - Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.40 GiB)
+#        - Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.04 GiB, Huihui Abliterated)
 #        - Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.23 GiB, Multiple Token Prediction)
 #        - Qwen3.8-27B-Turbo-MTP-Q6_K.gguf   (22.38 GiB, Multiple Token Prediction)
 #        - Qwen3.8-27B-Turbo-MTP-Q8_0.gguf   (28.16 GiB, Multiple Token Prediction)
@@ -65,6 +66,10 @@ QWEN38_TURBO_Q8_FILE="Qwen3.8-27B-Turbo-MTP-Q8_0.gguf"
 QWEN38_TURBO_Q8_HF_FILE="Qwen3.8-27B-TurboFCFusion-735-882-Here-Uncen-NEO-CODER-MAX-MTP-Q8_0.gguf"
 QWEN38_TURBO_Q8_MIN_BYTES=29500000000
 
+HUIHUI_Q2_URL="https://huggingface.co/huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF/resolve/main/Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+HUIHUI_Q2_FILE="Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf"
+HUIHUI_Q2_MIN_BYTES=16500000000
+
 SCRIPT_DIR=$(cd -- "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")" && pwd -P)
 if [[ -n "${CORA_ROOT:-}" ]]; then
   CORA_ROOT=$(readlink -m "$CORA_ROOT")
@@ -87,9 +92,10 @@ usage() {
 Usage: ./setup_cora_NIX.sh [options]
 
 Options:
-  --all-models       Download all 5 models: Qwen3.5-9B (5.24 GiB), Qwen3.8-27B Q3_K_M (12.40 GiB),
-                     and Qwen3.8-27B Turbo MTP Q4_K_M (17.23 GiB), Q6_K (22.38 GiB), Q8_0 (28.16 GiB)
+  --all-models       Download all 6 models: Qwen3.5-9B (5.24 GiB), Qwen3.8-27B Q3_K_M (12.40 GiB),
+                     Huihui-Qwen3.8-27B Q2_K_L (16.04 GiB), and Qwen3.8-27B Turbo MTP Q4_K_M (17.23 GiB), Q6_K (22.38 GiB), Q8_0 (28.16 GiB)
   --all-turbo        Download all 3 Qwen3.8-27B Turbo MTP models (Q4_K_M, Q6_K, and Q8_0)
+  --huihui|--only-q2 Download Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.04 GiB, Huihui Abliterated)
   --turbo            Download Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.23 GiB, Multiple Token Prediction)
   --only-turbo-q4    Download only Qwen3.8-27B-Turbo-MTP-Q4_K_M.gguf (17.23 GiB)
   --only-turbo-q6    Download only Qwen3.8-27B-Turbo-MTP-Q6_K.gguf (22.38 GiB)
@@ -112,6 +118,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --all-models)                 DOWNLOAD_MODE="all"; shift ;;
     --all-turbo|--turbo-all)      DOWNLOAD_MODE="all-turbo"; shift ;;
+    --huihui|--only-huihui|--only-q2|--q2) DOWNLOAD_MODE="huihui"; shift ;;
     --turbo|--only-turbo-q4)      DOWNLOAD_MODE="turbo-q4"; shift ;;
     --only-turbo-q6|--turbo-q6)   DOWNLOAD_MODE="turbo-q6"; shift ;;
     --only-turbo-q8|--turbo-q8)   DOWNLOAD_MODE="turbo-q8"; shift ;;
@@ -286,6 +293,7 @@ fi
 
 WANT_35=0
 WANT_38=0
+WANT_HUIHUI_Q2=0
 WANT_TURBO_Q4=0
 WANT_TURBO_Q6=0
 WANT_TURBO_Q8=0
@@ -294,6 +302,7 @@ case "$DOWNLOAD_MODE" in
   all)
     WANT_35=1
     WANT_38=1
+    WANT_HUIHUI_Q2=1
     WANT_TURBO_Q4=1
     WANT_TURBO_Q6=1
     WANT_TURBO_Q8=1
@@ -302,6 +311,9 @@ case "$DOWNLOAD_MODE" in
     WANT_TURBO_Q4=1
     WANT_TURBO_Q6=1
     WANT_TURBO_Q8=1
+    ;;
+  huihui)
+    WANT_HUIHUI_Q2=1
     ;;
   turbo-q4)
     WANT_TURBO_Q4=1
@@ -321,6 +333,7 @@ case "$DOWNLOAD_MODE" in
   none)
     WANT_35=0
     WANT_38=0
+    WANT_HUIHUI_Q2=0
     WANT_TURBO_Q4=0
     WANT_TURBO_Q6=0
     WANT_TURBO_Q8=0
@@ -331,6 +344,9 @@ case "$DOWNLOAD_MODE" in
       WANT_38=1
     else
       printf '  -> Host has %d MiB RAM (< 16 GiB): defaulting to Qwen3.5-9B (pass --all-models to force Qwen3.8-27B).\n' "$TOTAL_RAM_MIB"
+    fi
+    if (( TOTAL_VRAM_MIB >= 16000 || (TOTAL_RAM_MIB >= 24000 && TOTAL_VRAM_MIB >= 10000) )); then
+      WANT_HUIHUI_Q2=1
     fi
     # Auto-select Qwen3.8-27B Turbo MTP models where balanced for both GPU VRAM and host RAM
     if (( TOTAL_VRAM_MIB >= 16000 || (TOTAL_RAM_MIB >= 32000 && TOTAL_VRAM_MIB >= 12000) )); then
@@ -395,6 +411,11 @@ fi
 if (( WANT_38 == 1 )); then
   download_model "Qwen3.8-27B-Uncensored-Q3_K_M.gguf (12.40 GiB)" \
     "$QWEN38_URL" "$CORA_ROOT/models/$QWEN38_FILE" "$QWEN38_MIN_BYTES"
+fi
+
+if (( WANT_HUIHUI_Q2 == 1 )); then
+  download_model "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf (16.04 GiB Huihui Abliterated)" \
+    "$HUIHUI_Q2_URL" "$CORA_ROOT/models/$HUIHUI_Q2_FILE" "$HUIHUI_Q2_MIN_BYTES"
 fi
 
 if (( WANT_TURBO_Q4 == 1 )); then

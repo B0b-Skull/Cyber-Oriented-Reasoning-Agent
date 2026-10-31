@@ -211,6 +211,16 @@ CORA_MODEL_CATALOG: List[Dict[str, Any]] = [
         "vram_est": "5.8 GB",
     },
     {
+        "id": "huihui",
+        "alias": "Huihui-Qwen3.8-27B-abliterated-Q2_K_L",
+        "name": "Huihui-Qwen3.8-27B-Abliterated (Q2_K_L)",
+        "filename": "Huihui-Qwen3.8-27B-abliterated-Q2_K_L.gguf",
+        "alt_filenames": [],
+        "provider": "llama-server",
+        "role": "Abliterated 27B Mid-VRAM Tier (Q2_K_L)",
+        "vram_est": "16.8 GB",
+    },
+    {
         "id": "turbo",
         "alias": "Qwen3.8-27B-Turbo-MTP-Q4_K_M",
         "name": "Qwen3.8-27B-Turbo-MTP (Q4_K_M)",
@@ -1418,6 +1428,14 @@ def _resolve_gguf_model(model_id: str) -> Dict[str, Any]:
         "qwen3.5": "3.5",
         "9b": "3.5",
         "fast": "3.5",
+        "huihui": "huihui",
+        "q2": "huihui",
+        "q2_k_l": "huihui",
+        "abliterated": "huihui",
+        "huihui-q2": "huihui",
+        "3.8-q2": "huihui",
+        "qwen3.8-q2": "huihui",
+        "27b-q2": "huihui",
         "turbo-q4": "turbo",
         "mtp": "turbo",
         "q4": "turbo",
@@ -4540,13 +4558,13 @@ WEBUI_SWITCH_HELP_MAP: Dict[str, str] = {
     ),
     "m": (
         "=== Switch Help: -m / --model ===\n"
-        "  Select the active GGUF local LLM model to run on llama-server (127.0.0.1:8080):\n"
+        "  Select the active GGUF local LLM model to run on llama-server:\n"
         "    -m 3.8       | -m:3.8       | --model 3.8       : Qwen3.8-27B-Uncensored-Q3_K_M (~13.5 GB VRAM, default)\n"
-        "    -m q4        | -m:q4        | --model q4        : Qwen3.8-27B-Uncensored-Q4_K_M (~16.7 GB VRAM)\n"
-        "    -m q6        | -m:q6        | --model q6        : Qwen3.8-27B-Uncensored-Q6_K (~22.0 GB VRAM)\n"
-        "    -m 3.5       | -m:3.5       | --model 3.5       : Qwen3.5-9B-Uncensored-Q4_K_M (~6.5 GB VRAM, fast)\n"
-        "    -m turbo-q4  | -m:turbo-q4  | --model turbo-q4  : Qwen3.8-27B-Turbo-Uncensored-Q4_K_M (4-step distilled)\n"
-        "    -m turbo-q8  | -m:turbo-q8  | --model turbo-q8  : Qwen3.8-27B-Turbo-Uncensored-Q8_0 (4-step distilled)\n"
+        "    -m 3.5       | -m:3.5       | --model 3.5       : Qwen3.5-9B-Uncensored-Q4_K_M (~5.8 GB VRAM, fast)\n"
+        "    -m huihui    | -m:q2        | --model huihui    : Huihui-Qwen3.8-27B-abliterated-Q2_K_L (~16.8 GB VRAM, Huihui Abliterated)\n"
+        "    -m turbo-q4  | -m:turbo-q4  | --model turbo-q4  : Qwen3.8-27B-Turbo-MTP-Q4_K_M (~18.2 GB VRAM, MTP)\n"
+        "    -m turbo-q6  | -m:turbo-q6  | --model turbo-q6  : Qwen3.8-27B-Turbo-MTP-Q6_K (~23.8 GB VRAM, MTP)\n"
+        "    -m turbo-q8  | -m:turbo-q8  | --model turbo-q8  : Qwen3.8-27B-Turbo-MTP-Q8_0 (~29.8 GB VRAM, MTP)\n"
         "    -m -h        | -m --help    | --model --help    : Show this help message"
     ),
     "netiso": (

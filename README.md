@@ -27,9 +27,10 @@ cd CORA
 bash setup_cora_NIX.sh
 
 # Optional installer flags:
-bash setup_cora_NIX.sh --all-models       # Download all 5 GGUF models (3.5, 3.8, Turbo MTP Q4/Q6/Q8)
+bash setup_cora_NIX.sh --all-models       # Download all 6 GGUF models (3.5, 3.8, Huihui Q2_K_L, Turbo MTP Q4/Q6/Q8)
 bash setup_cora_NIX.sh --only-3.5         # Download only fast Qwen3.5-9B (5.24 GiB)
 bash setup_cora_NIX.sh --only-3.8         # Download only default Qwen3.8-27B (12.40 GiB)
+bash setup_cora_NIX.sh --only-huihui      # Download only Huihui Qwen3.8-27B Abliterated Q2_K_L (16.04 GiB)
 bash setup_cora_NIX.sh --skip-models      # Install binaries, Python deps & 15-Engine suite only
 ```
 
@@ -42,9 +43,10 @@ cd CORA
 .\setup_cora_WIN.ps1
 
 # Optional installer flags:
-.\setup_cora_WIN.ps1 -AllModels           # Download all 5 GGUF models (3.5, 3.8, Turbo MTP Q4/Q6/Q8)
+.\setup_cora_WIN.ps1 -AllModels           # Download all 6 GGUF models (3.5, 3.8, Huihui Q2_K_L, Turbo MTP Q4/Q6/Q8)
 .\setup_cora_WIN.ps1 -Only35              # Download only fast Qwen3.5-9B (5.24 GiB)
 .\setup_cora_WIN.ps1 -Only38              # Download only default Qwen3.8-27B (12.40 GiB)
+.\setup_cora_WIN.ps1 -OnlyHuihui          # Download only Huihui Qwen3.8-27B Abliterated Q2_K_L (16.04 GiB)
 .\setup_cora_WIN.ps1 -SkipModels          # Install binaries, Python deps & 15-Engine suite only
 ```
 
