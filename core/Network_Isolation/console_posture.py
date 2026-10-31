@@ -283,7 +283,7 @@ def detect_console_posture(override: str = "") -> Dict[str, Any]:
     elif egroup_name == "llm-local":
         evidence.append("Effective kernel group GID is `llm-local` (iptables owner filter active)")
         chosen = "ISOLATED_LAN_USB"
-    elif os_name == "windows" and _check_windows_firewall_isolation():
+    elif os_name == "windows" and env_mode != "UNRESTRICTED" and _check_windows_firewall_isolation():
         evidence.append("Windows Defender Firewall rule `LLM_ISOLATION` is enabled")
         chosen = "ISOLATED_LAN_USB"
     # 3. Default: Unrestricted Full System & Network Access (RED)
@@ -387,11 +387,18 @@ def _get_windows_active_interfaces() -> List[str]:
     return ["default"]
 
 
+_WIN_FIREWALL_ISO_CACHE: tuple[float, bool] = (0.0, False)
+
+
 def _check_windows_firewall_isolation() -> bool:
+    global _WIN_FIREWALL_ISO_CACHE
     if os.environ.get("LLM_FIREWALL_ISOLATED") == "1":
         return True
     if platform.system().lower() != "windows":
         return False
+    now = time.monotonic()
+    if _WIN_FIREWALL_ISO_CACHE[0] > 0.0 and (now - _WIN_FIREWALL_ISO_CACHE[0]) < 30.0:
+        return _WIN_FIREWALL_ISO_CACHE[1]
     try:
         proc = subprocess.run(
             ["netsh", "advfirewall", "firewall", "show", "rule", "name=LLM_ISOLATION"],
@@ -400,8 +407,11 @@ def _check_windows_firewall_isolation() -> bool:
             timeout=2.5,
             check=False,
         )
-        return proc.returncode == 0 and "Enabled:" in proc.stdout and "Yes" in proc.stdout
+        enabled = bool(proc.returncode == 0 and "Enabled:" in proc.stdout and "Yes" in proc.stdout)
+        _WIN_FIREWALL_ISO_CACHE = (now, enabled)
+        return enabled
     except Exception:
+        _WIN_FIREWALL_ISO_CACHE = (now, False)
         return False
 
 

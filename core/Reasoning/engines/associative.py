@@ -41,17 +41,121 @@ KNOWN_TECH_CONCEPTS = {
     "reverse_proxy", "bearer", "csrf", "cookie", "x-forwarded-for", "ssh", "socat", "tcpdump",
     "netstat", "ipconfig", "wmic", "icacls", "cacls", "bcdedit", "auditpol", "wevtutil",
     "netsh", "powershell", "pslist", "listdlls", "autorunsc", "dsquery", "tshark", "p0f", "snort",
+    "tasklist", "systeminfo", "reg", "sc", "schtasks", "forfiles", "findstr", "takeown",
+    "whoami", "gpresult", "nltest", "certutil", "klist", "setspn", "winrm", "psservice",
+    "psloggedon", "psloglist", "procdump", "handle", "sigcheck", "accesschk", "tcpvcon",
+    "pktmon", "get-ciminstance", "get-winevent", "get-process", "get-service", "get-netadapter",
+    "get-nettcpconnection", "get-netroute", "test-netconnection", "invoke-webrequest",
+    "invoke-command", "ss", "iproute2", "journalctl", "systemctl", "lsof", "fuser", "strace",
+    "findmnt", "lsblk", "getcap", "capsh", "sudo", "chmod", "chown", "find", "grep", "awk",
+    "openssl", "wireshark", "bpf", "autopsy", "encase", "ntfs", "mft", "oplocks", "kerberos",
+    "ldap", "smb", "rdp", "mpls", "gmpls", "sd-wan", "gpon", "otn", "lte", "5g", "gsm",
+    "umts", "sdr", "sqli", "informix", "oracle", "mysql", "mssql", "postgres", "aslr", "dep",
+    "pe_header", "apt28", "sysinternals", "windows", "linux", "solaris",
+    "revengai", "reait", "creait", "sdk-python", "plugin-ghidra", "plugin-ida", "plugin-binary-ninja",
+    "reai-r2", "reai-rz", "ghidra", "ida", "radare2", "rabin2", "rizin", "cutter", "dumpbin",
+    "readelf", "objdump", "strings64", "upx", "yara", "sbom", "binnet", "decompile", "disassemble", "unstrip",
+    "velociraptor", "hayabusa", "chainsaw", "mftecmd", "pecmd", "amcacheparser", "appcompatcacheparser",
+    "recmd", "srumecmd", "srum", "usnjrnl", "prefetch", "amcache", "shimcache", "shellbags", "userassist",
+    "vssadmin", "esentutl", "volatility3", "memprocfs", "winpmem", "hollowshunter", "uac", "avml", "lime",
+    "dwarf2json", "sleuthkit", "fls", "icat", "mactime", "plaso", "log2timeline", "tracee", "unhide",
+    "zeek", "bpftool", "debugfs", "utmpdump", "ausearch", "aureport", "memfd",
 }
 
 _WIKILINK_RE = re.compile(r"\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]")
 _FM_TAGS_RE = re.compile(r"(?m)^tags:\s*\[([^\]]+)\]")
+_FM_YAML_TAGS_BLOCK_RE = re.compile(r"(?ms)^tags:\s*\r?\n((?:[ \t]+-[ \t]+[^\r\n]+\r?\n?)+)")
 _INLINE_TAG_RE = re.compile(r"(?:^|\s)#([a-zA-Z][a-zA-Z0-9_\-]{1,30})\b")
 _IPV4_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}(?:/\d{1,2})?\b")
-_DEV_RE = re.compile(r"/dev/[a-zA-Z0-9_\-]+")
+_DEV_RE = re.compile(r"(?:/dev/[a-zA-Z0-9_\-]+|\bCOM[1-9]\d*\b)")
 _SUMMARY_RE = re.compile(r"(?m)^summary:\s*(.+)$")
+_WHEN_TO_APPLY_RE = re.compile(r"(?m)^when_to_apply:\s*(.+)$")
+_OS_PLATFORM_RE = re.compile(r"(?m)^os_platform:\s*(.+)$")
+_DOMAIN_HUB_RE = re.compile(r"(?m)^domain_hub:\s*(.+)$")
+_TEAM_ROLE_RE = re.compile(r"(?m)^team_role:\s*(.+)$")
 _TECH_CONCEPTS_RE = re.compile(
     r"\b(" + "|".join(re.escape(k) for k in sorted(KNOWN_TECH_CONCEPTS, key=len, reverse=True)) + r")\b"
 )
+
+_BLUE_TEAM_INTENT_RE = re.compile(
+    r"\b(?:blue[\s_\-]*team|defend|defensive|harden|hardening|lockdown|contain|containment|eradicate|eradication|"
+    r"remediate|remediation|mitigate|mitigation|patch|block[\s_\-]+ip|firewall[\s_\-]+rule|acl[\s_\-]+lockdown|"
+    r"audit[\s_\-]+policy|runasppl|wdigest)\b",
+    re.I,
+)
+_RED_TEAM_INTENT_RE = re.compile(
+    r"\b(?:red[\s_\-]*team|offensive|adversary[\s_\-]*emulation|pentest|exploit|exploitation|payload|bypass|"
+    r"privesc|privilege[\s_\-]+escalation|kerberoast|lateral[\s_\-]+movement|pivot|pivoting|portproxy|"
+    r"reverse[\s_\-]+shell|masquerade|oob[\s_\-]+unlock|berserker)\b",
+    re.I,
+)
+_HUNT_TEAM_INTENT_RE = re.compile(
+    r"\b(?:hunt[\s_\-]*team|threat[\s_\-]*hunt|threat[\s_\-]*hunting|assumed[\s_\-]*breach|anomaly|anomalies|"
+    r"ioc|ioa|persistence[\s_\-]*hunt|lolbin|hollowing|unbacked|rwxp|timestomp|ads[\s_\-]*stream|beacon|beaconing|"
+    r"c2|rootkit|dfir|forensic|forensics|autorunsc|p0f|pcap)\b",
+    re.I,
+)
+_REVENG_INTENT_RE = re.compile(
+    r"\b(?:reverse[\s_\-]*engineer|reverse[\s_\-]*engineering|reversing|revengai|reveng\.ai|reait|creait|"
+    r"sdk[\s_\-]*python|plugin[\s_\-]*ghidra|plugin[\s_\-]*ida|plugin[\s_\-]*binary[\s_\-]*ninja|reai[\s_\-]*r2|"
+    r"reai[\s_\-]*rz|ghidra|ida[\s_\-]*pro|binary[\s_\-]*ninja|radare2|rizin|cutter|rabin2|dumpbin|readelf|"
+    r"objdump|decompile|decompilation|disassemble|disassembly|unstrip|unstripping|binnet|binary[\s_\-]*similarity|"
+    r"pe[\s_\-]*header|elf[\s_\-]*binary|upx|sbom)\b",
+    re.I,
+)
+_WINDOWS_FORENSICS_INTENT_RE = re.compile(
+    r"\b(?:windows[\s_\-]*forensic|windows[\s_\-]*forensics|windows[\s_\-]*dfir|mftecmd|pecmd|amcacheparser|"
+    r"appcompatcacheparser|recmd|srumecmd|srum|srudb|usnjrnl|prefetch|amcache|shimcache|shellbags|userassist|"
+    r"vssadmin|esentutl|hayabusa|chainsaw|memprocfs|winpmem|hollowshunter|evtx|ntuser\.dat|usrclass\.dat)\b",
+    re.I,
+)
+_LINUX_FORENSICS_INTENT_RE = re.compile(
+    r"\b(?:linux[\s_\-]*forensic|linux[\s_\-]*forensics|linux[\s_\-]*dfir|uac|avml|lime|dwarf2json|sleuthkit|"
+    r"mactime|plaso|log2timeline|tracee|unhide|bpftool|debugfs|utmpdump|wtmp|btmp|memfd|ld\.so\.preload|"
+    r"crtime|dtime)\b",
+    re.I,
+)
+
+
+def infer_team_role_from_query(query: str) -> str:
+    """Infer whether a query/problem primarily aligns with `blue_team`, `red_team`, `hunt_team`, `reverse_engineering`, `windows_forensics`, or `linux_forensics`."""
+    q_low = (query or "").lower()
+    if not q_low:
+        return ""
+    blue_hits = len(_BLUE_TEAM_INTENT_RE.findall(q_low))
+    red_hits = len(_RED_TEAM_INTENT_RE.findall(q_low))
+    hunt_hits = len(_HUNT_TEAM_INTENT_RE.findall(q_low))
+    reveng_hits = len(_REVENG_INTENT_RE.findall(q_low))
+    win_dfir_hits = len(_WINDOWS_FORENSICS_INTENT_RE.findall(q_low))
+    lin_dfir_hits = len(_LINUX_FORENSICS_INTENT_RE.findall(q_low))
+    if "blue team" in q_low or "blue_team" in q_low:
+        blue_hits += 4
+    if "red team" in q_low or "red_team" in q_low:
+        red_hits += 4
+    if "hunt team" in q_low or "hunt_team" in q_low or "threat hunt" in q_low:
+        hunt_hits += 4
+    if any(k in q_low for k in ("reverse engineer", "reverse_engineer", "revengai", "reveng.ai", "reait")):
+        reveng_hits += 5
+    if ("forensic" in q_low or "dfir" in q_low or "volatility" in q_low or "velociraptor" in q_low) and any(
+        k in q_low for k in ("windows", "ntfs", "mft", "evtx", "registry", "prefetch", "amcache", "srum")
+    ):
+        win_dfir_hits += 5
+    if ("forensic" in q_low or "dfir" in q_low or "volatility" in q_low or "velociraptor" in q_low) and any(
+        k in q_low for k in ("linux", "unix", "/proc", "ext4", "inode", "journalctl", "auditd", "wtmp", "avml", "lime")
+    ):
+        lin_dfir_hits += 5
+    best_role, best_score = "", 0
+    for role, sc in (
+        ("windows_forensics", win_dfir_hits),
+        ("linux_forensics", lin_dfir_hits),
+        ("reverse_engineering", reveng_hits),
+        ("blue_team", blue_hits),
+        ("red_team", red_hits),
+        ("hunt_team", hunt_hits),
+    ):
+        if sc > best_score:
+            best_role, best_score = role, sc
+    return best_role if best_score > 0 else ""
 
 _GRAPH_CACHE: Dict[str, Any] = {
     "signature": None,
@@ -62,6 +166,12 @@ _GRAPH_CACHE: Dict[str, Any] = {
 
 _PPR_QUERY_CACHE: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
 
+
+def _strip_yaml_quotes(val: str) -> str:
+    s = (val or "").strip()
+    if len(s) >= 2 and ((s[0] == '"' and s[-1] == '"') or (s[0] == "'" and s[-1] == "'")):
+        return s[1:-1].strip()
+    return s
 
 
 def _extract_entities_from_markdown(rel_note: str, text: str) -> Dict[str, Set[str]]:
@@ -77,14 +187,22 @@ def _extract_entities_from_markdown(rel_note: str, text: str) -> Dict[str, Set[s
     # 1. WikiLinks [[category/note]] or [[note]]
     for m in _WIKILINK_RE.findall(text):
         cleaned = m.strip().strip("/")
-        if cleaned and cleaned != "00_MEMORY_INDEX":
+        if cleaned and not cleaned.startswith("00_"):
             entities["wikilinks"].add(cleaned.lower())
 
-    # 2. Frontmatter tags: [a, b, c] and inline #tags
+    # 2. Frontmatter tags: [a, b, c], multi-line YAML tags:\n  - a, and inline #tags
     fm_match = _FM_TAGS_RE.search(text)
     if fm_match:
         for t in fm_match.group(1).split(","):
             ct = re.sub(r"[^a-zA-Z0-9_\-]", "", t.strip()).lower()
+            if ct:
+                entities["tags"].add(ct)
+
+    fm_yaml_match = _FM_YAML_TAGS_BLOCK_RE.search(text[:1500])
+    if fm_yaml_match:
+        for ln in fm_yaml_match.group(1).splitlines():
+            item = re.sub(r"^[ \t]*-[ \t]*", "", ln).strip()
+            ct = re.sub(r"[^a-zA-Z0-9_\-]", "", item).lower()
             if ct:
                 entities["tags"].add(ct)
 
@@ -96,7 +214,7 @@ def _extract_entities_from_markdown(rel_note: str, text: str) -> Dict[str, Set[s
         if not m.startswith("0.0.0.") and not m.startswith("255."):
             entities["ips_and_cidrs"].add(m)
 
-    # 4. Device paths (/dev/ttyUSB0, etc.)
+    # 4. Device paths (/dev/ttyUSB0, COM1, etc.)
     for m in _DEV_RE.findall(text):
         entities["devices"].add(m.lower())
 
@@ -134,15 +252,16 @@ def build_vault_bipartite_graph() -> Tuple[Any, Dict[str, Dict[str, Any]]]:
     md_files: List[Tuple[Path, int, int]] = []
     sig_parts: List[Tuple[str, int, int]] = []
     for md_path in sorted(VAULT_DIR.rglob("*.md")):
-        if ".obsidian" in md_path.parts or "archive" in md_path.parts or md_path.name == "00_MEMORY_INDEX.md":
+        if ".obsidian" in md_path.parts or "archive" in md_path.parts or md_path.name.startswith("00_"):
             continue
         try:
             st = md_path.stat()
             mtime_ns = int(st.st_mtime_ns)
             fsize = int(st.st_size)
-            # Volatile self-echo files (`projects/goal_*.md` and `reasoning/*.md`) are indexed by path existence
-            # rather than mtime_ns so writing a reasoning report or attempt ledger doesn't force a full graph rebuild every turn
-            is_volatile = ("reasoning" in md_path.parts) or md_path.name.startswith("goal_")
+            # Volatile self-echo files (`projects/goal_*.md` and auto-generated `reasoning/*.md`) are indexed by path existence
+            # rather than mtime_ns, whereas curated strategy playbooks (`*_strategy_playbook.md`) are tracked by mtime_ns.
+            is_team_playbook = md_path.name.endswith("_strategy_playbook.md")
+            is_volatile = (("reasoning" in md_path.parts) and not is_team_playbook) or md_path.name.startswith("goal_")
             sig_parts.append((str(md_path), 0 if is_volatile else mtime_ns, 0 if is_volatile else fsize))
             md_files.append((md_path, mtime_ns, fsize))
         except Exception:
@@ -174,8 +293,13 @@ def build_vault_bipartite_graph() -> Tuple[Any, Dict[str, Dict[str, Any]]]:
             and cache_entry.get("mtime_ns") == mtime_ns
             and cache_entry.get("size") == fsize
             and isinstance(cache_entry.get("entities"), dict)
+            and "when_to_apply" in cache_entry
         ):
             summary = str(cache_entry.get("summary") or rel_str)
+            when_to_apply = str(cache_entry.get("when_to_apply") or "")
+            os_platform = str(cache_entry.get("os_platform") or "cross-platform")
+            domain_hub = str(cache_entry.get("domain_hub") or "")
+            team_role = str(cache_entry.get("team_role") or "")
             extracted = cache_entry["entities"]
         else:
             try:
@@ -183,22 +307,35 @@ def build_vault_bipartite_graph() -> Tuple[Any, Dict[str, Dict[str, Any]]]:
             except Exception:
                 continue
             summary_m = _SUMMARY_RE.search(text)
-            summary = summary_m.group(1).strip() if summary_m else rel_str
+            summary = _strip_yaml_quotes(summary_m.group(1)) if summary_m else rel_str
+            wta_m = _WHEN_TO_APPLY_RE.search(text)
+            when_to_apply = _strip_yaml_quotes(wta_m.group(1)) if wta_m else ""
+            os_m = _OS_PLATFORM_RE.search(text)
+            os_platform = _strip_yaml_quotes(os_m.group(1)) if os_m else "cross-platform"
+            hub_m = _DOMAIN_HUB_RE.search(text)
+            domain_hub = _strip_yaml_quotes(hub_m.group(1)) if hub_m else ""
+            tr_m = _TEAM_ROLE_RE.search(text)
+            team_role = _strip_yaml_quotes(tr_m.group(1)) if tr_m else ""
             raw_ext = _extract_entities_from_markdown(rel_str, text)
             extracted = {k: sorted(v) for k, v in raw_ext.items()}
             cached_files_map[rel_str] = {
                 "mtime_ns": mtime_ns,
                 "size": fsize,
                 "summary": summary,
+                "when_to_apply": when_to_apply,
+                "os_platform": os_platform,
+                "domain_hub": domain_hub,
+                "team_role": team_role,
                 "entities": extracted,
             }
             disk_cache_dirty = True
 
         note_id = f"note:{rel_str.lower()}"
         category = rel_Obj.parts[0] if len(rel_Obj.parts) > 1 else "root"
-        # Operational notes (`projects`, `targets`, `commands`, `knowledge`) have higher edge authority
-        # than auto-generated `reasoning/` notes so spreading activation never drowns in self-echo.
-        cat_mult = 0.65 if category == "reasoning" else 1.35
+        is_team_playbook = rel_str.lower().endswith("_strategy_playbook")
+        # Curated strategy playbooks (`blue/red/hunt_team_strategy_playbook`, `reverse_engineering_strategy_playbook`)
+        # and operational notes have higher edge authority than auto-generated `reasoning/` reports.
+        cat_mult = 1.65 if is_team_playbook else (0.65 if category == "reasoning" else 1.35)
 
         G.add_node(
             note_id,
@@ -207,19 +344,40 @@ def build_vault_bipartite_graph() -> Tuple[Any, Dict[str, Dict[str, Any]]]:
             label=rel_str,
             category=category,
             summary=summary,
+            when_to_apply=when_to_apply,
+            os_platform=os_platform,
+            domain_hub=domain_hub,
+            team_role=team_role,
         )
         note_metadata[note_id] = {
             "wiki_link": rel_str,
             "category": category,
             "summary": summary,
+            "when_to_apply": when_to_apply,
+            "os_platform": os_platform,
+            "domain_hub": domain_hub,
+            "team_role": team_role,
             "path": str(md_path),
         }
 
         for wl in extracted.get("wikilinks", ()):
+            if wl.startswith("00_"):
+                continue
             target_note_id = f"note:{wl}"
             if not G.has_node(target_note_id):
                 G.add_node(target_note_id, node_type="note", bipartite=0, label=wl, category="linked", summary=wl)
-            G.add_edge(note_id, target_note_id, weight=2.5 * cat_mult, relation="wikilink")
+            if wl in (
+                "commands/windows_master_command_playbook",
+                "commands/linux_master_command_playbook",
+                "commands/tio_serial_playbook",
+                "commands/curl_playbook",
+            ):
+                wl_weight = 0.05 * cat_mult
+            elif wl.startswith("knowledge/0") or wl.startswith("knowledge/10_"):
+                wl_weight = 0.25 * cat_mult
+            else:
+                wl_weight = 2.5 * cat_mult
+            G.add_edge(note_id, target_note_id, weight=wl_weight, relation="wikilink")
 
         for ip_str in extracted.get("ips_and_cidrs", ()):
             cid = f"ip:{ip_str}"
@@ -260,9 +418,18 @@ def build_vault_bipartite_graph() -> Tuple[Any, Dict[str, Dict[str, Any]]]:
     for idx, node in enumerate(node_list):
         ndata = G.nodes[node]
         label_low = str(ndata.get("label", node)).lower()
-        summary_low = str(ndata.get("summary", "")).lower()
+        summary_low = (
+            f"{ndata.get('summary', '')} {ndata.get('when_to_apply', '')} {ndata.get('os_platform', '')}"
+        ).lower()
         cat_low = str(ndata.get("category", "")).lower()
-        cat_boost = 0.65 if cat_low == "reasoning" else 1.5
+        is_team_playbook = label_low.endswith("_strategy_playbook")
+        is_hub_or_master = bool(
+            re.search(
+                r"(?:^|/)(?:0[1-9]_|10_|windows_master_|linux_master_|curl_playbook|tio_serial_playbook|revengai_and_binary_reversing_playbook|(?:windows|linux)_digital_forensics_playbook|(?:blue_team|red_team|hunt_team|reverse_engineering|windows_digital_forensics|linux_digital_forensics)_strategy_playbook)",
+                label_low,
+            )
+        )
+        cat_boost = 2.05 if is_team_playbook else (0.65 if cat_low == "reasoning" else (1.85 if is_hub_or_master else 1.5))
         search_index.append((idx, node, label_low, summary_low, cat_boost))
         if ndata.get("bipartite") == 0:
             note_connected_concepts[node] = [
@@ -333,6 +500,10 @@ def run_associative_vault_reasoning(
     import networkx as nx
 
     try:
+        if isinstance(query, (list, tuple, set)):
+            query = " ".join(str(x) for x in query)
+        else:
+            query = str(query or "")
         G, note_metadata = build_vault_bipartite_graph()
         if G.number_of_nodes() == 0:
             return {
@@ -373,20 +544,47 @@ def run_associative_vault_reasoning(
         edge_norm_w = _GRAPH_CACHE.get("edge_norm_w")
         dangling_mask = _GRAPH_CACHE.get("dangling_mask")
 
-        # Build Personalized PageRank seed activation vector
-        pers_vec = np.full(n_nodes, 0.01, dtype=np.float64)
+        # Build IDF-weighted Personalized PageRank seed activation vector so specific command/tool
+        # tokens (e.g. `auditpol`, `wevtutil`, `bpf`, `tio`, `netsh`) strongly outweigh generic OS words (`windows`, `linux`).
+        import math
+
+        tok_df: Dict[str, int] = {tok: 0 for tok in raw_tokens}
+        for _idx, _node, label_low, summary_low, _cb in search_index:
+            for tok in raw_tokens:
+                if tok in label_low or tok in summary_low:
+                    tok_df[tok] += 1
+        tok_idf: Dict[str, float] = {
+            tok: max(0.25, math.log(1.0 + float(max(1, n_nodes)) / float(1 + df)))
+            for tok, df in tok_df.items()
+        }
+
+        pers_vec = np.full(n_nodes, 0.002, dtype=np.float64)
         matched_seed_nodes: List[str] = []
+
+        inferred_team_role = infer_team_role_from_query(query)
+        role_to_playbook = {
+            "windows_forensics": "windows_digital_forensics_strategy_playbook",
+            "linux_forensics": "linux_digital_forensics_strategy_playbook",
+        }
+        pb_slug = role_to_playbook.get(inferred_team_role, f"{inferred_team_role}_strategy_playbook")
+        target_team_note = f"note:reasoning/{pb_slug}" if inferred_team_role else ""
 
         for idx, node, label_low, summary_low, cat_boost in search_index:
             score = 0.0
             label_clean = label_low.lstrip("#")
             for tok in raw_tokens:
+                idf_w = tok_idf.get(tok, 1.0)
                 if tok == label_low or tok == label_clean:
-                    score += 4.0 * cat_boost
+                    score += 5.0 * cat_boost * idf_w
                 elif tok in label_low:
-                    score += 2.5 * cat_boost
+                    score += 3.2 * cat_boost * idf_w
                 elif tok in summary_low:
-                    score += 1.2 * cat_boost
+                    score += 1.1 * cat_boost * idf_w
+            if target_team_note:
+                if node == target_team_note:
+                    score += 18.0 * cat_boost
+                elif node.endswith("_strategy_playbook"):
+                    score *= 0.05
             if score > 0.0:
                 pers_vec[idx] = score
                 matched_seed_nodes.append(node)
@@ -404,7 +602,8 @@ def run_associative_vault_reasoning(
                 np.add.at(p, edge_dst, alpha_damping * p_prev[edge_src] * edge_norm_w)
                 if float(np.sum(np.abs(p - p_prev))) < 1e-6:
                     break
-            ppr_scores = {node_list[i]: float(p[i]) for i in range(n_nodes)}
+            final_p = 0.55 * pers_vec + 0.45 * p
+            ppr_scores = {node_list[i]: float(final_p[i]) for i in range(n_nodes)}
         else:
             total_deg = sum(dict(G.degree()).values()) or 1
             ppr_scores = {n: G.degree(n) / total_deg for n in G.nodes()}
@@ -422,6 +621,10 @@ def run_associative_vault_reasoning(
                         "wiki_link": meta["wiki_link"],
                         "category": meta["category"],
                         "summary": meta["summary"],
+                        "when_to_apply": meta.get("when_to_apply", ""),
+                        "os_platform": meta.get("os_platform", "cross-platform"),
+                        "domain_hub": meta.get("domain_hub", ""),
+                        "team_role": meta.get("team_role", ""),
                         "activation_score": round(float(act_score), 5),
                         "shared_concepts": note_connected_concepts.get(node, []),
                     }
@@ -478,13 +681,14 @@ def run_associative_vault_reasoning(
             f"- **Bipartite Graph Scale:** `{G.number_of_nodes()} nodes` (`{len(note_metadata)} Vault notes` + `{G.number_of_nodes() - len(note_metadata)} extracted entities/concepts`), `{G.number_of_edges()} associative edges`",
             f"- **Matched Seed Activations:** `{len(matched_seed_nodes)} nodes` (PageRank damping $\\alpha = {alpha_damping}$)\n",
             "## 1. Top Activated Obsidian Vault Notes (Personalized PageRank)",
-            "| Rank | Obsidian Note | Category | Activation | Key Connected Concepts | Summary |",
-            "| :--- | :--- | :--- | :--- | :--- | :--- |",
+            "| Rank | Obsidian Note | Category | OS | Activation | Key Connected Concepts | Summary & When to Apply |",
+            "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
         ]
         for idx, an in enumerate(activated_notes[:top_k], 1):
             conc_str = ", ".join(f"`{c}`" for c in an["shared_concepts"][:4])
+            wta_s = f" *(Apply when: {an['when_to_apply'][:70]})*" if an.get("when_to_apply") else ""
             md_lines.append(
-                f"| **#{idx}** | `[[{an['wiki_link']}]]` | `{an['category']}` | **`{an['activation_score']:.4f}`** | {conc_str} | {an['summary'][:80]} |"
+                f"| **#{idx}** | `[[{an['wiki_link']}]]` | `{an['category']}` | `{an.get('os_platform', 'cross-platform')}` | **`{an['activation_score']:.4f}`** | {conc_str} | {an['summary'][:95]}{wta_s} |"
             )
 
         if bridge_concepts:

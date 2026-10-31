@@ -30,7 +30,7 @@ import os
 import re
 from typing import Any, Callable, Dict, List, Optional
 
-from .associative import run_associative_vault_reasoning
+from .associative import infer_team_role_from_query, run_associative_vault_reasoning
 from .bayesian import run_bayesian_abduction
 from .causal import run_causal_reasoning
 from .cbr_fingerprints import extract_executable_cbr_command, run_cbr_reasoning
@@ -225,11 +225,22 @@ def run_neuro_symbolic_pipeline(
     hw_limits = get_hardware_reasoning_limits()
 
     # STAGE 1: Associative Spreading Activation & Bipartite Obsidian Vault Graph
+    assoc_seeds = [
+        c
+        for c in [
+            resolved_target if resolved_target != "<TARGET_IP>" else "",
+            resolved_secondary if resolved_secondary != "<REMOTE_HOST>" else "",
+            bayesian_profile,
+            ctx.get("target_os", ""),
+            "tio" if has_serial_oob else "",
+        ]
+        if c
+    ]
     assoc_res = _safe_stage(
         "associative",
         lambda: run_associative_vault_reasoning(
             query=f"{problem} {resolved_target} {resolved_secondary or ''}",
-            seed_concepts=[c for c in [resolved_target, resolved_secondary, bayesian_profile, "tio", "curl"] if c],
+            seed_concepts=assoc_seeds,
             save_to_vault=False,
         ),
         {"activated_notes": [], "bridge_concepts": [], "num_graph_nodes": 0, "markdown_report": ""},
@@ -594,6 +605,22 @@ def run_neuro_symbolic_pipeline(
         consensus_rationale = f"{consensus_rationale} | {pacing_note}"
 
     top_assoc_notes = [f"`[[{n['wiki_link']}]]`" for n in assoc_res.get("activated_notes", [])[:3]]
+    active_team_role = infer_team_role_from_query(problem)
+    if not active_team_role:
+        env_mode = os.environ.get("CORA_PERSONALITY_MODE", "").strip().lower()
+        if env_mode == "berserker":
+            active_team_role = "red_team"
+        elif env_mode == "analyst":
+            active_team_role = "hunt_team"
+    _role_pb_map = {
+        "windows_forensics": "reasoning/windows_digital_forensics_strategy_playbook",
+        "linux_forensics": "reasoning/linux_digital_forensics_strategy_playbook",
+    }
+    active_team_playbook = (
+        _role_pb_map.get(active_team_role, f"reasoning/{active_team_role}_strategy_playbook")
+        if active_team_role
+        else ""
+    )
     stopping_info = mdp_res.get("optimal_stopping") or {}
     branch_fc = mdp_res.get("speculative_branch_forecast") or {}
     succ_br = branch_fc.get("on_success_branch") or {}
@@ -809,7 +836,10 @@ def run_neuro_symbolic_pipeline(
         "pca_cumulative_variance_pct": pca_res.get("cumulative_top3_variance_pct", 0.0),
         "spectral_laplacian": pca_lap,
         "associative_top_notes": [n["wiki_link"] for n in assoc_res.get("activated_notes", [])[:3]],
+        "associative_activated_notes_details": assoc_res.get("activated_notes", [])[:4],
         "associative_bridge_concepts": [b["concept"] for b in assoc_res.get("bridge_concepts", [])[:4]],
+        "team_role": active_team_role,
+        "team_strategy_playbook": active_team_playbook,
         "top_root_cause": bayes_res["top_hypothesis"],
         "top_root_cause_probability": bayes_res["top_probability"],
         "dempster_shafer_conflict_k": conflict_k,

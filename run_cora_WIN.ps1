@@ -636,10 +636,28 @@ function Detect-HardwareAndTune {
     }
 
     $gpuHeadroomMib = $script:GpuTotalMib - $script:ModelSizeMib
+    $isHybridOffload = ($script:GpuDetected -and ($script:GpuTotalMib -gt 0) -and ($script:ModelSizeMib -gt $script:GpuTotalMib))
+
+    if ($isHybridOffload) {
+        $autoThreads = if ($script:PhysicalCores -ge 6) { [Math]::Max(2, $script:PhysicalCores - 2) } else { [Math]::Max(1, $script:PhysicalCores - 1) }
+        $autoThreadsBatch = $script:PhysicalCores
+    }
+    $script:Threads = if ($env:THREADS) { [int]$env:THREADS } else { $autoThreads }
+    $script:ThreadsBatch = if ($env:THREADS_BATCH) { [int]$env:THREADS_BATCH } else { $autoThreadsBatch }
+
     if ($script:GpuDetected -and $script:GpuTotalMib -ge 24000 -and $gpuHeadroomMib -ge 10000) {
         $script:KvCacheType = if ($env:KV_CACHE_TYPE) { $env:KV_CACHE_TYPE } else { "f16" }
+    } elseif ($isHybridOffload -and $script:GpuTotalMib -le 12288) {
+        $script:KvCacheType = if ($env:KV_CACHE_TYPE) { $env:KV_CACHE_TYPE } else { "q4_0" }
     } else {
         $script:KvCacheType = if ($env:KV_CACHE_TYPE) { $env:KV_CACHE_TYPE } else { "q8_0" }
+    }
+
+    $script:HardwareBalanceWarning = ""
+    if ($isHybridOffload -and (($script:ModelSizeMib -gt [int]($script:GpuTotalMib * 2.5)) -or ($script:ModelSizeMib -gt [int]($script:TotalRamMib * 0.72)))) {
+        $estGpuPct = [Math]::Max(8, [Math]::Min(95, [int][Math]::Round((($script:GpuTotalMib - 1400) * 100.0) / [Math]::Max(1, $script:ModelSizeMib))))
+        $estCpuPct = 100 - $estGpuPct
+        $script:HardwareBalanceWarning = "[WARN: CPU BOTTLENECK] $($script:ModelAlias) ($($script:ModelSizeMib) MiB) exceeds balanced capacity for $($script:GpuTotalMib) MiB VRAM / $($script:TotalRamMib) MiB RAM (~${estGpuPct}% GPU / ~${estCpuPct}% CPU layers -> GPU stalls waiting on DDR4 RAM). Use '-m 3.8' (Qwen3.8-27B Q3_K_M, ~50% GPU offload) or '-m 3.5' (Qwen3.5-9B Q4_K_M, 100% GPU offload) for balanced CPU+GPU performance."
     }
 
     $script:GpuArgs = New-Object System.Collections.Generic.List[string]
@@ -647,24 +665,34 @@ function Detect-HardwareAndTune {
         if ($script:ModelSizeMib -le $script:GpuTotalMib) {
             $autoFitTarget = 256
         } elseif ($script:GpuTotalMib -le 8192) {
-            $autoFitTarget = 384
+            $autoFitTarget = 192
+        } elseif ($script:GpuTotalMib -le 12288) {
+            $autoFitTarget = 256
         } elseif ($script:GpuTotalMib -le 16384) {
-            $autoFitTarget = 512
+            $autoFitTarget = 384
         } else {
-            $autoFitTarget = 768
+            $autoFitTarget = 512
         }
         $script:FitTarget = if ($env:FIT_TARGET) { $env:FIT_TARGET } else { "$autoFitTarget" }
         if ($script:GpuTotalMib -ge 24000) {
             $script:BatchSize = if ($env:BATCH_SIZE) { $env:BATCH_SIZE } else { "4096" }
             $script:UbatchSize = if ($env:UBATCH_SIZE) { $env:UBATCH_SIZE } else { "2048" }
+        } elseif ($isHybridOffload -and $script:GpuTotalMib -le 12288) {
+            $script:BatchSize = if ($env:BATCH_SIZE) { $env:BATCH_SIZE } else { "512" }
+            $script:UbatchSize = if ($env:UBATCH_SIZE) { $env:UBATCH_SIZE } else { "256" }
         } else {
             $script:BatchSize = if ($env:BATCH_SIZE) { $env:BATCH_SIZE } else { "2048" }
             $script:UbatchSize = if ($env:UBATCH_SIZE) { $env:UBATCH_SIZE } else { "512" }
         }
-        foreach ($a in @("--fit", "on", "--fit-target", $script:FitTarget, "--flash-attn", "on", "--cache-type-k", $script:KvCacheType, "--cache-type-v", $script:KvCacheType)) {
+        foreach ($a in @("--fit", "on", "--fit-target", $script:FitTarget, "--flash-attn", "on", "--kv-offload", "--op-offload", "--cache-type-k", $script:KvCacheType, "--cache-type-v", $script:KvCacheType)) {
             $script:GpuArgs.Add($a)
         }
-        if ($gpuHeadroomMib -ge 4096) {
+        if ($isHybridOffload) {
+            foreach ($a in @("--poll", "0", "--poll-batch", "0")) {
+                $script:GpuArgs.Add($a)
+            }
+        }
+        if ($gpuHeadroomMib -ge 4096 -or ($script:ModelSizeMib + 1536 -le $script:GpuTotalMib)) {
             $script:GpuArgs.Add("--n-gpu-layers")
             $script:GpuArgs.Add("999")
         }
@@ -724,11 +752,11 @@ function Detect-HardwareAndTune {
     $script:SamplingGuardArgs.Add($repeatPenalty)
     $script:SamplingGuardArgs.Add("--repeat-last-n")
     $script:SamplingGuardArgs.Add($repeatLastN)
-    if ($script:TotalRamMib -ge 120000 -or $script:GpuTotalMib -ge 24000 -or $script:LogicalCpus -ge 36) {
+    if ($script:TotalRamMib -ge 120000 -or $script:GpuTotalMib -ge 24000 -or $script:PhysicalCores -ge 24 -or $script:LogicalCpus -ge 36) {
         $script:ReasoningHwTier = "ULTRA_SERVER_DATACENTER (15 Core Engines: 1,024-D VSA, 80x H-MDP, 1,200 RL eps, 32x K-Means++)"
-    } elseif ($script:TotalRamMib -ge 24000 -and $script:LogicalCpus -ge 16) {
+    } elseif (($script:TotalRamMib -ge 48000 -and $script:PhysicalCores -ge 12) -or ($script:GpuTotalMib -ge 16000 -and $script:TotalRamMib -ge 32000 -and $script:PhysicalCores -ge 10)) {
         $script:ReasoningHwTier = "EXTREME_WORKSTATION (15 Core Engines: 1,024-D VSA, 80x H-MDP, 600 RL eps, 20x K-Means++)"
-    } elseif ($script:TotalRamMib -ge 12000 -and $script:LogicalCpus -ge 8) {
+    } elseif ($script:TotalRamMib -ge 12000 -and ($script:PhysicalCores -ge 6 -or $script:LogicalCpus -ge 8)) {
         $script:ReasoningHwTier = "HIGH_PERFORMANCE (15 Core Engines: 1,024-D VSA, 60x H-MDP, 400 RL eps, 12x K-Means++)"
     } else {
         $script:ReasoningHwTier = "PORTABLE_CONSERVATIVE (15 Core Engines: 1,024-D VSA, 40x H-MDP, 200 RL eps, 8x K-Means++)"
@@ -748,11 +776,17 @@ function Show-HardwareProfile {
     Write-Host ("  15-Engine Tier: {0}" -f $script:ReasoningHwTier)
     $modelLeaf = Split-Path -Leaf $script:ModelPath
     Write-Host ("  Selected Model: {0} ({1} MiB -> {2})" -f $script:ModelAlias, $script:ModelSizeMib, $modelLeaf)
+    if ($script:HardwareBalanceWarning) {
+        Write-Host ("  Balance Alert:  {0}" -f $script:HardwareBalanceWarning) -ForegroundColor Yellow
+    }
     Write-Host ("  Reasoning Mode: {0} (default: off for instant answers; pass --think to enable <think>)" -f $ReasoningMode)
     Write-Host ("  Agent Tools:    {0} (read_file, write_file, edit_file, exec_shell_command, grep_search, ...)" -f $AgentMode)
     $tunedLine = "  Tuned Settings: --ctx-size $($script:CtxSize) --reasoning $ReasoningMode --threads $($script:Threads) --threads-batch $($script:ThreadsBatch) --batch-size $($script:BatchSize) --ubatch-size $($script:UbatchSize) --spec-type $SpecType"
     if ($script:GpuDetected) {
-        $tunedLine += " --fit on --fit-target $($script:FitTarget) --flash-attn on -ctk $($script:KvCacheType) -ctv $($script:KvCacheType)"
+        $tunedLine += " --fit on --fit-target $($script:FitTarget) --flash-attn on --kv-offload --op-offload -ctk $($script:KvCacheType) -ctv $($script:KvCacheType)"
+        if ($script:ModelSizeMib -gt $script:GpuTotalMib) {
+            $tunedLine += " --poll 0 --poll-batch 0"
+        }
     } else {
         $tunedLine += " --n-gpu-layers 0 --flash-attn on -ctk $($script:KvCacheType) -ctv $($script:KvCacheType)"
     }

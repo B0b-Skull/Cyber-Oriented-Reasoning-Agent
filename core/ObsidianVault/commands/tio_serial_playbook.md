@@ -1,14 +1,18 @@
 ---
-title: tio_serial_playbook
+title: "tio 3.9 UART Serial Console & Windows COM Port OOB Playbook (/dev/ttyUSB0 & COM1)"
 category: commands
-summary: Non-interactive tio 3.9 Lua --script patterns for logging into and running commands on /dev/ttyUSB0 without Python scripts
-tags: [tio, serial, ttyusb0, console, login]
-updated: 2026-10-25
+domain_hub: "[[knowledge/09_hardware_uart_serial_oob_and_telecom_wan]]"
+os_platform: cross-platform
+primary_tactic: OOB_Serial_Access
+summary: "Non-interactive tio 3.9 Lua --script patterns for logging into and running paced commands on /dev/ttyUSB0 without Python scripts, plus Windows COM port discovery and OOB appliance recovery."
+when_to_apply: "Apply whenever an embedded appliance, router, switch, or firewall returns TCP Connection Refused (Exit 7), Timeout (Exit 28), or binds its service exclusively to 127.0.0.1 loopback, and a local hardware UART serial interface (/dev/ttyUSB0, /dev/ttyACM0, or Windows COM1-COM9) is attached."
+tags: [tio, serial, ttyusb0, ttyusb1, console, login, uart, oob, oob_serial_access, com1, linux, windows]
+updated: 2026-10-30
 ---
-# `tio` Serial Console Playbook (`/dev/ttyUSB0`)
+# `tio` Serial Console & Out-of-Band (`OOB`) UART Playbook (`/dev/ttyUSB0` & `COM1`)
 
-> **Summary:** Non-interactive `tio 3.9` Lua `--script` patterns for `/dev/ttyUSB0` & `/dev/ttyUSB1`  
-> **Backlink:** [[00_MEMORY_INDEX]]
+> **Summary:** Non-interactive `tio 3.9` Lua `--script` patterns for `/dev/ttyUSB0` & `/dev/ttyUSB1` + Windows `COM` port OOB discovery  
+> **Backlinks:** [[00_MEMORY_INDEX]] | [[commands/linux_master_command_playbook]] | [[commands/windows_master_command_playbook]] | [[knowledge/09_hardware_uart_serial_oob_and_telecom_wan]]
 
 ## Critical Rules for LLM Agent Execution
 1. **NEVER write or run `python3` scripts for `/dev/ttyUSB0`.** Always use `tio`.
@@ -115,3 +119,16 @@ exit(0)
 - `read(max_bytes, timeout_ms)` — Read up to `max_bytes` within `timeout_ms` (all read bytes are printed to `stdout`).
 - `msleep(ms)` / `sleep(sec)` — Pause execution.
 - `exit(0)` — Cleanly disconnect `tio` and return output to shell.
+
+---
+
+## 5. Windows `COM` Port Discovery & Non-Interactive Serial OOB Probe (`CMD` / `PowerShell`)
+When running on Windows (`os.name == "nt"`), discover attached hardware UART / USB-to-Serial `COM` ports and probe them non-interactively:
+```powershell
+# 1. Enumerate active COM ports in the Windows Registry and Device Manager
+reg query HKLM\HARDWARE\DEVICEMAP\SERIALCOMM
+mode
+
+# 2. Non-interactive PowerShell Serial Port Wake & Read on COM1 (115200 8N1)
+powershell -NoProfile -Command "$p = New-Object System.IO.Ports.SerialPort 'COM1',115200,'None',8,'One'; $p.ReadTimeout = 1000; $p.Open(); $p.Write(\"`r`n\"); Start-Sleep -Milliseconds 500; try { $p.ReadExisting() } finally { $p.Close() }"
+```

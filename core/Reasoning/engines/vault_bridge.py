@@ -273,7 +273,7 @@ def update_project_memory_index(proj_dir: Path, rel_link: str, summary: str, tag
     return mem_file
 
 
-def get_hardware_reasoning_limits() -> Dict[str, Any]:
+def get_hardware_reasoning_limits(force_recompute: bool = False) -> Dict[str, Any]:
     """
     Dynamically compute hardware-adaptive reasoning parameters for all 20 symbolic/statistical
     engines and the 5-Layer Lexical Priority Cascade based on the local machine's CPU physical
@@ -282,13 +282,21 @@ def get_hardware_reasoning_limits() -> Dict[str, Any]:
     to a Dual Xeon + 512 GB RAM + 48 GB RTX A6000 server) and re-profiles automatically.
     """
     global _cached_max_files, _HW_LIMITS_RAM_CACHE
-    if _HW_LIMITS_RAM_CACHE is not None:
+    if not force_recompute and _HW_LIMITS_RAM_CACHE is not None:
         return _HW_LIMITS_RAM_CACHE
     ensure_directories()
     prof_path = DATA_DIR / "hardware_profile.json"
 
     cpu_threads = os.cpu_count() or 4
     cpu_physical_cores = max(1, cpu_threads // 2)
+    try:
+        import psutil as _psutil_hw
+
+        phys_det = _psutil_hw.cpu_count(logical=False)
+        if phys_det and phys_det > 0:
+            cpu_physical_cores = int(phys_det)
+    except Exception:
+        pass
     numa_nodes = 1
     total_ram_mib = 8192
     try:
@@ -360,11 +368,13 @@ def get_hardware_reasoning_limits() -> Dict[str, Any]:
     except Exception:
         pass
 
-    if prof_path.is_file():
+    if not force_recompute and prof_path.is_file():
         try:
             cached = json.loads(prof_path.read_text(encoding="utf-8"))
             if (
-                cached.get("cpu_threads") == cpu_threads
+                cached.get("profile_schema_version") == 2
+                and cached.get("cpu_threads") == cpu_threads
+                and cached.get("cpu_physical_cores") == cpu_physical_cores
                 and abs(cached.get("total_ram_mib", 0) - total_ram_mib) < 1024
                 and cached.get("detected_gpu_vram_mib", 0) == detected_gpu_vram_mib
                 and cached.get("vsa_hypervector_dim") == 1024
@@ -380,7 +390,7 @@ def get_hardware_reasoning_limits() -> Dict[str, Any]:
         except Exception:
             pass
 
-    if total_ram_mib >= 120000 or detected_gpu_vram_mib >= 24000 or cpu_threads >= 36:
+    if total_ram_mib >= 120000 or detected_gpu_vram_mib >= 24000 or cpu_physical_cores >= 24 or cpu_threads >= 36:
         tier = "ULTRA_SERVER_DATACENTER"
         vsa_dim = 1024
         evo_generations = 800
@@ -430,7 +440,11 @@ def get_hardware_reasoning_limits() -> Dict[str, Any]:
         raw_preserve_chars = 12000
         max_tool_chars = 16000
         max_history_chars = 180000
-    elif total_ram_mib >= 24000 and cpu_threads >= 16:
+    elif (
+        (total_ram_mib >= 48000 and cpu_physical_cores >= 12)
+        or (total_ram_mib >= 28000 and detected_gpu_vram_mib >= 16000 and cpu_physical_cores >= 10)
+        or (total_ram_mib >= 24000 and cpu_physical_cores >= 16)
+    ):
         tier = "EXTREME_WORKSTATION"
         vsa_dim = 1024
         evo_generations = 320
@@ -582,10 +596,33 @@ def get_hardware_reasoning_limits() -> Dict[str, Any]:
         max_history_chars = 16000
 
     clingo_threads = min(8, max(1, cpu_physical_cores // 2))
-    layer2_workers = min(8, max(2, cpu_threads // 4))
+    layer2_workers = min(8, max(2, cpu_physical_cores // 2))
+
+    # Balanced CPU+GPU LLM Inference Recommendations for this host
+    if detected_gpu_vram_mib >= 24000 and total_ram_mib >= 48000:
+        rec_llm_model = "turbo-q8"
+        rec_full_gpu_model = "turbo"
+        rec_kv_type = "q8_0"
+    elif detected_gpu_vram_mib >= 16000 and total_ram_mib >= 32000:
+        rec_llm_model = "turbo"
+        rec_full_gpu_model = "3.8"
+        rec_kv_type = "q8_0"
+    elif detected_gpu_vram_mib >= 8000 and total_ram_mib >= 24000:
+        rec_llm_model = "3.8"
+        rec_full_gpu_model = "3.5"
+        rec_kv_type = "q4_0"
+    else:
+        rec_llm_model = "3.5"
+        rec_full_gpu_model = "3.5"
+        rec_kv_type = "q4_0"
+
+    rec_llm_threads = max(2, min(cpu_physical_cores - 2 if cpu_physical_cores >= 6 else max(1, cpu_physical_cores - 1), 12))
+    rec_llm_threads_batch = max(rec_llm_threads, min(cpu_physical_cores, 16))
+    max_safe_model_mib = int(max(6000, (total_ram_mib * 0.65) + (detected_gpu_vram_mib * 0.85)))
 
     _cached_max_files = shadow_max_files
     profile = {
+        "profile_schema_version": 2,
         "tier": tier,
         "hardware_tier": tier,
         "cpu_threads": cpu_threads,
@@ -595,6 +632,13 @@ def get_hardware_reasoning_limits() -> Dict[str, Any]:
         "detected_gpu_vram_mib": detected_gpu_vram_mib,
         "gpu_count": gpu_count,
         "engines_configured": 15,
+        "recommended_llm_model_id": rec_llm_model,
+        "recommended_full_gpu_model_id": rec_full_gpu_model,
+        "recommended_llm_threads": rec_llm_threads,
+        "recommended_llm_threads_batch": rec_llm_threads_batch,
+        "recommended_llm_poll": 0,
+        "recommended_kv_cache_type": rec_kv_type,
+        "max_safe_model_size_mib": max_safe_model_mib,
         # Engine 1: Associative Graph & PageRank
         "pagerank_max_iter": pagerank_max_iter,
         "spreading_activation_hops": spreading_hops,
@@ -837,6 +881,11 @@ def save_reasoning_to_vault(
         "meta_learning_audit",
     }
     is_long_term = persist_long_term or (slug in canonical_long_term_stems)
+    if is_long_term:
+        summary = parameterize_tactical_template(summary)
+        summary = re.sub(r"<TARGET_IP>/\d{1,2}", "<LOCAL_SUBNET>", summary)
+        markdown_body = parameterize_tactical_template(markdown_body)
+        markdown_body = re.sub(r"<TARGET_IP>/\d{1,2}", "<LOCAL_SUBNET>", markdown_body)
 
     all_tags = ["reasoning", engine_type.lower()] + (tags or [])
     clean_tags = []

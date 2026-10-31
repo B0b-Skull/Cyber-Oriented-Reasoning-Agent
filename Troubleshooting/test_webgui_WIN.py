@@ -259,6 +259,7 @@ def run_frontend_and_lexical_audit(h: TestHarness) -> None:
         ("Control Deck: Console File Drag-and-Drop (`handleConsoleDrop`)", "handleConsoleDrop"),
         ("Control Deck: Query History `↑ Prev` / `↓ Next` Buttons (`stepQueryHistory`)", "stepQueryHistory"),
         ("Control Deck: Main Query Input & `Execute Query` Submit Button (`handleQuerySubmit`)", "handleQuerySubmit"),
+        ("Control Deck: `Cancel` Button below `Execute Query` (`handleCancelExecution` / `#cora-cancel-btn`)", "handleCancelExecution"),
         ("Modal 2: Create / Select Project Modal (`submitCreateProject`)", "submitCreateProject"),
         ("Modal 3: Rename Current Project Modal (`submitRenameProject`)", "submitRenameProject"),
         ("Modal 5: Project `Files/` Manager — Local Path Importer (`handleImportLocalPath`)", "handleImportLocalPath"),
@@ -275,7 +276,7 @@ def run_frontend_and_lexical_audit(h: TestHarness) -> None:
         h.check(label, needle in svelte_src, f"Missing `{needle}` in App.svelte")
 
     # 4. Verify compiled JS bundle is synchronized with latest features
-    for bundle_token in ("Thought Process (Ctrl+O)", "SYSINTERNALS: INSTALLED", "Customize Font & Display"):
+    for bundle_token in ("Thought Process (Ctrl+O)", "SYSINTERNALS: INSTALLED", "Customize Font & Display", "cora-cancel-btn"):
         h.check(f"Compiled `dist/assets/index-*.js` contains `{bundle_token}`", bundle_token in js_src)
 
     # 5. Verify prohibited clutter is NOT rendered in the template markup
@@ -716,7 +717,31 @@ def run_live_webgui_api_and_logic_tests(h: TestHarness, base_url: str) -> None:
         )
         assert c_clr == 200 and clr_res.get("ok"), f"Clear Display failed: {clr_res}"
 
-    h.run_step("`🧠 Thought Process (Ctrl+O)` Clean Output Separation & `Clear Display` Button (`DELETE /api/messages/{slug}`)", _test_ctrl_o_separation_and_clear_display)
+        # Test `Cancel` button (`POST /api/cancel`)
+        c_can, can_res, _ = _http_request(
+            f"{base_url}/api/cancel",
+            method="POST",
+            payload={},
+        )
+        assert c_can == 200 and can_res.get("ok") and can_res.get("cancelled") is True, f"POST /api/cancel failed: {can_res}"
+
+        # Test llama.cpp keep-alive & context compaction (`_compact_messages_for_llama_context`)
+        sys.path.insert(0, str(CORE_DIR / "webui"))
+        import server as webui_srv  # type: ignore
+
+        sample_msgs = [
+            {"role": "system", "content": "System prompt"},
+            {"role": "user", "content": "Scan 192.168.1.99 and identify firmware"},
+            {"role": "assistant", "content": "<think>long internal thought</think>", "tool_calls": [{"id": "c1", "function": {"name": "scan_target", "arguments": "{}"}}]},
+            {"role": "tool", "tool_call_id": "c1", "name": "scan_target", "content": "Port 443 open: FortiGate-50E"},
+        ]
+        compacted = webui_srv._compact_messages_for_llama_context(sample_msgs, max_chars=4000, force_flatten=True)
+        assert any(
+            m.get("role") == "user" and "192.168.1.99" in str(m.get("content", "")) and "FortiGate-50E" in str(m.get("content", ""))
+            for m in compacted
+        ), f"Compacted messages lost user query or tool output: {compacted}"
+
+    h.run_step("`🧠 Thought Process (Ctrl+O)` Clean Output Separation, `Cancel` Button (`POST /api/cancel`), Keep-Alive & `Clear Display` Button", _test_ctrl_o_separation_and_clear_display)
 
 
 # ===========================================================================

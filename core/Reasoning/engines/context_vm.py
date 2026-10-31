@@ -321,17 +321,25 @@ def build_dynamic_l1_state_block(user_query: str = "") -> str:
         if isinstance(f, dict) and f.get("status") in ("ACTIVE", "HOLDING")
     ]
 
-    # MemGPT-style Bipartite Graph Page-In: check if user_query matches any Obsidian Vault note keywords
+    # MemGPT-style Bipartite Graph Page-In: use Engine 5 Personalized PageRank across the entire ObsidianVault
     paged_notes: List[str] = []
     if user_query and len(user_query) >= 4:
-        q_words = {w.lower() for w in user_query.split() if len(w) >= 4}
-        if q_words:
-            for note in scan_vault_notes()[:30]:
-                title_lower = note.get("title", "").lower()
-                if any(w in title_lower for w in q_words):
-                    paged_notes.append(f"`{note['rel_path']}` ({note['title']})")
-                if len(paged_notes) >= 3:
-                    break
+        try:
+            from .associative import run_associative_vault_reasoning
+
+            assoc_page = run_associative_vault_reasoning(query=user_query, top_k=3, save_to_vault=False)
+            for an in assoc_page.get("activated_notes", [])[:3]:
+                wta_s = f" [Apply: {an['when_to_apply'][:75]}]" if an.get("when_to_apply") else ""
+                paged_notes.append(f"`[[{an['wiki_link']}]]` ({an.get('summary', '')[:85]}{wta_s})")
+        except Exception:
+            q_words = {w.lower() for w in user_query.split() if len(w) >= 4}
+            if q_words:
+                for note in scan_vault_notes():
+                    title_lower = note.get("title", "").lower()
+                    if any(w in title_lower for w in q_words):
+                        paged_notes.append(f"`{note['rel_path']}` ({note['title']})")
+                    if len(paged_notes) >= 3:
+                        break
 
     parts: List[str] = []
     if fluent_summary and "No symbolic state" not in fluent_summary:

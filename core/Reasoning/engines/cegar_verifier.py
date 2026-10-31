@@ -149,8 +149,15 @@ def _find_truncated_or_malformed_ipv4(text: str) -> Optional[str]:
     return None
 
 
+_HOST_ALL_IFACE_SUBNETS_CACHE: Tuple[float, Dict[str, List[ipaddress.IPv4Network]]] = (0.0, {})
+
+
 def _get_host_all_interface_subnets() -> Dict[str, List[ipaddress.IPv4Network]]:
     """Map every host interface on Linux and Windows to its IPv4 networks (unfiltered) to detect disallowed subnet probes in BLUE mode."""
+    global _HOST_ALL_IFACE_SUBNETS_CACHE
+    now = time.monotonic()
+    if _HOST_ALL_IFACE_SUBNETS_CACHE[1] and (now - _HOST_ALL_IFACE_SUBNETS_CACHE[0]) < 15.0:
+        return _HOST_ALL_IFACE_SUBNETS_CACHE[1]
     out: Dict[str, List[ipaddress.IPv4Network]] = {}
     if os.name == "nt":
         try:
@@ -185,6 +192,7 @@ def _get_host_all_interface_subnets() -> Dict[str, List[ipaddress.IPv4Network]]:
                         cur_ip = ""
         except Exception:
             pass
+        _HOST_ALL_IFACE_SUBNETS_CACHE = (now, out)
         return out
     try:
         proc = subprocess.run(
@@ -208,6 +216,7 @@ def _get_host_all_interface_subnets() -> Dict[str, List[ipaddress.IPv4Network]]:
                                 pass
     except Exception:
         pass
+    _HOST_ALL_IFACE_SUBNETS_CACHE = (now, out)
     return out
 
 

@@ -178,11 +178,11 @@ if ($nvidiaSmi) {
     }
 }
 
-$HwTier = if (($TotalVramMib -ge 40000) -or ($TotalRamMib -ge 120000) -or ($PhysCores -ge 32)) {
+$HwTier = if (($TotalVramMib -ge 24000) -or ($TotalRamMib -ge 120000) -or ($PhysCores -ge 24)) {
     "ULTRA_SERVER_DATACENTER"
-} elseif (($TotalVramMib -ge 20000) -or ($TotalRamMib -ge 60000) -or ($PhysCores -ge 16)) {
+} elseif ((($TotalRamMib -ge 48000) -and ($PhysCores -ge 12)) -or (($TotalVramMib -ge 16000) -and ($TotalRamMib -ge 32000) -and ($PhysCores -ge 10))) {
     "EXTREME_WORKSTATION"
-} elseif (($TotalVramMib -ge 10000) -or ($TotalRamMib -ge 28000) -or ($PhysCores -ge 8)) {
+} elseif (($TotalRamMib -ge 12000) -and (($PhysCores -ge 6) -or ($LogicalThreads -ge 8))) {
     "HIGH_PERFORMANCE"
 } else {
     "PORTABLE_CONSERVATIVE"
@@ -221,14 +221,14 @@ if ($Only35) {
     } else {
         Write-Host "[WARN] System has $TotalRamMib MiB RAM (<15 GB); defaulting to Qwen3.5-9B only (pass -AllModels to force Qwen3.8-27B)." -ForegroundColor Yellow
     }
-    # Auto-select Qwen3.8-27B Turbo MTP models where practical for the host RAM / GPU VRAM
-    if (($TotalRamMib -ge 24000) -or ($TotalVramMib -ge 16000)) {
+    # Auto-select Qwen3.8-27B Turbo MTP models where balanced for both GPU VRAM and host RAM
+    if (($TotalVramMib -ge 16000) -or (($TotalRamMib -ge 32000) -and ($TotalVramMib -ge 12000))) {
         $DownloadTurboQ4 = $true
     }
-    if (($TotalRamMib -ge 48000) -or ($TotalVramMib -ge 24000)) {
+    if (($TotalVramMib -ge 24000) -or (($TotalRamMib -ge 48000) -and ($TotalVramMib -ge 16000))) {
         $DownloadTurboQ6 = $true
     }
-    if (($TotalRamMib -ge 64000) -or ($TotalVramMib -ge 32000)) {
+    if (($TotalVramMib -ge 32000) -or (($TotalRamMib -ge 64000) -and ($TotalVramMib -ge 24000))) {
         $DownloadTurboQ8 = $true
     }
 }

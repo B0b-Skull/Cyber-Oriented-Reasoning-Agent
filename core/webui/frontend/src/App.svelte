@@ -172,6 +172,8 @@
   let submittingQuery = false;
   let executingCommand = false;
   let generatingReport = false;
+  let cancellingExecution = false;
+  let activeAbortController: AbortController | null = null;
 
   // --- Antigravity-Style "Ctrl+O" Thought Process & Engine Trace State (Hidden by Default) ---
   let showThinkingExpanded = false;
@@ -707,6 +709,8 @@
     }
   }
 
+  let lastAutoKeepAliveEpoch = 0;
+
   function connectTelemetryWebSocket() {
     try {
       const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -721,7 +725,20 @@
           if (payload.type === 'telemetry') {
             hardware = payload.hardware;
             if (payload.posture) posture = payload.posture;
-            if (payload.llama_server) llamaServerStatus = payload.llama_server;
+            if (payload.llama_server) {
+              llamaServerStatus = payload.llama_server;
+              const nowMs = Date.now();
+              if (
+                inferenceProvider === 'llama-server' &&
+                !payload.llama_server.online &&
+                payload.llama_server.state === 'offline' &&
+                !startingLlm &&
+                nowMs - lastAutoKeepAliveEpoch > 15000
+              ) {
+                lastAutoKeepAliveEpoch = nowMs;
+                handleStartOrRestartLlm(false);
+              }
+            }
           }
         } catch {
           // ignore malformed frame
@@ -1283,10 +1300,62 @@
     await handleQuerySubmit();
   }
 
+  async function handleCancelExecution() {
+    if (cancellingExecution) return;
+    cancellingExecution = true;
+    const wasBusy = submittingQuery || executingCommand || generatingReport;
+    errorBanner = '';
+
+    if (activeAbortController) {
+      try {
+        activeAbortController.abort();
+      } catch {
+        // ignore abort errors
+      }
+      activeAbortController = null;
+    }
+
+    stopProcessingTimer();
+    submittingQuery = false;
+    executingCommand = false;
+    generatingReport = false;
+
+    try {
+      await fetch('/api/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch {
+      // ignore network error during cancel
+    } finally {
+      cancellingExecution = false;
+    }
+
+    if (wasBusy) {
+      const cancelMsg: ChatMessage = {
+        conversation_id: `conv-${activeProject}`,
+        project_slug: activeProject,
+        role: 'assistant',
+        content:
+          '⏹ **Execution Cancelled by Operator.** All reasoning engines, active probes, and LLM processing have been stopped. Awaiting further instructions.',
+        posture_level: posture?.color_level || isolationLevel.toUpperCase(),
+        mode_key: sessionMode,
+        model_used: 'CORA Execution Controller',
+        latency_ms: 0,
+        created_at: new Date().toLocaleTimeString(),
+      };
+      messages = [...messages, cancelMsg];
+      await scrollToBottom();
+    }
+    showToast('⏹ Stopped all engines & LLM processing — awaiting further instructions');
+  }
+
   async function handleQuerySubmit() {
     if ((!queryInput.trim() && !commandToExecute.trim() && !activeGoal.trim() && attachedFiles.length === 0) || submittingQuery) return;
     submittingQuery = true;
     errorBanner = '';
+    const controller = new AbortController();
+    activeAbortController = controller;
 
     const submittedAttached = [...attachedFiles];
     const submittedText =
@@ -1349,6 +1418,7 @@
       const res = await fetch('/api/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           query: submittedText,
           project_slug: activeProject,
@@ -1365,6 +1435,9 @@
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      if (data.cancelled) {
+        return;
+      }
 
       const replyText = data.reply || data.assistant_message?.content || '';
       if (replyText) {
@@ -1395,10 +1468,16 @@
       await refreshProjectFiles();
       await scrollToBottom();
     } catch (err: any) {
+      if (err?.name === 'AbortError' || controller.signal.aborted) {
+        return;
+      }
       errorBanner = err?.message || 'Query execution failed.';
     } finally {
-      stopProcessingTimer();
-      submittingQuery = false;
+      if (activeAbortController === controller) {
+        activeAbortController = null;
+        stopProcessingTimer();
+        submittingQuery = false;
+      }
     }
   }
 
@@ -1408,6 +1487,8 @@
     cmdHistoryCursor = -1;
     executingCommand = true;
     errorBanner = '';
+    const controller = new AbortController();
+    activeAbortController = controller;
     startProcessingTimer(
       'C.O.R.A. is executing host command probe...',
       `Command: ${cmd.trim()} • Posture: ${postureColor} (${isolationLevel.toUpperCase()})`
@@ -1417,6 +1498,7 @@
       const res = await fetch('/api/command/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           command: cmd.trim(),
           project_slug: activeProject,
@@ -1424,6 +1506,9 @@
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      if (data.cancelled) {
+        return;
+      }
       const internalTrace = data.sygus_facts
         ? `=== ENGINE 9 (CEGAR) & ENGINE 10 (SyGuS) VERIFICATION TRACE ===\nCommand: ${data.command}\nExit Code: ${data.exit_code}\nParsed Facts:\n${JSON.stringify(
             data.sygus_facts,
@@ -1450,15 +1535,23 @@
       messages = [...messages, sysMsg];
       await scrollToBottom();
     } catch (err: any) {
+      if (err?.name === 'AbortError' || controller.signal.aborted) {
+        return;
+      }
       errorBanner = err?.message || 'Command execution failed.';
     } finally {
-      stopProcessingTimer();
-      executingCommand = false;
+      if (activeAbortController === controller) {
+        activeAbortController = null;
+        stopProcessingTimer();
+        executingCommand = false;
+      }
     }
   }
 
   async function handleGenerateReport() {
     generatingReport = true;
+    const controller = new AbortController();
+    activeAbortController = controller;
     startProcessingTimer(
       'C.O.R.A. is synthesizing 5-Section Project Report...',
       `Workspace: Projects/${activeProject}/REPORT.md • Focus: ${activeGoal || 'General Assessment'}`
@@ -1468,6 +1561,7 @@
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           project_slug: activeProject,
           focus: activeGoal || '',
@@ -1476,6 +1570,9 @@
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      if (data.cancelled) {
+        return;
+      }
       showToast(`Generated 5-Section Report: Projects/${activeProject}/REPORT.md`);
       const repMsg: ChatMessage = {
         conversation_id: `conv-${activeProject}`,
@@ -1491,10 +1588,16 @@
       messages = [...messages, repMsg];
       await scrollToBottom();
     } catch (err: any) {
+      if (err?.name === 'AbortError' || controller.signal.aborted) {
+        return;
+      }
       errorBanner = err?.message || 'Report generation failed.';
     } finally {
-      stopProcessingTimer();
-      generatingReport = false;
+      if (activeAbortController === controller) {
+        activeAbortController = null;
+        stopProcessingTimer();
+        generatingReport = false;
+      }
     }
   }
 
@@ -2448,7 +2551,7 @@
           ? 'ONLINE'
           : llamaServerStatus.state === 'loading' || startingLlm
           ? 'LOADING...'
-          : 'STANDBY'}
+          : 'ENGAGING...'}
       </button>
 
       <span
@@ -2684,7 +2787,7 @@
                   {selectedModel} ({inferenceProvider})
                 </div>
                 <div class="text-[10px] opacity-75 mt-0.5">
-                  Status: {llamaServerStatus.online || ollamaStatus.online ? 'ONLINE & READY' : 'STANDBY'}
+                  Status: {llamaServerStatus.online || ollamaStatus.online ? 'ONLINE & READY' : 'ENGAGING / LOADING...'}
                 </div>
               </div>
 
@@ -3486,8 +3589,8 @@
         {/if}
       </div>
 
-      <!-- Row D: Main Query Input Window & Submit Button -->
-      <div class="flex items-end gap-2">
+      <!-- Row D: Main Query Input Window & Submit / Cancel Buttons -->
+      <div class="flex items-stretch gap-2">
         <div
           class="flex-1 relative rounded-lg border overflow-hidden {isDark
             ? 'bg-slate-900 border-slate-700'
@@ -3522,28 +3625,47 @@
             on:keydown={handleKeydown}
             rows="2"
             placeholder="Enter your tactical query, target IP/URL, or slash command (/generate-report)... Press ↑/↓ for command history, Tab ↹ for shaded word autocomplete, Enter to execute."
-            class="relative z-10 w-full bg-transparent px-3 py-2 focus:outline-none resize-none {isDark
+            class="relative z-10 w-full h-full bg-transparent px-3 py-2 focus:outline-none resize-none {isDark
               ? 'text-white placeholder-slate-400'
               : 'text-slate-900 placeholder-slate-500'}"
             style={customTextStyle}
           ></textarea>
         </div>
 
-        <button
-          type="button"
-          disabled={!activeProject || submittingQuery || (!queryInput.trim() && !commandToExecute.trim() && !activeGoal.trim() && attachedFiles.length === 0)}
-          on:click={handleQuerySubmit}
-          class="h-[54px] px-5 rounded-lg font-bold text-sm tracking-wide transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 {isoTheme.submitBtnClass}"
-        >
-          {#if submittingQuery}
-            <span class="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
-            <span>Executing...</span>
-          {:else if !queryInput.trim() && !commandToExecute.trim() && activeGoal.trim()}
-            <span>🎯 Pursue Goal</span>
-          {:else}
-            <span>Execute Query</span>
-          {/if}
-        </button>
+        <div class="flex flex-col gap-1.5 shrink-0">
+          <button
+            id="cora-execute-btn"
+            type="button"
+            disabled={!activeProject || submittingQuery || (!queryInput.trim() && !commandToExecute.trim() && !activeGoal.trim() && attachedFiles.length === 0)}
+            on:click={handleQuerySubmit}
+            class="h-[34px] px-5 rounded-lg font-bold text-xs tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 {isoTheme.submitBtnClass}"
+          >
+            {#if submittingQuery}
+              <span class="animate-spin h-3.5 w-3.5 border-2 border-current border-t-transparent rounded-full"></span>
+              <span>Executing...</span>
+            {:else if !queryInput.trim() && !commandToExecute.trim() && activeGoal.trim()}
+              <span>🎯 Pursue Goal</span>
+            {:else}
+              <span>Execute Query</span>
+            {/if}
+          </button>
+
+          <button
+            id="cora-cancel-btn"
+            type="button"
+            disabled={cancellingExecution}
+            on:click={handleCancelExecution}
+            title="Stop all active reasoning engines, shell probes, and LLM processing immediately and await further instructions"
+            class="h-[26px] px-5 rounded-lg font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-1.5 border {submittingQuery || executingCommand || generatingReport
+              ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-900/50 animate-pulse'
+              : isDark
+              ? 'bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border-rose-800/80'
+              : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'} disabled:opacity-50"
+          >
+            <span>⏹</span>
+            <span>{cancellingExecution ? 'Stopping...' : 'Cancel'}</span>
+          </button>
+        </div>
       </div>
     </section>
   </main>

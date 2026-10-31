@@ -357,15 +357,105 @@ def _get_live_continual_mode() -> str:
 CONTINUAL_MODE: str = _get_live_continual_mode()
 
 
+def _is_webui_or_other_cli_engaged() -> bool:
+    """
+    Return True if the CORA WebGUI (`127.0.0.1:1337` / `Log/webui.pid`) or another
+    `agent-cli.py` process is currently running so `llama-server` is never stopped
+    while either interface remains engaged.
+    """
+    webui_port = int(os.environ.get("CORA_WEBUI_PORT") or os.environ.get("WEBUI_PORT") or "1337")
+    try:
+        import socket
+
+        with socket.create_connection(("127.0.0.1", webui_port), timeout=0.35):
+            return True
+    except Exception:
+        pass
+
+    webui_pid_file = BASE_DIR / "Log" / "webui.pid"
+    if webui_pid_file.is_file():
+        try:
+            wpid_str = webui_pid_file.read_text(encoding="utf-8", errors="ignore").strip().splitlines()[0].strip()
+            if wpid_str.isdigit():
+                wpid = int(wpid_str)
+                if wpid != os.getpid():
+                    import psutil
+
+                    if psutil.pid_exists(wpid):
+                        return True
+        except Exception:
+            pass
+
+    try:
+        import psutil
+
+        my_pid = os.getpid()
+        for proc in psutil.process_iter(["pid", "name"]):
+            try:
+                pid = proc.info.get("pid")
+                if not pid or pid == my_pid:
+                    continue
+                pname = (proc.info.get("name") or "").lower()
+                if "python" not in pname:
+                    continue
+                cmdline = " ".join(proc.cmdline() or []).lower().replace("\\", "/")
+                if "webui/server.py" in cmdline or "agent-cli.py" in cmdline:
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
+
+
+_CLI_KEEPALIVE_WATCHDOG_STARTED = False
+
+
+def _start_cli_llama_keepalive_watchdog() -> None:
+    """
+    Keep `llama-server` continuously online and engaged for the entire duration of the
+    interactive CLI session so it never drops into standby mode.
+    """
+    global _CLI_KEEPALIVE_WATCHDOG_STARTED
+    if _CLI_KEEPALIVE_WATCHDOG_STARTED or os.environ.get("CORA_SKIP_AUTO_LLAMA") == "1":
+        return
+    _CLI_KEEPALIVE_WATCHDOG_STARTED = True
+
+    def _cli_watchdog_loop() -> None:
+        health_url = API_URL.split("/v1/")[0].rstrip("/") + "/health"
+        while not _CLI_SHUTDOWN_DONE:
+            try:
+                is_up = False
+                try:
+                    with urllib.request.urlopen(health_url, timeout=2.0) as r:
+                        if r.status == 200:
+                            is_up = True
+                except urllib.error.HTTPError as he:
+                    if he.code == 503:
+                        is_up = True
+                except Exception:
+                    pass
+                if not is_up and not _CLI_SHUTDOWN_DONE:
+                    _ensure_llama_server_running()
+            except Exception:
+                pass
+            for _ in range(16):
+                if _CLI_SHUTDOWN_DONE:
+                    return
+                time.sleep(0.5)
+
+    threading.Thread(target=_cli_watchdog_loop, daemon=True, name="cora-cli-llama-keepalive").start()
+
+
 def _shutdown_cli_and_engines(stop_llm: bool = True, quiet: bool = False) -> None:
     """
     Deterministic shutdown hook triggered on `/exit`, `Ctrl+D`, `Ctrl+C` at prompt,
     or terminal window close (`SIGHUP` / `SIGTERM` on Linux; `SIGBREAK` on Windows).
     1. Immediately halts Engine 16 Continual Learning (`is_currently_running = False`)
        and pauses/stops the Speculative Lookahead Cache thread.
-    2. Immediately stops the local `llama-server` process (`Log/llama-server.pid`) so
-       zero LLM inference or GPU VRAM remains active after the CLI console closes
-       (unless `--keep-server` / `KEEP_SERVER_ON_EXIT=1` was explicitly requested).
+    2. Stops the local `llama-server` process (`Log/llama-server.pid`) ONLY if neither the
+       CORA WebGUI nor another CLI instance is currently engaged (unless `--keep-server` /
+       `KEEP_SERVER_ON_EXIT=1` was explicitly requested).
     """
     global _CLI_SHUTDOWN_DONE
     if _CLI_SHUTDOWN_DONE:
@@ -414,7 +504,7 @@ def _shutdown_cli_and_engines(stop_llm: bool = True, quiet: bool = False) -> Non
     except Exception:
         pass
 
-    if stop_llm and not KEEP_SERVER_ON_EXIT:
+    if stop_llm and not KEEP_SERVER_ON_EXIT and not _is_webui_or_other_cli_engaged():
         pid_file = BASE_DIR / "Log" / "llama-server.pid"
         active_mod_file = BASE_DIR / "Log" / "llama-server.model"
         legacy_mod_file = BASE_DIR / "Log" / "active-model.txt"
@@ -473,11 +563,79 @@ def _refresh_active_posture(override: str = "", apply_osc: bool = False, quiet: 
     return ACTIVE_POSTURE
 
 
+import contextlib
+
+_CLI_VIEW_STATE: str = "startup"
+_SESSION_TRANSCRIPT_CHUNKS: list[str] = []
+_SESSION_TRANSCRIPT_MAX_CHARS: int = 120000
+_SUPPRESS_TRANSCRIPT_DEPTH: int = 0
+_ACTIVE_MENU_REDRAW_FN = None
+_ACTIVE_PROMPT_REDRAW_FN = None
+_LAST_RESTORED_SESSION_INFO: dict = {}
+_LAST_STARTUP_CONTINUE: bool = False
+_ANSI_VIS_RE = re.compile(r"\x01?\x1b\[[0-?]*[ -/]*[@-~]\x02?|\x01?\x1b\][^\x07]*\x07\x02?|\x01|\x02")
+
+
+@contextlib.contextmanager
+def _raw_terminal_output():
+    """Suppress recording of transient HUD/cursor/spinner/repaint sequences in `_SESSION_TRANSCRIPT_CHUNKS`."""
+    global _SUPPRESS_TRANSCRIPT_DEPTH
+    _SUPPRESS_TRANSCRIPT_DEPTH += 1
+    try:
+        yield
+    finally:
+        _SUPPRESS_TRANSCRIPT_DEPTH = max(0, _SUPPRESS_TRANSCRIPT_DEPTH - 1)
+
+
+def _append_session_transcript(text: str) -> None:
+    """Append committed session text to `_SESSION_TRANSCRIPT_CHUNKS` so window resizes can repaint cleanly."""
+    global _SESSION_TRANSCRIPT_CHUNKS
+    if not text or _SUPPRESS_TRANSCRIPT_DEPTH > 0 or _CLI_VIEW_STATE != "main_session":
+        return
+    _SESSION_TRANSCRIPT_CHUNKS.append(text)
+    total_len = sum(len(c) for c in _SESSION_TRANSCRIPT_CHUNKS)
+    while total_len > _SESSION_TRANSCRIPT_MAX_CHARS and len(_SESSION_TRANSCRIPT_CHUNKS) > 1:
+        removed = _SESSION_TRANSCRIPT_CHUNKS.pop(0)
+        total_len -= len(removed)
+
+
+class _TranscriptTeeStdout:
+    """Wraps `sys.stdout` on interactive TTYs to capture committed session output for resize repainting."""
+
+    def __init__(self, wrapped) -> None:
+        self._wrapped = wrapped
+
+    def write(self, s: str) -> int:
+        res = self._wrapped.write(s)
+        try:
+            _append_session_transcript(s)
+        except Exception:
+            pass
+        return res
+
+    def flush(self) -> None:
+        self._wrapped.flush()
+
+    def isatty(self) -> bool:
+        return self._wrapped.isatty()
+
+    def fileno(self) -> int:
+        return self._wrapped.fileno()
+
+    def __getattr__(self, name: str):
+        return getattr(self._wrapped, name)
+
+
+if sys.stdout.isatty() and not isinstance(sys.stdout, _TranscriptTeeStdout):
+    sys.stdout = _TranscriptTeeStdout(sys.stdout)  # type: ignore[assignment]
+
+
 class BottomPinnedHUD:
     """
     Pins an ultra-compact, auto-centered, color-coded hardware monitor (`C:xx% M:xx% G:xx%/xx% D:xx%`)
     to the bottom terminal row using DECSTBM scroll-region locking (`\\033[1;{rows-1}r`).
-    Adjusts dynamically on window resize (`SIGWINCH`) and never obstructs CLI input or output.
+    Adjusts dynamically on window resize (`SIGWINCH` / ConPTY size polling) and repaints the active
+    CLI viewport so text never disappears into blank reflow gaps on resize.
     """
 
     def __init__(self) -> None:
@@ -494,12 +652,14 @@ class BottomPinnedHUD:
         self._pending_resize_dims = (0, 0)
         self._pending_resize_ts = 0.0
         self._in_readline_input = False
+        self._in_interactive_input = False
+        self._resize_in_progress = False
         self._resize_flag = False
         # Default both Linux and Windows to 'pin' mode (pins the HUD metric bar to the very bottom
         # row of the terminal window, BELOW the `[POSTURE] You>` input prompt).
         # On Windows PowerShell/ConPTY, we combine `cols - 1` bottom-right wrap prevention (`\033[?7l`),
-        # pre-prompt scroll reservation (`\n\033[1A`), and pre-output bottom-row clearing so the bar
-        # stays below the input prompt without scrolling or duplicating during streaming.
+        # pre-prompt scroll reservation (`\n\033[1A`), and full-viewport resize repainting so the bar
+        # stays below the input prompt without scrolling, duplicating, or wiping text on window resize.
         default_mode = "pin"
         self.mode = os.environ.get("HUD_MODE", default_mode).strip().lower()
         if self.mode not in ("pin", "prompt", "title"):
@@ -825,7 +985,7 @@ class BottomPinnedHUD:
             return
         self._update_window_title()
         if self.mode == "prompt":
-            with self._lock:
+            with self._lock, _raw_terminal_output():
                 try:
                     sz = shutil.get_terminal_size((80, 24))
                     cols = max(20, sz.columns)
@@ -837,13 +997,34 @@ class BottomPinnedHUD:
         elif self.mode == "pin":
             self.render(force_region=True)
 
+    def begin_resize_transition(self, cols: int, rows: int) -> None:
+        """
+        Immediately unlock DECSTBM (`\\033[r`) and erase the old bottom HUD bar row as soon
+        as a terminal resize starts so ConPTY/Windows Terminal never anchors reflow to a
+        stale bottom HUD row or clips reflow inside an outdated scroll region.
+        """
+        with self._lock, _raw_terminal_output():
+            now_m = time.monotonic()
+            was_in_progress = self._resize_in_progress
+            self._resize_in_progress = True
+            self._pending_resize_dims = (cols, rows)
+            self._pending_resize_ts = now_m
+            if not was_in_progress and self.active and self.mode == "pin" and sys.stdout.isatty():
+                try:
+                    old_r = self._last_rows
+                    clear_old = f"\033[{old_r};1H\033[2K" if old_r > 0 else ""
+                    sys.stdout.write(f"\0337\033[r{clear_old}\033[0m\0338")
+                    sys.stdout.flush()
+                except Exception:
+                    pass
+
     def render(self, force_region: bool = False) -> None:
         if not self.active or not sys.stdout.isatty():
             return
         self._update_window_title()
         if self.mode != "pin":
             return
-        with self._lock:
+        with self._lock, _raw_terminal_output():
             try:
                 sz = shutil.get_terminal_size((80, 24))
                 cols, rows = max(20, sz.columns), max(6, sz.lines)
@@ -856,11 +1037,21 @@ class BottomPinnedHUD:
                 if size_changed and not force_region and self._last_rows > 0:
                     now_m = time.monotonic()
                     if (cols, rows) != self._pending_resize_dims:
-                        self._pending_resize_dims = (cols, rows)
-                        self._pending_resize_ts = now_m
+                        self.begin_resize_transition(cols, rows)
                         return
-                    if (now_m - self._pending_resize_ts) < 0.45:
+                    if (now_m - self._pending_resize_ts) < 0.35:
                         return
+                    self._resize_in_progress = False
+                    redraw_cli_on_resize()
+                    if _ACTIVE_PROMPT_REDRAW_FN is not None:
+                        try:
+                            _ACTIVE_PROMPT_REDRAW_FN()
+                        except Exception:
+                            pass
+                    return
+
+                if self._resize_in_progress and not force_region:
+                    return
 
                 posture = ACTIVE_POSTURE or _refresh_active_posture()
                 hud_bg = posture.get("ansi_hud_bar", "\033[48;5;235m")
@@ -876,6 +1067,7 @@ class BottomPinnedHUD:
                 if force_region or size_changed:
                     self._last_cols, self._last_rows = cols, rows
                     self._pending_resize_dims = (cols, rows)
+                    self._resize_in_progress = False
                     seq = f"{prefix}\0337{cleanup_old_row}\033[1;{rows - 1}r\033[?7l\033[{rows};1H{hud_bg}\033[2K{bar}\033[0m\033[?7h\0338"
                 else:
                     seq = f"\0337\033[?7l\033[{rows};1H{hud_bg}\033[2K{bar}\033[0m\033[?7h\0338"
@@ -885,24 +1077,51 @@ class BottomPinnedHUD:
                 pass
 
     def _loop(self) -> None:
+        last_sample_ts = 0.0
         while not self._stop_evt.is_set():
-            self._metrics["cpu"] = self._sample_cpu_pct()
-            self._metrics["mem"] = self._sample_mem_pct()
-            g_pct, v_pct = self._sample_gpu_pcts()
-            self._metrics["gpu"] = g_pct
-            self._metrics["vram"] = v_pct
-            self._metrics["disk"] = self._sample_disk_pct()
-            if self.mode == "pin" and not self._in_readline_input:
-                force_reg = self._resize_flag
-                self._resize_flag = False
-                self.render(force_region=force_reg)
-            else:
+            now_m = time.monotonic()
+            if (now_m - last_sample_ts) >= 1.5:
+                last_sample_ts = now_m
+                self._metrics["cpu"] = self._sample_cpu_pct()
+                self._metrics["mem"] = self._sample_mem_pct()
+                g_pct, v_pct = self._sample_gpu_pcts()
+                self._metrics["gpu"] = g_pct
+                self._metrics["vram"] = v_pct
+                self._metrics["disk"] = self._sample_disk_pct()
                 self._update_window_title()
-            self._stop_evt.wait(1.5)
+                if self.mode == "pin" and not self._in_readline_input and not self._in_interactive_input and not self._resize_in_progress:
+                    self.render(force_region=False)
+
+            # On POSIX/Linux, handle debounced SIGWINCH resize events cleanly outside the signal handler
+            if os.name != "nt" and self._resize_flag:
+                try:
+                    sz = shutil.get_terminal_size((80, 24))
+                    cols, rows = max(20, sz.columns), max(6, sz.lines)
+                    if (cols, rows) != self._pending_resize_dims:
+                        self.begin_resize_transition(cols, rows)
+                    elif (now_m - self._pending_resize_ts) >= 0.22:
+                        self._resize_flag = False
+                        self._resize_in_progress = False
+                        redraw_cli_on_resize()
+                        if _ACTIVE_PROMPT_REDRAW_FN is not None:
+                            try:
+                                _ACTIVE_PROMPT_REDRAW_FN()
+                            except Exception:
+                                pass
+                        elif self._in_readline_input and readline is not None and hasattr(readline, "redisplay"):
+                            try:
+                                readline.redisplay()
+                            except Exception:
+                                pass
+                except Exception:
+                    self._resize_flag = False
+
+            self._stop_evt.wait(0.15)
 
     def _on_resize(self, signum, frame) -> None:
         # Never call sys.stdout.write() inside a signal handler (avoids RuntimeError: reentrant call inside BufferedWriter)
         self._resize_flag = True
+        self._pending_resize_ts = time.monotonic()
 
     def start(self) -> None:
         if self.active or not sys.stdout.isatty():
@@ -919,15 +1138,22 @@ class BottomPinnedHUD:
         self._update_window_title()
 
         if self.mode == "pin":
-            with self._lock:
+            with self._lock, _raw_terminal_output():
                 sz = shutil.get_terminal_size((80, 24))
                 cols, rows = max(20, sz.columns), max(6, sz.lines)
                 self._last_cols, self._last_rows = cols, rows
+                self._pending_resize_dims = (cols, rows)
                 # Reserve 1 bottom row (scrolling up if cursor was on `rows`), move cursor to `<= rows - 1`,
                 # and lock DECSTBM scroll region to `1..{rows - 1}` so CLI output always sits above row `rows`.
                 sys.stdout.write(f"\n\033[1A\0337\033[1;{rows - 1}r\0338")
                 sys.stdout.flush()
             self.render(force_region=True)
+
+        if hasattr(signal, "SIGWINCH"):
+            try:
+                signal.signal(signal.SIGWINCH, self._on_resize)
+            except Exception:
+                pass
 
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
@@ -939,12 +1165,12 @@ class BottomPinnedHUD:
         self.active = False
         self._stop_evt.set()
         if was_pin and sys.stdout.isatty():
-            with self._lock:
+            with self._lock, _raw_terminal_output():
                 try:
                     sz = shutil.get_terminal_size((80, 24))
                     rows = max(6, sz.lines)
                     # Clear bottom HUD line and restore full terminal scroll region
-                    sys.stdout.write(f"\0337\033[1;{rows}r\033[{rows};1H\033[2K\033[0m\0338")
+                    sys.stdout.write(f"\0337\033[r\033[1;{rows}r\033[{rows};1H\033[2K\033[0m\0338")
                     sys.stdout.flush()
                 except Exception:
                     pass
@@ -1810,7 +2036,21 @@ def get_cora_version_info(bump_patch_reason: str = "", bump_engine_reason: str =
     return out
 
 
+import textwrap
+
 DEFAULT_BANNER_WIDTH = 100
+
+
+def get_terminal_banner_width(default_width: int = DEFAULT_BANNER_WIDTH) -> int:
+    """Return banner width adapted to the live terminal width (up to `default_width`)."""
+    if not sys.stdout.isatty():
+        return default_width
+    try:
+        cols = shutil.get_terminal_size((default_width, 24)).columns
+        return max(48, min(default_width, cols - 1))
+    except Exception:
+        return default_width
+
 
 _CORA_DESCRIPTION_LINES = (
     "C.O.R.A. is a multi-layered reasoning agent that combines AI and a cybersecurity focused",
@@ -1830,9 +2070,10 @@ _CORA_DISCLAIMER_LINES = (
 )
 
 
-def render_cora_splash_screen(posture: dict | None = None, banner_width: int = DEFAULT_BANNER_WIDTH) -> None:
+def render_cora_splash_screen(posture: dict | None = None, banner_width: int | None = None) -> None:
     """
-    Display the C.O.R.A. (Cyber Oriented Reasoning Agent) ASCII splash screen at CLI opening (default 100 columns wide):
+    Display the C.O.R.A. (Cyber Oriented Reasoning Agent) ASCII splash screen at CLI opening (default 100 columns wide,
+    automatically adapting when the terminal window is narrower so lines never wrap or corrupt on resize):
       - Left-aligned Crow ASCII graphic (height = top of C.O.R.A. banner to bottom of full name, width = 32 cols).
       - Top banner displaying 5-line ASCII `C.O.R.A.` with spacing rows below to `Cyber Oriented Reasoning Agent`,
         centered cleanly in the banner area to the right of the Crow.
@@ -1841,43 +2082,164 @@ def render_cora_splash_screen(posture: dict | None = None, banner_width: int = D
       - Above the Developed by line (bottom-left): `Version: <CLI_Overhaul>.<Engine_Rev>.<Patch_Rev>` (e.g. `Version: 5.14.11`).
       - Bottom-left subtly sized developer line: `Developed by: https://CROWinnovations.com`.
     """
+    bw = banner_width if banner_width is not None else get_terminal_banner_width(DEFAULT_BANNER_WIDTH)
     p = posture or ACTIVE_POSTURE or _refresh_active_posture()
     border_col = p.get("ansi_border", "\033[1;36m")
     accent_col = p.get("ansi_accent", "\033[1;37m")
-    crow_w = 32
-    crow_lines = _load_crow_logo_ascii(width=crow_w, height=len(_CORA_BANNER_LINES))
+    ascii_block_w = max(len(ln.rstrip()) for ln in _CORA_BANNER_LINES[:5])
     ver_info = get_cora_version_info()
     ver_str = ver_info["version"]
 
-    # Center the C.O.R.A. ASCII banner block and subtitle in the space to the right of the left-aligned Crow (col 34..banner_width)
-    left_used = 2 + crow_w
-    right_space = max(40, banner_width - left_used)
-    ascii_block_w = max(len(ln.rstrip()) for ln in _CORA_BANNER_LINES[:5])
-    gap_after_crow = max(3, (right_space - ascii_block_w) // 2)
-
-    print(f"\n{border_col}{'=' * banner_width}\033[0m")
-    for idx, (c_ln, b_ln) in enumerate(zip(crow_lines, _CORA_BANNER_LINES)):
-        if idx < 5:
-            b_padded = (" " * gap_after_crow) + b_ln.rstrip()
-            b_styled = f"\033[1;97m{b_padded}\033[0m"
-        elif idx in (7, 8):
-            sub_txt = b_ln.strip()
-            sub_gap = max(3, gap_after_crow + (ascii_block_w - len(sub_txt)) // 2)
-            if idx == 7:
-                b_styled = (" " * sub_gap) + f"{accent_col}\033[1m{sub_txt}\033[0m"
+    print(f"\n{border_col}{'=' * bw}\033[0m")
+    if bw >= 86:
+        crow_w = min(32, max(18, bw - ascii_block_w - 5))
+        crow_lines = _load_crow_logo_ascii(width=crow_w, height=len(_CORA_BANNER_LINES))
+        left_used = 2 + crow_w
+        right_space = max(ascii_block_w, bw - left_used)
+        gap_after_crow = max(2, (right_space - ascii_block_w) // 2)
+        for idx, (c_ln, b_ln) in enumerate(zip(crow_lines, _CORA_BANNER_LINES)):
+            if idx < 5:
+                b_padded = (" " * gap_after_crow) + b_ln.rstrip()
+                b_styled = f"\033[1;97m{b_padded}\033[0m"
+            elif idx in (7, 8):
+                sub_txt = b_ln.strip()
+                sub_gap = max(2, gap_after_crow + (ascii_block_w - len(sub_txt)) // 2)
+                if idx == 7:
+                    b_styled = (" " * sub_gap) + f"{accent_col}\033[1m{sub_txt}\033[0m"
+                else:
+                    b_styled = (" " * sub_gap) + f"\033[2;37m{sub_txt}\033[0m"
             else:
-                b_styled = (" " * sub_gap) + f"\033[2;37m{sub_txt}\033[0m"
-        else:
-            b_styled = ""
-        print(f"  \033[1;37m{c_ln}\033[0m{b_styled}")
+                b_styled = ""
+            print(f"  \033[1;37m{c_ln}\033[0m{b_styled}")
+    else:
+        # Compact stacked layout for narrow terminal windows (< 86 columns)
+        for idx, b_ln in enumerate(_CORA_BANNER_LINES):
+            if idx < 5:
+                print(f"\033[1;97m{b_ln.rstrip()[:bw].center(bw)}\033[0m")
+            elif idx == 7:
+                print(f"{accent_col}\033[1m{b_ln.strip().center(bw)}\033[0m")
+            elif idx == 8:
+                print(f"\033[2;37m{b_ln.strip().center(bw)}\033[0m")
 
     print()
-    for desc_ln in _CORA_DESCRIPTION_LINES:
-        print(f"\033[0;37m{desc_ln.center(banner_width)}\033[0m")
+    desc_lines = (
+        list(_CORA_DESCRIPTION_LINES)
+        if bw >= max(len(ln) for ln in _CORA_DESCRIPTION_LINES)
+        else textwrap.wrap(" ".join(_CORA_DESCRIPTION_LINES), width=max(40, bw - 4))
+    )
+    for desc_ln in desc_lines:
+        print(f"\033[0;37m{desc_ln.center(bw)}\033[0m")
     print()
     print(f"  \033[2;37mVersion: {ver_str}\033[0m")
     print("  \033[2;37mDeveloped by: https://CROWinnovations.com\033[0m")
-    print(f"{border_col}{'=' * banner_width}\033[0m\n")
+    print(f"{border_col}{'=' * bw}\033[0m\n")
+
+
+def render_session_intro_banner(
+    posture: dict | None = None,
+    restored_session_info: dict | None = None,
+    startup_continue_session: bool = False,
+) -> None:
+    """Render the C.O.R.A. session status & legal disclaimer block scaled to the active terminal width."""
+    bw = get_terminal_banner_width(DEFAULT_BANNER_WIDTH)
+    p = posture or ACTIVE_POSTURE or _refresh_active_posture()
+    p_border = p.get("ansi_border", "\033[1;32m")
+    p_accent = p.get("ansi_accent", "\033[1;32m")
+    p_badge = p.get("banner_badge", "[POSTURE: UNRESTRICTED]")
+    p_ifaces = p.get("allowed_interfaces") or []
+    pmode_key = (ACTIVE_PERSONALITY_MODE or "DEFAULT").upper()
+    pmode_num = {"DEFAULT": "1", "ANALYST": "2", "BERSERKER": "3", "NINJA": "4"}.get(pmode_key, "1")
+    pmode_meta = PERSONALITY_MODES_META[pmode_num]
+    perm_status = (
+        "\033[1;31mAUTO-RUN (--dangerously-skip-permissions enabled)\033[0m"
+        if SKIP_PERMISSIONS
+        else "\033[1;32mCONFIRM ON [y/N/a] (pass --dangerously-skip-permissions to auto-run)\033[0m"
+    )
+
+    if startup_continue_session:
+        r_info = restored_session_info or {}
+        if r_info.get("restored"):
+            print(
+                f"\033[1;32m=== Session Restored (`--continue` from `{r_info.get('source')}`) ===\033[0m\n"
+                f"  Saved At:       `{r_info.get('saved_at')}`\n"
+                f"  Active Project: `{r_info.get('active_project') or 'None'}`\n"
+                f"  Active Goal:    `{r_info.get('active_goal') or 'None'}`\n"
+                f"  History Loaded: `{r_info.get('message_count')}` messages | `{r_info.get('attempt_count')}` tool attempts (Wave `{r_info.get('current_wave')}`)\n"
+                f"  Tip:            Type `/relentless` to immediately resume autonomous wave execution, or enter your next instruction below.\n"
+            )
+        else:
+            print(
+                f"\033[1;33m[Continuation Notice]\033[0m {r_info.get('reason', 'No previous session found.')} Starting a fresh session.\n"
+            )
+
+    intro_hdr = " C.O.R.A. Local System Agent CLI + Obsidian Vault ".center(bw, "=")
+    print(f"{p_border}{intro_hdr}\033[0m")
+    print(f"  Active Project: \033[1;36mProjects/{get_active_project_slug()}/\033[0m (`/project` to switch, rename, or create)")
+    print(f"  Session Mode:   {pmode_meta['color']}[{pmode_num}] {pmode_meta['label']}\033[0m — {pmode_meta['purpose']} (`/mode` to view/switch)")
+    print(f"  Security Mode:  {p_accent}{p_badge}\033[0m")
+    if p.get("mode") == "ISOLATED_LAN_USB" and p_ifaces:
+        print(f"  Allowed Ifaces: \033[1;36m{', '.join(p_ifaces)}\033[0m (Locked by Blue Network Isolation; all other host NICs blocked)")
+    elif p.get("mode") == "AIR_GAPPED_NETNS":
+        print("  Namespace Lock: \033[1;97mLinux Network Namespace (`unshare -r -n`, `lo` loopback only — 0 external NICs)\033[0m")
+    print(f"  Active Model:   \033[1m{MODEL_NAME}\033[0m")
+    print(f"  Obsidian Vault: \033[1;36m{VAULT_DIR}\033[0m (Long-Term Universal Knowledge)")
+    print(f"  Projects Dir:   \033[1;36m{PROJECTS_DIR}\033[0m (Isolated Project Downloads, Scans & `memory.md`)")
+    print(f"  Project Files:  \033[1;36mProjects/{get_active_project_slug()}/Files/\033[0m (`/files` or `/upload <path>` to add files for LLM)")
+    print(f"  Working Dir:    {os.getcwd()}")
+    print(f"  Permissions:    {perm_status}")
+    print()
+    disc_header = _CORA_DISCLAIMER_LINES[0].center(bw)
+    print(f"\033[1;33m{disc_header}\033[0m")
+    disc_body = (
+        list(_CORA_DISCLAIMER_LINES[1:])
+        if bw >= max(len(ln) for ln in _CORA_DISCLAIMER_LINES[1:])
+        else textwrap.wrap(" ".join(_CORA_DISCLAIMER_LINES[1:]), width=max(40, bw - 4))
+    )
+    for d_line in disc_body:
+        print(f"\033[2;37m{d_line.center(bw)}\033[0m")
+    print(f"{p_border}{'=' * bw}\033[0m\n")
+
+
+def redraw_cli_on_resize() -> None:
+    """
+    Repaint the active CLI view (interactive menu or C.O.R.A. splash + session header +
+    recorded session transcript + bottom-pinned HUD bar) when the terminal window is resized,
+    preventing ConPTY/terminal reflow from scrolling text into blank space or overwriting prompts.
+    """
+    if not sys.stdout.isatty():
+        return
+    with HUD._lock, _raw_terminal_output():
+        try:
+            sz = shutil.get_terminal_size((80, 24))
+            cols, rows = max(20, sz.columns), max(6, sz.lines)
+            # Unlock DECSTBM scroll margins to full screen, reset SGR, and clear viewport & reflow artifacts
+            sys.stdout.write(f"\033[r\033[1;{rows}r\033[0m\033[2J\033[3J\033[H")
+            sys.stdout.flush()
+            posture = _refresh_active_posture(apply_osc=True, quiet=True)
+            if _ACTIVE_MENU_REDRAW_FN is not None:
+                _ACTIVE_MENU_REDRAW_FN()
+            elif _CLI_VIEW_STATE == "main_session":
+                render_cora_splash_screen(posture)
+                render_session_intro_banner(
+                    posture=posture,
+                    restored_session_info=_LAST_RESTORED_SESSION_INFO,
+                    startup_continue_session=_LAST_STARTUP_CONTINUE,
+                )
+                if _SESSION_TRANSCRIPT_CHUNKS:
+                    transcript_text = "".join(_SESSION_TRANSCRIPT_CHUNKS)
+                    sys.stdout.write(transcript_text)
+                    if not transcript_text.endswith("\n"):
+                        sys.stdout.write("\n")
+            sys.stdout.flush()
+            if HUD.active and HUD.mode == "pin":
+                HUD._last_cols, HUD._last_rows = cols, rows
+                HUD._pending_resize_dims = (cols, rows)
+                HUD._resize_in_progress = False
+                sys.stdout.write(f"\n\033[1A\0337\033[1;{rows - 1}r\0338")
+                sys.stdout.flush()
+                HUD.render(force_region=True)
+        except Exception:
+            pass
 
 
 def render_simplified_switches_table(posture: dict | None = None, table_width: int = DEFAULT_BANNER_WIDTH) -> None:
@@ -2189,17 +2551,25 @@ def _prompt_berserker_or_ninja_netiso_group(mode_label: str, mode_color: str) ->
     blue_ifaces, blue_src = get_configured_blue_interfaces()
     blue_csv = ", ".join(blue_ifaces)
 
-    while True:
-        sub_hdr = f" {mode_label} Mode: Select Network Isolation Group (Red or Blue) ".center(DEFAULT_BANNER_WIDTH, "-")
+    def _render_netiso_submenu() -> None:
+        bw = get_terminal_banner_width(DEFAULT_BANNER_WIDTH)
+        sub_hdr = f" {mode_label} Mode: Select Network Isolation Group (Red or Blue) ".center(bw, "-")
         print(f"\n{mode_color}{sub_hdr}\033[0m")
         print("  \033[1;31m[1] Red \033[0m — Interfaces: \033[1;37mAll\033[0m (Unrestricted full host network access)")
         print(f"  \033[1;36m[2] Blue\033[0m — Interfaces: \033[1;36m{blue_csv}\033[0m (Locked via {blue_src})")
         print("  \033[1;33m[B]\033[0m Go Back to Mode Selection")
         print("  \033[2;37m[C]\033[0m CANCEL / Exit")
-        print(f"{mode_color}{'-' * DEFAULT_BANNER_WIDTH}\033[0m")
+        print(f"{mode_color}{'-' * bw}\033[0m")
+
+    while True:
+        _render_netiso_submenu()
 
         try:
-            iso_choice = input(f"\n{mode_color}Select Network Isolation Group for {mode_label} [1=Red, 2=Blue, B=Back, C=CANCEL]:\033[0m ").strip()
+            iso_choice = _read_interactive_cli_line(
+                f"\n{mode_color}Select Network Isolation Group for {mode_label} [1=Red, 2=Blue, B=Back, C=CANCEL]:\033[0m ",
+                allow_autocomplete=False,
+                menu_redraw_fn=_render_netiso_submenu,
+            ).strip()
         except (EOFError, KeyboardInterrupt):
             if not sys.stdin.isatty():
                 return "red"
@@ -2251,8 +2621,9 @@ def interactive_personality_mode_menu(project_slug: str = "", allow_back_to_proj
         apply_personality_mode("DEFAULT")
         return "DEFAULT"
 
-    while True:
-        hdr = " C.O.R.A. Session Personality & Logic Mode Selection (Session-Only) ".center(DEFAULT_BANNER_WIDTH, "=")
+    def _render_mode_menu() -> None:
+        bw = get_terminal_banner_width(DEFAULT_BANNER_WIDTH)
+        hdr = " C.O.R.A. Session Personality & Logic Mode Selection (Session-Only) ".center(bw, "=")
         print(f"\033[1;35m{hdr}\033[0m")
         print(f"  Active Project: `Projects/{proj_disp}/`  |  Select mode number [1-4] (Default: [1]):")
         for num_k in ("1", "2", "3", "4"):
@@ -2265,10 +2636,17 @@ def interactive_personality_mode_menu(project_slug: str = "", allow_back_to_proj
         if allow_back_to_project:
             print("  \033[1;36m[B]\033[0m Go Back to Project Selection")
         print("  \033[2;37m[C]\033[0m CANCEL / Exit")
-        print(f"\033[1;35m{'=' * DEFAULT_BANNER_WIDTH}\033[0m")
+        print(f"\033[1;35m{'=' * bw}\033[0m")
+
+    while True:
+        _render_mode_menu()
 
         try:
-            raw_sel = input("\n\033[1;35mSelect Session Mode [1-4, Enter=1 (Default)" + (", B=Back" if allow_back_to_project else "") + ", C=CANCEL]:\033[0m ").strip()
+            raw_sel = _read_interactive_cli_line(
+                "\n\033[1;35mSelect Session Mode [1-4, Enter=1 (Default)" + (", B=Back" if allow_back_to_project else "") + ", C=CANCEL]:\033[0m ",
+                allow_autocomplete=False,
+                menu_redraw_fn=_render_mode_menu,
+            ).strip()
         except (EOFError, KeyboardInterrupt):
             if not sys.stdin.isatty():
                 apply_personality_mode("DEFAULT")
@@ -2455,32 +2833,40 @@ def interactive_project_selection_menu(require_selection: bool = True, prompt_mo
         rename_num = n_projs + 1
         create_num = n_projs + 2
 
-        proj_header = " C.O.R.A. Project Workspace Selection (Required Before LLM Interaction) ".center(DEFAULT_BANNER_WIDTH, "=")
-        print(f"\033[1;36m{proj_header}\033[0m")
-        print(f"  Projects Directory: `{PROJECTS_DIR}`")
-        if proj_dirs:
-            for idx, pdir in enumerate(proj_dirs, 1):
-                active_tag = " \033[1;32m[ACTIVE]\033[0m" if pdir.name == ACTIVE_PROJECT else ""
-                mem_f = pdir / "memory.md"
-                summary = ""
-                if mem_f.is_file():
-                    try:
-                        m_sum = re.search(r"^summary:\s*(.+)$", mem_f.read_text(encoding="utf-8", errors="replace"), re.M)
-                        if m_sum:
-                            summary = f" — {m_sum.group(1).strip()[:140]}"
-                    except Exception:
-                        pass
-                print(f"  \033[1;33m[{idx}]\033[0m {pdir.name}{active_tag}{summary}")
-        else:
-            print("  *(No existing projects in `/Projects` yet)*")
+        def _render_proj_menu() -> None:
+            bw = get_terminal_banner_width(DEFAULT_BANNER_WIDTH)
+            proj_header = " C.O.R.A. Project Workspace Selection (Required Before LLM Interaction) ".center(bw, "=")
+            print(f"\033[1;36m{proj_header}\033[0m")
+            print(f"  Projects Directory: `{PROJECTS_DIR}`")
+            if proj_dirs:
+                for idx, pdir in enumerate(proj_dirs, 1):
+                    active_tag = " \033[1;32m[ACTIVE]\033[0m" if pdir.name == ACTIVE_PROJECT else ""
+                    mem_f = pdir / "memory.md"
+                    summary = ""
+                    if mem_f.is_file():
+                        try:
+                            m_sum = re.search(r"^summary:\s*(.+)$", mem_f.read_text(encoding="utf-8", errors="replace"), re.M)
+                            if m_sum:
+                                summary = f" — {m_sum.group(1).strip()[:140]}"
+                        except Exception:
+                            pass
+                    print(f"  \033[1;33m[{idx}]\033[0m {pdir.name}{active_tag}{summary}")
+            else:
+                print("  *(No existing projects in `/Projects` yet)*")
 
-        print(f"  \033[1;35m[{rename_num}]\033[0m Rename Current Project")
-        print(f"  \033[1;32m[{create_num}]\033[0m CREATE NEW PROJECT")
-        print("  \033[2;37m[C] CANCEL / Exit\033[0m")
-        print(f"\033[1;36m{'=' * DEFAULT_BANNER_WIDTH}\033[0m")
+            print(f"  \033[1;35m[{rename_num}]\033[0m Rename Current Project")
+            print(f"  \033[1;32m[{create_num}]\033[0m CREATE NEW PROJECT")
+            print("  \033[2;37m[C] CANCEL / Exit\033[0m")
+            print(f"\033[1;36m{'=' * bw}\033[0m")
+
+        _render_proj_menu()
 
         try:
-            choice = input(f"\n\033[1;36mSelect Project or Action [1-{create_num}, or C to CANCEL]:\033[0m ").strip()
+            choice = _read_interactive_cli_line(
+                f"\n\033[1;36mSelect Project or Action [1-{create_num}, or C to CANCEL]:\033[0m ",
+                allow_autocomplete=False,
+                menu_redraw_fn=_render_proj_menu,
+            ).strip()
         except (EOFError, KeyboardInterrupt):
             print("\nCancelled.")
             if require_selection and not ACTIVE_PROJECT:
@@ -2533,13 +2919,20 @@ def interactive_project_selection_menu(require_selection: bool = True, prompt_mo
                     print("\n\033[1;33mNo projects exist yet to rename. Please select CREATE NEW PROJECT.\033[0m\n")
                     continue
                 while True:
-                    print("\n\033[1;35m--- Rename Current Project ---\033[0m")
-                    for idx, pdir in enumerate(proj_dirs, 1):
-                        print(f"  \033[1;33m[{idx}]\033[0m {pdir.name}")
-                    print("  \033[1;36m[B]\033[0m Go Back")
-                    print("  \033[1;31m[C]\033[0m CANCEL")
+                    def _render_rename_menu() -> None:
+                        print("\n\033[1;35m--- Rename Current Project ---\033[0m")
+                        for idx, pdir in enumerate(proj_dirs, 1):
+                            print(f"  \033[1;33m[{idx}]\033[0m {pdir.name}")
+                        print("  \033[1;36m[B]\033[0m Go Back")
+                        print("  \033[1;31m[C]\033[0m CANCEL")
+
+                    _render_rename_menu()
                     try:
-                        r_sel = input(f"Select project number to rename [1-{n_projs}, B=Go Back, C=CANCEL]: ").strip()
+                        r_sel = _read_interactive_cli_line(
+                            f"Select project number to rename [1-{n_projs}, B=Go Back, C=CANCEL]: ",
+                            allow_autocomplete=False,
+                            menu_redraw_fn=_render_rename_menu,
+                        ).strip()
                     except (EOFError, KeyboardInterrupt):
                         print()
                         break
@@ -2554,8 +2947,10 @@ def interactive_project_selection_menu(require_selection: bool = True, prompt_mo
                     if r_sel.isdigit() and 1 <= int(r_sel) <= n_projs:
                         target_old = proj_dirs[int(r_sel) - 1].name
                         try:
-                            new_raw = input(
-                                f"Enter new name for `{target_old}` (spaces/special chars auto-convert to `-`, B=Go Back, C=CANCEL): "
+                            new_raw = _read_interactive_cli_line(
+                                f"Enter new name for `{target_old}` (spaces/special chars auto-convert to `-`, B=Go Back, C=CANCEL): ",
+                                allow_autocomplete=False,
+                                menu_redraw_fn=_render_rename_menu,
                             ).strip()
                         except (EOFError, KeyboardInterrupt):
                             print()
@@ -2577,11 +2972,18 @@ def interactive_project_selection_menu(require_selection: bool = True, prompt_mo
             if sel_num == create_num:
                 created_project_slug = ""
                 while True:
-                    print("\n\033[1;32m--- CREATE NEW PROJECT ---\033[0m")
-                    print("  (Spaces and special characters will be automatically converted to dashes `-`)")
-                    print("  Type `B` to Go Back or `C` to CANCEL.")
+                    def _render_create_menu() -> None:
+                        print("\n\033[1;32m--- CREATE NEW PROJECT ---\033[0m")
+                        print("  (Spaces and special characters will be automatically converted to dashes `-`)")
+                        print("  Type `B` to Go Back or `C` to CANCEL.")
+
+                    _render_create_menu()
                     try:
-                        raw_new = input("Enter New Project Name: ").strip()
+                        raw_new = _read_interactive_cli_line(
+                            "Enter New Project Name: ",
+                            allow_autocomplete=False,
+                            menu_redraw_fn=_render_create_menu,
+                        ).strip()
                     except (EOFError, KeyboardInterrupt):
                         print()
                         break
@@ -4424,23 +4826,24 @@ def chat_step(messages: list) -> dict:
         if spinner_active[0]:
             spinner_active[0] = False
             spinner_stop.set()
-            sys.stdout.write("\r\033[2K")
-            sys.stdout.flush()
+            with _raw_terminal_output():
+                sys.stdout.write("\r\033[2K")
+                sys.stdout.flush()
 
     def _wait_spinner() -> None:
         frames = ("⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏")
         t0 = time.monotonic()
         idx = 0
         while not spinner_stop.wait(0.25):
-            with spinner_lock:
+            with spinner_lock, _raw_terminal_output():
                 if not spinner_active[0]:
                     break
                 elapsed = time.monotonic() - t0
                 frame = frames[idx % len(frames)]
                 idx += 1
-                sys.stdout.write(
-                    f"\r\033[2K\033[0;36m{frame} [C.O.R.A. Thinking / Processing... {elapsed:.1f}s | Press Ctrl+O to expand thought process | Ctrl+C to cancel]\033[0m"
-                )
+                max_c = max(24, shutil.get_terminal_size((80, 24)).columns - 2)
+                msg_sp = f"{frame} [C.O.R.A. Thinking / Processing... {elapsed:.1f}s | Press Ctrl+O to expand thought process | Ctrl+C to cancel]"
+                sys.stdout.write(f"\r\033[2K\033[0;36m{msg_sp[:max_c]}\033[0m")
                 sys.stdout.flush()
 
     spinner_thread = threading.Thread(target=_wait_spinner, daemon=True)
@@ -4539,10 +4942,11 @@ def chat_step(messages: list) -> dict:
                                     printed_header = True
                                 print(f"\033[2;37m{c}\033[0m", end="", flush=True)
                             else:
-                                sys.stdout.write(
-                                    f"\r\033[2K\033[1;33m🧠 [C.O.R.A. Thinking & Processing... ({think_elapsed:.1f}s) — Press Ctrl+O to expand thought process]\033[0m"
-                                )
-                                sys.stdout.flush()
+                                with _raw_terminal_output():
+                                    max_c = max(24, shutil.get_terminal_size((80, 24)).columns - 3)
+                                    th_msg = f"🧠 [C.O.R.A. Thinking & Processing... ({think_elapsed:.1f}s) — Press Ctrl+O to expand thought process]"
+                                    sys.stdout.write(f"\r\033[2K\033[1;33m{th_msg[:max_c]}\033[0m")
+                                    sys.stdout.flush()
                         continue
 
                     if in_think_block and "</think>" in full_so_far:
@@ -4552,7 +4956,8 @@ def chat_step(messages: list) -> dict:
                             LAST_THINKING_TRACE = m_th.group(1).strip()
                         think_elapsed = time.monotonic() - think_start_t
                         with spinner_lock:
-                            sys.stdout.write("\r\033[2K")
+                            with _raw_terminal_output():
+                                sys.stdout.write("\r\033[2K")
                             print(
                                 f"\n\033[2;33m[🧠 Thought for {think_elapsed:.1f}s — Press Ctrl+O (or type /ctrl-o) to expand thought process]\033[0m",
                                 flush=True,
@@ -6487,128 +6892,196 @@ def _setup_posix_readline_completer() -> None:
         pass
 
 
-def _read_interactive_cli_line(prompt_text: str) -> str:
+def _read_interactive_cli_line(
+    prompt_text: str,
+    allow_autocomplete: bool = True,
+    menu_redraw_fn=None,
+) -> str:
     """
     Read an interactive CLI line with:
+      - Real-time terminal window resize detection & full-viewport repaint (`redraw_cli_on_resize`)
       - Up/Down arrow history navigation (`_CLI_HISTORY`)
       - Live shaded ANSI ghost-text word autocomplete (`\\033[2;36m<suffix>\\033[0m`)
       - Tab key completion (`Tab` accepts shaded word completion)
     Falls back cleanly to standard `input(prompt_text)` when stdin/stdout is not a Windows console TTY.
     """
-    _load_cli_history()
+    global _ACTIVE_MENU_REDRAW_FN, _ACTIVE_PROMPT_REDRAW_FN
+    if allow_autocomplete:
+        _load_cli_history()
+
     if os.name != "nt" or not sys.stdin.isatty() or not sys.stdout.isatty():
         HUD._in_readline_input = True
+        _ACTIVE_MENU_REDRAW_FN = menu_redraw_fn
         try:
-            raw_line = input(prompt_text)
+            with _raw_terminal_output():
+                raw_line = input(prompt_text)
         finally:
             HUD._in_readline_input = False
+            _ACTIVE_MENU_REDRAW_FN = None
+            _ACTIVE_PROMPT_REDRAW_FN = None
         if "\x0f" in raw_line:
             return "/ctrl-o"
         line = raw_line.strip()
-        if line and line != "/ctrl-o":
+        if menu_redraw_fn is None and _CLI_VIEW_STATE == "main_session":
+            _append_session_transcript(f"{prompt_text}{line}\n")
+        if allow_autocomplete and line and line != "/ctrl-o":
             _save_cli_history_entry(line)
         return line
 
     try:
         import msvcrt
     except ImportError:
-        line = input(prompt_text).strip()
-        if line:
+        with _raw_terminal_output():
+            line = input(prompt_text).strip()
+        if menu_redraw_fn is None and _CLI_VIEW_STATE == "main_session":
+            _append_session_transcript(f"{prompt_text}{line}\n")
+        if allow_autocomplete and line:
             _save_cli_history_entry(line)
         return line
 
-    sys.stdout.write(prompt_text)
-    sys.stdout.flush()
+    stripped_prompt = prompt_text.lstrip("\n")
+    leading_nl = "\n" * (len(prompt_text) - len(stripped_prompt))
+    single_prompt = stripped_prompt
+    vis_prompt_len = len(_ANSI_VIS_RE.sub("", single_prompt))
 
     buf: list[str] = []
     history_idx = -1
     draft_before_history = ""
-    last_rendered_len = 0
 
     def _redraw() -> None:
-        nonlocal last_rendered_len
-        current_text = "".join(buf)
-        _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
-        ghost_hint = f"\033[2;36m{suffix}\033[0m" if suffix else ""
-        # Move back to start of user input, write current buffer + shaded ghost suffix, clear trailing chars, and reposition cursor
-        if last_rendered_len > 0:
-            sys.stdout.write(f"\r{prompt_text}{current_text}{ghost_hint}\033[K")
-        else:
-            sys.stdout.write(f"\r{prompt_text}{current_text}{ghost_hint}\033[K")
-        if suffix:
-            sys.stdout.write(f"\033[{len(suffix)}D")
-        sys.stdout.flush()
-        last_rendered_len = len(current_text) + len(suffix)
-
-    while True:
-        ch = msvcrt.getwch()
-        if ch in ("\r", "\n"):
+        with HUD._lock, _raw_terminal_output():
+            cols = max(24, shutil.get_terminal_size((80, 24)).columns)
             current_text = "".join(buf)
-            # Clear ghost suffix before newline
-            sys.stdout.write(f"\r{prompt_text}{current_text}\033[K\n")
-            sys.stdout.flush()
-            result = current_text.strip()
-            if result:
-                _save_cli_history_entry(result)
-            return result
-        if ch == "\x03":  # Ctrl+C
-            raise KeyboardInterrupt
-        if ch == "\x0f":  # Ctrl+O -> Expand/toggle LLM thought process & engine trace
-            sys.stdout.write("\r\033[K\n")
-            print_last_thinking_trace_cli()
-            _redraw()
-            continue
-        if ch == "\x04":  # Ctrl+D / EOF
-            if not buf:
-                raise EOFError
-            continue
-        if ch == "\t":  # Tab -> accept shaded autocomplete suffix
-            current_text = "".join(buf)
-            _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
+            _, suffix, _ = _compute_cli_autocomplete(current_text, 0) if allow_autocomplete else ("", "", [])
+            avail_for_text = max(8, cols - 2 - vis_prompt_len)
+            if len(current_text) > avail_for_text:
+                disp_text = current_text[-avail_for_text:]
+                suffix = ""
+            else:
+                disp_text = current_text
+                max_suf = max(0, avail_for_text - len(disp_text))
+                suffix = suffix[:max_suf]
+            ghost_hint = f"\033[2;36m{suffix}\033[0m" if suffix else ""
+            sys.stdout.write(f"\r{single_prompt}{disp_text}{ghost_hint}\033[K")
             if suffix:
-                buf.extend(list(suffix))
-                if not suffix.endswith((":", "/", "\\", "-")):
-                    buf.append(" ")
+                sys.stdout.write(f"\033[{len(suffix)}D")
+            sys.stdout.flush()
+
+    _ACTIVE_MENU_REDRAW_FN = menu_redraw_fn
+    _ACTIVE_PROMPT_REDRAW_FN = _redraw
+    HUD._in_interactive_input = True
+    try:
+        if leading_nl:
+            with _raw_terminal_output():
+                sys.stdout.write(leading_nl)
+                sys.stdout.flush()
+        _redraw()
+
+        sz0 = shutil.get_terminal_size((80, 24))
+        last_cols, last_rows = max(20, sz0.columns), max(6, sz0.lines)
+        resize_pending = False
+        resize_ts = 0.0
+        last_hud_refresh = time.monotonic()
+
+        while True:
+            while not msvcrt.kbhit():
+                now_m = time.monotonic()
+                sz = shutil.get_terminal_size((80, 24))
+                c_now, r_now = max(20, sz.columns), max(6, sz.lines)
+                if (c_now, r_now) != (last_cols, last_rows):
+                    last_cols, last_rows = c_now, r_now
+                    resize_pending = True
+                    resize_ts = now_m
+                    HUD.begin_resize_transition(c_now, r_now)
+                elif resize_pending and (now_m - resize_ts) >= 0.18:
+                    resize_pending = False
+                    redraw_cli_on_resize()
+                    if leading_nl:
+                        with _raw_terminal_output():
+                            sys.stdout.write(leading_nl)
+                            sys.stdout.flush()
+                    _redraw()
+                    last_hud_refresh = time.monotonic()
+                elif not resize_pending and HUD.active and HUD.mode == "pin" and (now_m - last_hud_refresh) >= 1.5:
+                    last_hud_refresh = now_m
+                    HUD.render(force_region=False)
+                time.sleep(0.04)
+
+            ch = msvcrt.getwch()
+            if ch in ("\r", "\n"):
+                current_text = "".join(buf)
+                with HUD._lock, _raw_terminal_output():
+                    sys.stdout.write(f"\r{single_prompt}{current_text}\033[K\n")
+                    sys.stdout.flush()
+                if menu_redraw_fn is None and _CLI_VIEW_STATE == "main_session":
+                    _append_session_transcript(f"{leading_nl}{single_prompt}{current_text}\n")
+                result = current_text.strip()
+                if allow_autocomplete and result:
+                    _save_cli_history_entry(result)
+                return result
+            if ch == "\x03":  # Ctrl+C
+                raise KeyboardInterrupt
+            if ch == "\x0f" and allow_autocomplete:  # Ctrl+O -> Expand/toggle LLM thought process & engine trace
+                with _raw_terminal_output():
+                    sys.stdout.write("\r\033[K\n")
+                print_last_thinking_trace_cli()
                 _redraw()
-            continue
-        if ch in ("\x08", "\x7f"):  # Backspace
-            if buf:
-                buf.pop()
-                _redraw()
-            continue
-        if ch in ("\x00", "\xe0"):  # Special key prefix (arrows, delete, etc.)
-            key2 = msvcrt.getwch()
-            if key2 == "H":  # Up arrow -> older command in history
-                if _CLI_HISTORY:
-                    if history_idx == -1:
-                        draft_before_history = "".join(buf)
-                    if history_idx < len(_CLI_HISTORY) - 1:
-                        history_idx += 1
-                    buf = list(_CLI_HISTORY[history_idx])
-                    _redraw()
-            elif key2 == "P":  # Down arrow -> newer command in history
-                if history_idx > 0:
-                    history_idx -= 1
-                    buf = list(_CLI_HISTORY[history_idx])
-                    _redraw()
-                elif history_idx == 0:
-                    history_idx = -1
-                    buf = list(draft_before_history)
-                    _redraw()
-            elif key2 == "M":  # Right arrow -> accept ghost completion if present
+                continue
+            if ch == "\x04":  # Ctrl+D / EOF
+                if not buf:
+                    raise EOFError
+                continue
+            if ch == "\t" and allow_autocomplete:  # Tab -> accept shaded autocomplete suffix
                 current_text = "".join(buf)
                 _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
                 if suffix:
                     buf.extend(list(suffix))
+                    if not suffix.endswith((":", "/", "\\", "-")):
+                        buf.append(" ")
                     _redraw()
-            continue
-        if ch >= " ":
-            buf.append(ch)
-            _redraw()
+                continue
+            if ch in ("\x08", "\x7f"):  # Backspace
+                if buf:
+                    buf.pop()
+                    _redraw()
+                continue
+            if ch in ("\x00", "\xe0"):  # Special key prefix (arrows, delete, etc.)
+                key2 = msvcrt.getwch()
+                if key2 == "H" and allow_autocomplete:  # Up arrow -> older command in history
+                    if _CLI_HISTORY:
+                        if history_idx == -1:
+                            draft_before_history = "".join(buf)
+                        if history_idx < len(_CLI_HISTORY) - 1:
+                            history_idx += 1
+                        buf = list(_CLI_HISTORY[history_idx])
+                        _redraw()
+                elif key2 == "P" and allow_autocomplete:  # Down arrow -> newer command in history
+                    if history_idx > 0:
+                        history_idx -= 1
+                        buf = list(_CLI_HISTORY[history_idx])
+                        _redraw()
+                    elif history_idx == 0:
+                        history_idx = -1
+                        buf = list(draft_before_history)
+                        _redraw()
+                elif key2 == "M" and allow_autocomplete:  # Right arrow -> accept ghost completion if present
+                    current_text = "".join(buf)
+                    _, suffix, _ = _compute_cli_autocomplete(current_text, 0)
+                    if suffix:
+                        buf.extend(list(suffix))
+                        _redraw()
+                continue
+            if ch >= " ":
+                buf.append(ch)
+                _redraw()
+    finally:
+        HUD._in_interactive_input = False
+        _ACTIVE_MENU_REDRAW_FN = None
+        _ACTIVE_PROMPT_REDRAW_FN = None
 
 
 def main() -> None:
-    global SKIP_PERMISSIONS, ACTIVE_PROJECT, ACTIVE_GOAL, ACTIVE_PERSONALITY_MODE, RELENTLESS_MODE, HUD_ENABLED, CONTINUAL_MODE, KEEP_SERVER_ON_EXIT, _SPECULATIVE_CACHE_REF, _ACTIVE_MESSAGES_REF, _PENDING_FIRST_COMMAND
+    global SKIP_PERMISSIONS, ACTIVE_PROJECT, ACTIVE_GOAL, ACTIVE_PERSONALITY_MODE, RELENTLESS_MODE, HUD_ENABLED, CONTINUAL_MODE, KEEP_SERVER_ON_EXIT, _SPECULATIVE_CACHE_REF, _ACTIVE_MESSAGES_REF, _PENDING_FIRST_COMMAND, _CLI_VIEW_STATE, _LAST_RESTORED_SESSION_INFO, _LAST_STARTUP_CONTINUE
     ensure_vault_structure()
     # Session personality mode is strictly unique to the current session (never inherited across sessions)
     ACTIVE_PERSONALITY_MODE = "DEFAULT"
@@ -6784,6 +7257,7 @@ def main() -> None:
     )
 
     posture = _refresh_active_posture(apply_osc=True, quiet=True)
+    _start_cli_llama_keepalive_watchdog()
     atexit.register(_shutdown_cli_and_engines, True, True)
     for _sig_name in ("SIGHUP", "SIGTERM", "SIGBREAK"):
         _sig_obj = getattr(signal, _sig_name, None)
@@ -6837,59 +7311,23 @@ def main() -> None:
             _persist_selected_project(chosen_proj)
 
     posture = _refresh_active_posture(apply_osc=True, quiet=True)
-    p_border = posture.get("ansi_border", "\033[1;32m")
-    p_accent = posture.get("ansi_accent", "\033[1;32m")
-    p_badge = posture.get("banner_badge", "[POSTURE: UNRESTRICTED]")
-    p_ifaces = posture.get("allowed_interfaces") or []
-    pmode_key = (ACTIVE_PERSONALITY_MODE or "DEFAULT").upper()
-    pmode_num = {"DEFAULT": "1", "ANALYST": "2", "BERSERKER": "3", "NINJA": "4"}.get(pmode_key, "1")
-    pmode_meta = PERSONALITY_MODES_META[pmode_num]
-
     messages[0] = {"role": "system", "content": build_system_prompt(force_refresh_hw=False)}
+    _CLI_VIEW_STATE = "main_session"
+    _LAST_RESTORED_SESSION_INFO = restored_session_info
+    _LAST_STARTUP_CONTINUE = startup_continue_session
+    _SESSION_TRANSCRIPT_CHUNKS.clear()
     HUD.render(force_region=False)
 
     # 2. Once Project and Mode have been selected, display the main C.O.R.A. login splash banner page
-    render_cora_splash_screen(posture)
-
-    if startup_continue_session:
-        if restored_session_info.get("restored"):
-            print(
-                f"\033[1;32m=== Session Restored (`--continue` from `{restored_session_info.get('source')}`) ===\033[0m\n"
-                f"  Saved At:       `{restored_session_info.get('saved_at')}`\n"
-                f"  Active Project: `{restored_session_info.get('active_project') or 'None'}`\n"
-                f"  Active Goal:    `{restored_session_info.get('active_goal') or 'None'}`\n"
-                f"  History Loaded: `{restored_session_info.get('message_count')}` messages | `{restored_session_info.get('attempt_count')}` tool attempts (Wave `{restored_session_info.get('current_wave')}`)\n"
-                f"  Tip:            Type `/relentless` to immediately resume autonomous wave execution, or enter your next instruction below.\n"
-            )
-            HUD.render(force_region=False)
-        else:
-            print(
-                f"\033[1;33m[Continuation Notice]\033[0m {restored_session_info.get('reason', 'No previous session found.')} Starting a fresh session.\n"
-            )
-
-    intro_hdr = " C.O.R.A. Local System Agent CLI + Obsidian Vault ".center(DEFAULT_BANNER_WIDTH, "=")
-    print(f"{p_border}{intro_hdr}\033[0m")
-    print(f"  Active Project: \033[1;36mProjects/{get_active_project_slug()}/\033[0m (`/project` to switch, rename, or create)")
-    print(f"  Session Mode:   {pmode_meta['color']}[{pmode_num}] {pmode_meta['label']}\033[0m — {pmode_meta['purpose']} (`/mode` to view/switch)")
-    print(f"  Security Mode:  {p_accent}{p_badge}\033[0m")
-    if posture.get("mode") == "ISOLATED_LAN_USB" and p_ifaces:
-        print(f"  Allowed Ifaces: \033[1;36m{', '.join(p_ifaces)}\033[0m (Locked by Blue Network Isolation; all other host NICs blocked)")
-    elif posture.get("mode") == "AIR_GAPPED_NETNS":
-        print("  Namespace Lock: \033[1;97mLinux Network Namespace (`unshare -r -n`, `lo` loopback only — 0 external NICs)\033[0m")
-    print(f"  Active Model:   \033[1m{MODEL_NAME}\033[0m")
-    print(f"  Obsidian Vault: \033[1;36m{VAULT_DIR}\033[0m (Long-Term Universal Knowledge)")
-    print(f"  Projects Dir:   \033[1;36m{PROJECTS_DIR}\033[0m (Isolated Project Downloads, Scans & `memory.md`)")
-    print(f"  Project Files:  \033[1;36mProjects/{get_active_project_slug()}/Files/\033[0m (`/files` or `/upload <path>` to add files for LLM)")
-    print(f"  Working Dir:    {os.getcwd()}")
-    print(f"  Permissions:    {perm_status}")
-    print()
-    for idx, d_line in enumerate(_CORA_DISCLAIMER_LINES):
-        centered = d_line.center(DEFAULT_BANNER_WIDTH)
-        if idx == 0:
-            print(f"\033[1;33m{centered}\033[0m")
-        else:
-            print(f"\033[2;37m{centered}\033[0m")
-    print(f"{p_border}{'=' * DEFAULT_BANNER_WIDTH}\033[0m\n")
+    with _raw_terminal_output():
+        render_cora_splash_screen(posture)
+        render_session_intro_banner(
+            posture=posture,
+            restored_session_info=restored_session_info,
+            startup_continue_session=startup_continue_session,
+        )
+    if startup_continue_session and restored_session_info.get("restored"):
+        HUD.render(force_region=False)
 
     if pending_onboarding_doc:
         try:
@@ -7075,6 +7513,9 @@ def main() -> None:
             continue
         if user_input.lower() == "/clear":
             messages = [{"role": "system", "content": build_system_prompt(force_refresh_hw=True)}]
+            _SESSION_TRANSCRIPT_CHUNKS.clear()
+            if sys.stdout.isatty():
+                redraw_cli_on_resize()
             print("Conversation history cleared (Obsidian Vault memory & L1 Symbolic State remain active).\n")
             continue
         if user_input.lower() in ("/ctrl-o", "/ctrlo", "/think", "/think-view", "/thinking"):

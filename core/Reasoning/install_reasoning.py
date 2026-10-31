@@ -132,7 +132,12 @@ def analyze_system_resources_and_compatibility() -> Dict[str, Any]:
         sys.path.insert(0, str(CORA_CORE_DIR))
     from Reasoning.engines.vault_bridge import get_hardware_reasoning_limits
 
-    hw_limits = get_hardware_reasoning_limits()
+    hw_limits = get_hardware_reasoning_limits(force_recompute=True)
+    try:
+        from webui.server import init_sqlite_db
+        init_sqlite_db()
+    except Exception:
+        pass
 
     ram_ok = total_ram_mib >= MIN_RAM_MIB and avail_ram_mib >= MIN_FREE_RAM_MIB
     disk_ok = disk_free_mib >= MIN_DISK_FREE_MIB
@@ -166,7 +171,8 @@ def analyze_system_resources_and_compatibility() -> Dict[str, Any]:
         f"    - L2 Abduct/Graph:    PageRank={hw_limits.get('pagerank_max_iter')} iters, EIG depth={hw_limits.get('eig_lookahead_depth')}, DST samples={hw_limits.get('dst_monte_carlo_samples')}\n"
         f"    - L3 Causal/VSA:      Causal paths={hw_limits.get('causal_counterfactual_paths')}, VSA={hw_limits.get('vsa_hypervector_dim')}-D\n"
         f"    - L4 Tactical/RL/MDP: MDP sweeps={hw_limits.get('mdp_bellman_sweeps')}, RL={hw_limits.get('rl_train_episodes')} eps\n"
-        f"    - L5 Meta/Continual:  Pass-2 cands={hw_limits.get('continual_pass2_max_candidates')}, Hedge bins={hw_limits.get('meta_calibration_bins')}, Shadow Archive={hw_limits.get('shadow_archive_max_files')} files"
+        f"    - L5 Meta/Continual:  Pass-2 cands={hw_limits.get('continual_pass2_max_candidates')}, Hedge bins={hw_limits.get('meta_calibration_bins')}, Shadow Archive={hw_limits.get('shadow_archive_max_files')} files\n"
+        f"    - LLM GPU+CPU Balance: Recommended Model='{hw_limits.get('recommended_llm_model_id')}' (100% GPU='{hw_limits.get('recommended_full_gpu_model_id')}'), Threads={hw_limits.get('recommended_llm_threads')}/{hw_limits.get('recommended_llm_threads_batch')}, Poll={hw_limits.get('recommended_llm_poll')}, KV={hw_limits.get('recommended_kv_cache_type')}"
     )
     print("  Reasoning VRAM Usage: 0 MB (100% CPU-isolated; preserves all GPU VRAM for LLM weights & KV cache)")
     if not compatible:

@@ -332,14 +332,14 @@ case "$DOWNLOAD_MODE" in
     else
       printf '  -> Host has %d MiB RAM (< 16 GiB): defaulting to Qwen3.5-9B (pass --all-models to force Qwen3.8-27B).\n' "$TOTAL_RAM_MIB"
     fi
-    # Auto-select Qwen3.8-27B Turbo MTP models where practical for host RAM / GPU VRAM
-    if (( TOTAL_RAM_MIB >= 24000 || TOTAL_VRAM_MIB >= 16000 )); then
+    # Auto-select Qwen3.8-27B Turbo MTP models where balanced for both GPU VRAM and host RAM
+    if (( TOTAL_VRAM_MIB >= 16000 || (TOTAL_RAM_MIB >= 32000 && TOTAL_VRAM_MIB >= 12000) )); then
       WANT_TURBO_Q4=1
     fi
-    if (( TOTAL_RAM_MIB >= 48000 || TOTAL_VRAM_MIB >= 24000 )); then
+    if (( TOTAL_VRAM_MIB >= 24000 || (TOTAL_RAM_MIB >= 48000 && TOTAL_VRAM_MIB >= 16000) )); then
       WANT_TURBO_Q6=1
     fi
-    if (( TOTAL_RAM_MIB >= 64000 || TOTAL_VRAM_MIB >= 32000 )); then
+    if (( TOTAL_VRAM_MIB >= 32000 || (TOTAL_RAM_MIB >= 64000 && TOTAL_VRAM_MIB >= 24000) )); then
       WANT_TURBO_Q8=1
     fi
     ;;

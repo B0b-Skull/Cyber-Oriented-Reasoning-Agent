@@ -1,208 +1,310 @@
-# Trained Documentation, Playbooks & Network Diagrams Index (`00_TRAINED_INDEX.md`)
+---
+title: "CORA Organized Training & Domain Knowledge Index (00_TRAINED_INDEX)"
+category: root
+os_platform: cross-platform
+summary: "Complete organized index of all 10 Domain Knowledge Hubs, 4 Master Command Playbooks, 196 Knowledge Notes, and 146 Command Playbooks in core/ObsidianVault."
+when_to_apply: "Consult this index to locate domain-specific Windows and Linux command playbooks and knowledge notes across all 10 operational domains."
+tags: [index, trained, commands, knowledge, windows, linux, mdp, cegar]
+updated: 2026-10-30
+---
 
-- **Last Updated:** `2026-10-24T01:16:25-04:00`
-- **Total Trained Documents & Diagrams:** 200
-- **Active Evolutionary Command Primitives:** 4931
-- **Active CBR Failure Fingerprints:** `3`
+# CORA Organized Knowledge & Command Vault Index (`00_TRAINED_INDEX`)
 
-| Source Document | Type | Knowledge Note | Command Playbook | Verified Cmds | IPs / Interfaces |
+- **Parent Index:** [[00_MEMORY_INDEX]]
+- **Master Command Playbooks:** [[commands/windows_master_command_playbook]] | [[commands/linux_master_command_playbook]] | [[commands/curl_playbook]] | [[commands/tio_serial_playbook]]
+- **Organized Domain Knowledge Hubs:** `10` (`knowledge/01_...` through `knowledge/10_...`)
+- **Total Enriched Knowledge Notes (`knowledge/trained_*`):** `196`
+- **Total Enriched Command Playbooks (`commands/trained_*`):** `144` (+ `4` Master Playbooks = `148` total command notes)
+
+---
+
+## 1. The 10 Operational Domain Knowledge Hubs
+
+| Hub # | Domain Knowledge Hub | OS Platform | Primary H-MDP Tactic | Member Notes | When to Apply |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `APT28-Center-of-Storm-2017_MANDIANT.pdf` | `pdf` | [[knowledge/trained_apt28-center-of-storm-2017_mandiant]] | - | `0` | `-` |
-| `APT28-FANCYBEAR-REPORT.pdf` | `pdf` | [[knowledge/trained_apt28-fancybear-report]] | [[commands/trained_apt28-fancybear-report]] | `9` | `2.2.2.1, 2.2.2.2, 2.2.2.3` |
-| `Address_Space_Layout_Randomization.pdf` | `pdf` | [[knowledge/trained_address_space_layout_randomization]] | [[commands/trained_address_space_layout_randomization]] | `30` | `-` |
-| `AuditPol CMDs.txt` | `text` | [[knowledge/trained_auditpol_cmds]] | [[commands/trained_auditpol_cmds]] | `30` | `-` |
-| `BCF_Autopsy Configuration and Setup.pdf` | `pdf` | [[knowledge/trained_bcf_autopsy_configuration_and_setup]] | - | `0` | `-` |
-| `BCF_Autopsy Internet Artifacts.pdf` | `pdf` | [[knowledge/trained_bcf_autopsy_internet_artifacts]] | - | `0` | `-` |
-| `BCF_Autopsy Navigation and Analysis.pdf` | `pdf` | [[knowledge/trained_bcf_autopsy_navigation_and_analysis]] | - | `0` | `-` |
-| `BCF_Autopsy Registry_Examination.pdf` | `pdf` | [[knowledge/trained_bcf_autopsy_registry_examination]] | - | `0` | `-` |
-| `BCF_CNE Basics.pdf` | `pdf` | [[knowledge/trained_bcf_cne_basics]] | [[commands/trained_bcf_cne_basics]] | `6` | `172.24.12.4, 172.24.12.9` |
-| `BCF_EnCase Configuration and Basics.pdf` | `pdf` | [[knowledge/trained_bcf_encase_configuration_and_basics]] | - | `0` | `-` |
-| `BCF_EnCase Navigation.pdf` | `pdf` | [[knowledge/trained_bcf_encase_navigation]] | - | `0` | `-` |
-| `BCF_EnCase Searching.pdf` | `pdf` | [[knowledge/trained_bcf_encase_searching]] | - | `0` | `-` |
-| `BCF_Slack Space and Deleted Files.pdf` | `pdf` | [[knowledge/trained_bcf_slack_space_and_deleted_files]] | - | `0` | `-` |
-| `BCF_Windows Live Response.pdf` | `pdf` | [[knowledge/trained_bcf_windows_live_response]] | [[commands/trained_bcf_windows_live_response]] | `52` | `-` |
-| `BCF_Windows Process Investigation.pdf` | `pdf` | [[knowledge/trained_bcf_windows_process_investigation]] | [[commands/trained_bcf_windows_process_investigation]] | `8` | `-` |
-| `BEC703  -CELLULAR MOBILE COMMUNICATION.pdf` | `pdf` | [[knowledge/trained_bec703_-cellular_mobile_communication]] | - | `0` | `-` |
-| `BFP-Fexible Packet Filtering.pdf` | `pdf` | [[knowledge/trained_bfp-fexible_packet_filtering]] | [[commands/trained_bfp-fexible_packet_filtering]] | `1` | `172.24.1.10, 172.24.1.15, lo` |
-| `BPF syntax.pdf` | `pdf` | [[knowledge/trained_bpf_syntax]] | - | `0` | `172.24.1.0, 192.9.200.1, 255.0.0.0` |
-| `Basic Survey Commands.txt` | `text` | [[knowledge/trained_basic_survey_commands]] | [[commands/trained_basic_survey_commands]] | `39` | `-` |
-| `BcdEdit CMDs.txt` | `text` | [[knowledge/trained_bcdedit_cmds]] | [[commands/trained_bcdedit_cmds]] | `8` | `-` |
-| `Beacon.pdf` | `pdf` | [[knowledge/trained_beacon]] | [[commands/trained_beacon]] | `6` | `-` |
-| `CBM_1_2_2006_Goppit_PE_Format_Reverse_Engineer_View.pdf` | `pdf` | [[knowledge/trained_cbm_1_2_2006_goppit_pe_format_reverse_engineer_view]] | - | `0` | `-` |
-| `CQC001_E010_M010_Network_Traffic_Monitoring.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m010_network_traffic_monitoring]] | [[commands/trained_cqc001_e010_m010_network_traffic_monitoring]] | `1` | `172.16.1.84, 172.16.1.85, 172.16.1.86` |
-| `CQC001_E010_M030_IP_Header_Diagram.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m030_ip_header_diagram]] | - | `0` | `-` |
-| `CQC001_E010_M030_Wireshark_Display_Filters.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m030_wireshark_display_filters]] | - | `0` | `-` |
-| `CQC001_E010_M030_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m030_transcript]] | [[commands/trained_cqc001_e010_m030_transcript]] | `7` | `0.0.0.0, 1.1.1.1, 1.2.3.4, eth0` |
-| `CQC001_E010_M040_Netstat.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m040_netstat]] | [[commands/trained_cqc001_e010_m040_netstat]] | `21` | `0.0.0.0, 10.99.99.1, 101.101.34.101, eth0, eth2, lo` |
-| `CQC001_E010_M040_S060_I020_ModExam_X020_C010_netstat.txt` | `text` | [[knowledge/trained_cqc001_e010_m040_s060_i020_modexam_x020_c010_netstat]] | - | `0` | `0.0.0.0, 10.0.10.112, 10.5.10.141` |
-| `CQC001_E010_M040_TCP_Header.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m040_tcp_header]] | - | `0` | `-` |
-| `CQC001_E010_M040_Traffic_Analysis_and_Passive_OS_Fingerprinting.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m040_traffic_analysis_and_passive_os_fingerprinting]] | [[commands/trained_cqc001_e010_m040_traffic_analysis_and_passive_os_fingerprinting]] | `6` | `eth0` |
-| `CQC001_E010_M040_p0f.txt` | `text` | [[knowledge/trained_cqc001_e010_m040_p0f]] | - | `0` | `-` |
-| `CQC001_E010_M050_ARP_Packet.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m050_arp_packet]] | - | `0` | `129.25.10.11` |
-| `CQC001_E010_M050_DHCP_Fingerprints.txt` | `text` | [[knowledge/trained_cqc001_e010_m050_dhcp_fingerprints]] | [[commands/trained_cqc001_e010_m050_dhcp_fingerprints]] | `4` | `1.5.0.0, 1.6.0.3, 1.8.5.3` |
-| `CQC001_E010_M050_Network_Helper_Protocols_SupplementalMaterials.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m050_network_helper_protocols_supplementalmaterials]] | - | `0` | `-` |
-| `CQC001_E010_M050_RFC792.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m050_rfc792]] | [[commands/trained_cqc001_e010_m050_rfc792]] | `2` | `-` |
-| `CQC001_E010_M060_Network_Diagram_Legend.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m060_network_diagram_legend]] | - | `0` | `-` |
-| `CQC001_E010_M060_Spanning_Tree_Protocol.pdf` | `pdf` | [[knowledge/trained_cqc001_e010_m060_spanning_tree_protocol]] | [[commands/trained_cqc001_e010_m060_spanning_tree_protocol]] | `1` | `-` |
-| `CQC001_E020_M010_Kernel_Functions.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m010_kernel_functions]] | - | `0` | `-` |
-| `CQC001_E020_M010_Kernel_Mode_Components.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m010_kernel_mode_components]] | - | `0` | `-` |
-| `CQC001_E020_M010_Root_Keys_and_Registry_Types.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m010_root_keys_and_registry_types]] | [[commands/trained_cqc001_e020_m010_root_keys_and_registry_types]] | `17` | `-` |
-| `CQC001_E020_M010_Sysinternals_Tools.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m010_sysinternals_tools]] | [[commands/trained_cqc001_e020_m010_sysinternals_tools]] | `14` | `-` |
-| `CQC001_E020_M020_NTFS_Cheat_Sheets.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m020_ntfs_cheat_sheets]] | [[commands/trained_cqc001_e020_m020_ntfs_cheat_sheets]] | `2` | `-` |
-| `CQC001_E020_M020_OPLOCKS.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m020_oplocks]] | - | `0` | `-` |
-| `CQC001_E020_M030_Boot_and_Logon_Resource_-_Windows_7_-_2008.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_7_-_2008]] | - | `0` | `-` |
-| `CQC001_E020_M030_Boot_and_Logon_Resource_-_Windows_XP_-_2003.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_xp_-_2003]] | - | `0` | `-` |
-| `CQC001_E020_M040_Windows_Processes.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m040_windows_processes]] | [[commands/trained_cqc001_e020_m040_windows_processes]] | `1` | `-` |
-| `CQC001_E020_M040_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m040_transcript]] | - | `0` | `-` |
-| `CQC001_E020_M040_transcript.txt` | `text` | [[knowledge/trained_cqc001_e020_m040_transcript]] | [[commands/trained_cqc001_e020_m040_transcript]] | `1` | `-` |
-| `CQC001_E020_M050_S040_I030_Exer_X010_C010_transcript.txt` | `text` | [[knowledge/trained_cqc001_e020_m050_s040_i030_exer_x010_c010_transcript]] | [[commands/trained_cqc001_e020_m050_s040_i030_exer_x010_c010_transcript]] | `1` | `-` |
-| `CQC001_E020_M060_Networking_and_Name_Resolution.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m060_networking_and_name_resolution]] | [[commands/trained_cqc001_e020_m060_networking_and_name_resolution]] | `22` | `-` |
-| `CQC001_E020_M060_S010_I020_BypassExam_X040_C010_transcript.txt` | `text` | [[knowledge/trained_cqc001_e020_m060_s010_i020_bypassexam_x040_c010_transcript]] | - | `0` | `0.0.0.0, 127.0.0.1, 172.24.15.200` |
-| `CQC001_E020_M060_S010_I020_BypassExam_X060_C010_exhibit1.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]] | [[commands/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]] | `1` | `-` |
-| `CQC001_E020_M060_S010_I020_BypassExam_X060_C010_exhibit2.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit2]] | - | `0` | `0.0.0.0, 104.64.57.171, 127.0.0.1` |
-| `CQC001_E020_M060_S040_I020_ModExam_X040_C010_transcript.txt` | `text` | [[knowledge/trained_cqc001_e020_m060_s040_i020_modexam_x040_c010_transcript]] | - | `0` | `0.0.0.0, 104.64.26.169, 127.0.0.1` |
-| `CQC001_E020_M060_S040_I020_ModExam_X060_C010_exhibit1.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit1]] | [[commands/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit1]] | `1` | `-` |
-| `CQC001_E020_M060_S040_I020_ModExam_X060_C010_exhibit2.pdf` | `pdf` | [[knowledge/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit2]] | - | `0` | `0.0.0.0, 104.64.57.171, 127.0.0.1` |
-| `CQC001_E030_M010_Well_Known_SIDs.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m010_well_known_sids]] | - | `0` | `-` |
-| `CQC001_E030_M020_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m020_transcript]] | [[commands/trained_cqc001_e030_m020_transcript]] | `38` | `-` |
-| `CQC001_E030_M030_ACE_Flags_and_Inheritance_Rules.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m030_ace_flags_and_inheritance_rules]] | - | `0` | `-` |
-| `CQC001_E030_M030_Permissions_and_ACL_Commands.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m030_permissions_and_acl_commands]] | [[commands/trained_cqc001_e030_m030_permissions_and_acl_commands]] | `32` | `-` |
-| `CQC001_E030_M030_S040_I020_ModExam_X030_C010_transcript.txt` | `text` | [[knowledge/trained_cqc001_e030_m030_s040_i020_modexam_x030_c010_transcript]] | [[commands/trained_cqc001_e030_m030_s040_i020_modexam_x030_c010_transcript]] | `5` | `-` |
-| `CQC001_E030_M030_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m030_transcript]] | - | `0` | `-` |
-| `CQC001_E030_M040_Windows_Firewall.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m040_windows_firewall]] | - | `0` | `-` |
-| `CQC001_E030_M040_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m040_transcript]] | [[commands/trained_cqc001_e030_m040_transcript]] | `2` | `-` |
-| `CQC001_E030_M050_Auditing_Policy_Settings.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m050_auditing_policy_settings]] | - | `0` | `-` |
-| `CQC001_E030_M050_Auditing_Tools.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m050_auditing_tools]] | [[commands/trained_cqc001_e030_m050_auditing_tools]] | `9` | `-` |
-| `CQC001_E030_M050_Event_IDs.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m050_event_ids]] | - | `0` | `-` |
-| `CQC001_E030_M050_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m050_transcript]] | [[commands/trained_cqc001_e030_m050_transcript]] | `1` | `-` |
-| `CQC001_E030_M060_Windows_Protection_Mechanisms.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m060_windows_protection_mechanisms]] | - | `0` | `-` |
-| `CQC001_E030_M060_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e030_m060_transcript]] | [[commands/trained_cqc001_e030_m060_transcript]] | `1` | `-` |
-| `CQC001_E040_M005_PowerShell_Basic_Cheat.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_powershell_basic_cheat]] | [[commands/trained_cqc001_e040_m005_powershell_basic_cheat]] | `55` | `-` |
-| `CQC001_E040_M005_PowerShell_Comparison.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_powershell_comparison]] | [[commands/trained_cqc001_e040_m005_powershell_comparison]] | `21` | `-` |
-| `CQC001_E040_M005_PowerShell_Examples_4.0.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_powershell_examples_4_0]] | [[commands/trained_cqc001_e040_m005_powershell_examples_4_0]] | `20` | `-` |
-| `CQC001_E040_M005_PowerShell_Remoting_Technologies.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_powershell_remoting_technologies]] | - | `0` | `-` |
-| `CQC001_E040_M005_PowerShell_Security_BSides_Charm_2016.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_powershell_security_bsides_charm_2016]] | [[commands/trained_cqc001_e040_m005_powershell_security_bsides_charm_2016]] | `122` | `-` |
-| `CQC001_E040_M005_PowerShell_Versions.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_powershell_versions]] | - | `0` | `-` |
-| `CQC001_E040_M005_S030_I020_Exer_X010_C010_Firewall_Fun.ps1.txt` | `text` | [[knowledge/trained_cqc001_e040_m005_s030_i020_exer_x010_c010_firewall_fun_ps1]] | [[commands/trained_cqc001_e040_m005_s030_i020_exer_x010_c010_firewall_fun_ps1]] | `2` | `-` |
-| `CQC001_E040_M005_S070_I020_ModExam_X020_C010_LogScript.txt` | `text` | [[knowledge/trained_cqc001_e040_m005_s070_i020_modexam_x020_c010_logscript]] | [[commands/trained_cqc001_e040_m005_s070_i020_modexam_x020_c010_logscript]] | `1` | `-` |
-| `CQC001_E040_M005_WMI_QR_PowerShell_4.0.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_wmi_qr_powershell_4_0]] | [[commands/trained_cqc001_e040_m005_wmi_qr_powershell_4_0]] | `39` | `127.0.0.1` |
-| `CQC001_E040_M005_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m005_transcript]] | [[commands/trained_cqc001_e040_m005_transcript]] | `17` | `127.0.0.1, 172.24.1.10` |
-| `CQC001_E040_M010_Windows_Forensics.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m010_windows_forensics]] | [[commands/trained_cqc001_e040_m010_windows_forensics]] | `10` | `-` |
-| `CQC001_E040_M010_Windows_Startup_Locations.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m010_windows_startup_locations]] | - | `0` | `-` |
-| `CQC001_E040_M010_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m010_transcript]] | [[commands/trained_cqc001_e040_m010_transcript]] | `2` | `0.0.0.0, 127.0.0.1` |
-| `CQC001_E040_M020_Network_Enumeration_Tools.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m020_network_enumeration_tools]] | - | `0` | `-` |
-| `CQC001_E040_M020_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e040_m020_transcript]] | - | `0` | `-` |
-| `CQC001_E050_M010_Kernel_Basics_Configuration_Files.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m010_kernel_basics_configuration_files]] | - | `0` | `-` |
-| `CQC001_E050_M010_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m010_transcript]] | [[commands/trained_cqc001_e050_m010_transcript]] | `1` | `-` |
-| `CQC001_E050_M020_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m020_transcript]] | [[commands/trained_cqc001_e050_m020_transcript]] | `5` | `-` |
-| `CQC001_E050_M030_Filesystems.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m030_filesystems]] | - | `0` | `-` |
-| `CQC001_E050_M030_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m030_transcript]] | [[commands/trained_cqc001_e050_m030_transcript]] | `6` | `-` |
-| `CQC001_E050_M040_Boot_Init_Login.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m040_boot_init_login]] | - | `0` | `-` |
-| `CQC001_E050_M040_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m040_transcript]] | [[commands/trained_cqc001_e050_m040_transcript]] | `3` | `-` |
-| `CQC001_E050_M050_Process_and_Signals.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m050_process_and_signals]] | - | `0` | `-` |
-| `CQC001_E050_M050_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m050_transcript]] | [[commands/trained_cqc001_e050_m050_transcript]] | `1` | `-` |
-| `CQC001_E050_M060_Network_and_Name_Resolution.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m060_network_and_name_resolution]] | [[commands/trained_cqc001_e050_m060_network_and_name_resolution]] | `1` | `-` |
-| `CQC001_E050_M060_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e050_m060_transcript]] | [[commands/trained_cqc001_e050_m060_transcript]] | `4` | `0.0.0.0, 127.0.0.1, 172.24.11.13, eth0, lo` |
-| `CQC001_E060_M010_Users_and_Permissions.pdf` | `pdf` | [[knowledge/trained_cqc001_e060_m010_users_and_permissions]] | [[commands/trained_cqc001_e060_m010_users_and_permissions]] | `1` | `-` |
-| `CQC001_E060_M010_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e060_m010_transcript]] | [[commands/trained_cqc001_e060_m010_transcript]] | `4` | `-` |
-| `CQC001_E060_M020_UNIX_Logging.pdf` | `pdf` | [[knowledge/trained_cqc001_e060_m020_unix_logging]] | [[commands/trained_cqc001_e060_m020_unix_logging]] | `1` | `-` |
-| `CQC001_E060_M020_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e060_m020_transcript]] | - | `0` | `-` |
-| `CQC001_E060_M030_iptables_and_Snort.pdf` | `pdf` | [[knowledge/trained_cqc001_e060_m030_iptables_and_snort]] | - | `0` | `-` |
-| `CQC001_E060_M030_transcript.pdf` | `pdf` | [[knowledge/trained_cqc001_e060_m030_transcript]] | [[commands/trained_cqc001_e060_m030_transcript]] | `18` | `10.18.80.64/26, 172.24.0.0/24, 172.24.1.0/24, eth0, eth1, lo` |
-| `Cacls - Icacls CMDs 2.txt` | `text` | [[knowledge/trained_cacls_-_icacls_cmds_2]] | [[commands/trained_cacls_-_icacls_cmds_2]] | `40` | `-` |
-| `Cacls - Icacls CMDs.txt` | `text` | [[knowledge/trained_cacls_-_icacls_cmds]] | [[commands/trained_cacls_-_icacls_cmds]] | `21` | `-` |
-| `CentOS-Debian-Survey.txt` | `text` | [[knowledge/trained_centos-debian-survey]] | [[commands/trained_centos-debian-survey]] | `182` | `10.10.10.10/24, 10.18.80.64/26, 172.24.11.0/24, eth0, eth1` |
-| `Change System Files CMDs.txt` | `text` | [[knowledge/trained_change_system_files_cmds]] | [[commands/trained_change_system_files_cmds]] | `31` | `-` |
-| `Conversion_Worksheet.pdf` | `pdf` | [[knowledge/trained_conversion_worksheet]] | - | `0` | `-` |
-| `Cyber Forensics Intro Guide_updated_table.pdf` | `pdf` | [[knowledge/trained_cyber_forensics_intro_guide_updated_table]] | [[commands/trained_cyber_forensics_intro_guide_updated_table]] | `17` | `172.16.157.136` |
-| `DEFCON-21-Bialek-PowerPwning-Post-Exploiting-by-Overpowering-Powershell.pdf` | `pdf` | [[knowledge/trained_defcon-21-bialek-powerpwning-post-exploiting-by-overpowering-pow]] | [[commands/trained_defcon-21-bialek-powerpwning-post-exploiting-by-overpowering-pow]] | `1` | `-` |
-| `DM4_OctalandHexadecimalNumberSystems_BP_9_22_14.pdf` | `pdf` | [[knowledge/trained_dm4_octalandhexadecimalnumbersystems_bp_9_22_14]] | - | `0` | `-` |
-| `DS CMDs.txt` | `text` | [[knowledge/trained_ds_cmds]] | [[commands/trained_ds_cmds]] | `27` | `-` |
-| `Domain_Service_Tools.pdf` | `pdf` | [[knowledge/trained_domain_service_tools]] | [[commands/trained_domain_service_tools]] | `35` | `-` |
-| `Empire.pdf` | `pdf` | [[knowledge/trained_empire]] | [[commands/trained_empire]] | `9` | `-` |
-| `FORFILES.txt` | `text` | [[knowledge/trained_forfiles]] | [[commands/trained_forfiles]] | `5` | `-` |
-| `Find.pdf` | `pdf` | [[knowledge/trained_find]] | [[commands/trained_find]] | `4` | `-` |
-| `Findstr.pdf` | `pdf` | [[knowledge/trained_findstr]] | [[commands/trained_findstr]] | `9` | `-` |
-| `HadoopMappingInfra_ReadMe.md` | `text` | [[knowledge/trained_hadoopmappinginfra_readme]] | [[commands/trained_hadoopmappinginfra_readme]] | `1` | `172.24.11.150, 2.7.1.2` |
-| `Hadoop_README.md` | `text` | [[knowledge/trained_hadoop_readme]] | [[commands/trained_hadoop_readme]] | `1` | `-` |
-| `HandbookAcoustics.pdf` | `pdf` | [[knowledge/trained_handbookacoustics]] | [[commands/trained_handbookacoustics]] | `10` | `-` |
-| `Hot Potato – Windows Privilege Escalation.pdf` | `pdf` | [[knowledge/trained_hot_potato_windows_privilege_escalation]] | - | `0` | `10.0.0.0/24, 10.0.1.0, 127.0.0.1` |
-| `IPtables-Snort-CMDs.txt` | `text` | [[knowledge/trained_iptables-snort-cmds]] | [[commands/trained_iptables-snort-cmds]] | `42` | `10.18.80.64/26, 172.24.0.0/24, 172.24.1.0/24, eth0, eth1, lo` |
-| `Intro to GMPLS.pdf` | `pdf` | [[knowledge/trained_intro_to_gmpls]] | [[commands/trained_intro_to_gmpls]] | `3` | `172.24.0.1, 172.24.12.1, 172.24.16.1` |
-| `Introduction to OTN.pdf` | `pdf` | [[knowledge/trained_introduction_to_otn]] | - | `0` | `-` |
-| `JStebelton_BPF-Syntax.pdf` | `pdf` | [[knowledge/trained_jstebelton_bpf-syntax]] | [[commands/trained_jstebelton_bpf-syntax]] | `1` | `10.10.1.1, eth0` |
-| `LTEPTCLOVWWP.pdf` | `pdf` | [[knowledge/trained_lteptclovwwp]] | - | `0` | `3.1.6.1, 3.1.6.2, 3.1.6.3` |
-| `LTE_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0100.pdf` | `pdf` | [[knowledge/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]] | [[commands/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]] | `2` | `-` |
-| `Logging-CMDs.txt` | `text` | [[knowledge/trained_logging-cmds]] | [[commands/trained_logging-cmds]] | `27` | `172.24.11.13` |
-| `Metro Ethernet CenturyLink.pdf` | `pdf` | [[knowledge/trained_metro_ethernet_centurylink]] | - | `0` | `-` |
-| `Metro Ethernet Training_Day_2_MPLS.pdf` | `pdf` | [[knowledge/trained_metro_ethernet_training_day_2_mpls]] | [[commands/trained_metro_ethernet_training_day_2_mpls]] | `4` | `10.1.0.0/24, 10.1.2.0/24, 10.2.1.0/24, eth0, eth1` |
-| `Metro Ethernet Training_Day_2_Optical.pdf` | `pdf` | [[knowledge/trained_metro_ethernet_training_day_2_optical]] | - | `0` | `-` |
-| `Metro Ethernet Training_Part_1.pdf` | `pdf` | [[knowledge/trained_metro_ethernet_training_part_1]] | [[commands/trained_metro_ethernet_training_part_1]] | `4` | `1.0.0.0, 1.1.1.2/32, 1.1.1.4/32, LO, Lo` |
-| `MobileHacking_with_SDR-2G-part.pdf` | `pdf` | [[knowledge/trained_mobilehacking_with_sdr-2g-part]] | [[commands/trained_mobilehacking_with_sdr-2g-part]] | `1` | `-` |
-| `MobileHacking_with_SDR-3Gand5G.pdf` | `pdf` | [[knowledge/trained_mobilehacking_with_sdr-3gand5g]] | [[commands/trained_mobilehacking_with_sdr-3gand5g]] | `3` | `127.0.1.1, 127.0.1.100, 127.0.1.200, ttyUSB1, ttyUSB2` |
-| `MobileHacking_with_SDR-4Gand5G-final.pdf` | `pdf` | [[knowledge/trained_mobilehacking_with_sdr-4gand5g-final]] | [[commands/trained_mobilehacking_with_sdr-4gand5g-final]] | `3` | `127.0.1.1, 127.0.1.100, 127.0.1.200, ttyUSB1, ttyUSB2` |
-| `Mod_14.pdf` | `pdf` | [[knowledge/trained_mod_14]] | - | `0` | `-` |
-| `Movelatr-SourceCode.txt` | `text` | [[knowledge/trained_movelatr-sourcecode]] | [[commands/trained_movelatr-sourcecode]] | `4` | `-` |
-| `Net CMDs 1.txt` | `text` | [[knowledge/trained_net_cmds_1]] | [[commands/trained_net_cmds_1]] | `13` | `-` |
-| `Net-SC CMDs.txt` | `text` | [[knowledge/trained_net-sc_cmds]] | [[commands/trained_net-sc_cmds]] | `25` | `-` |
-| `Netsh FW CMDs.txt` | `text` | [[knowledge/trained_netsh_fw_cmds]] | [[commands/trained_netsh_fw_cmds]] | `27` | `172.24.11.14, 212.54.40.25` |
-| `Netsh commands for DHCP.pdf` | `pdf` | [[knowledge/trained_netsh_commands_for_dhcp]] | [[commands/trained_netsh_commands_for_dhcp]] | `14` | `10.0.0.0, 10.0.0.1, 10.1.1.1` |
-| `Netsh commands for Routing.pdf` | `pdf` | [[knowledge/trained_netsh_commands_for_routing]] | [[commands/trained_netsh_commands_for_routing]] | `16` | `0.0.0.0, 10.0.0.2, 10.10.1.100` |
-| `Notes.txt` | `text` | [[knowledge/trained_notes]] | [[commands/trained_notes]] | `2` | `-` |
-| `Operator-handbook-Search.Copy.Paste.pdf` | `pdf` | [[knowledge/trained_operator-handbook-search_copy_paste]] | [[commands/trained_operator-handbook-search_copy_paste]] | `1835` | `0.0.0.0/0, 0.0.0.0/24, 1.1.1.1, Lo, eth0, eth1` |
-| `Overview of GSM GPRS and UMTS Mobile Communications by CISCO.pdf` | `pdf` | [[knowledge/trained_overview_of_gsm_gprs_and_umts_mobile_communications_by_cisco]] | - | `0` | `-` |
-| `PON-GPON.pdf` | `pdf` | [[knowledge/trained_pon-gpon]] | - | `0` | `-` |
-| `PS Get-CIM.txt` | `text` | [[knowledge/trained_ps_get-cim]] | [[commands/trained_ps_get-cim]] | `17` | `-` |
-| `Penetration Testing Tools Cheat Sheet.html` | `html` | [[knowledge/trained_penetration_testing_tools_cheat_sheet]] | [[commands/trained_penetration_testing_tools_cheat_sheet]] | `148` | `0.0.0.0, 10.0.0.0, 10.255.255.255, eth0` |
-| `PolAdtEv_Structure_en_rev2.pdf` | `pdf` | [[knowledge/trained_poladtev_structure_en_rev2]] | - | `0` | `-` |
-| `PowerShell CMDs.txt` | `text` | [[knowledge/trained_powershell_cmds]] | [[commands/trained_powershell_cmds]] | `4` | `-` |
-| `PowerShell-1.txt` | `text` | [[knowledge/trained_powershell-1]] | [[commands/trained_powershell-1]] | `48` | `127.0.0.1, 172.17.10.71` |
-| `PowerShell-Remoting.txt` | `text` | [[knowledge/trained_powershell-remoting]] | [[commands/trained_powershell-remoting]] | `28` | `-` |
-| `PowerSploit.pdf` | `pdf` | [[knowledge/trained_powersploit]] | [[commands/trained_powersploit]] | `13` | `172.24.1.0/24` |
-| `PowerUp.pdf` | `pdf` | [[knowledge/trained_powerup]] | [[commands/trained_powerup]] | `13` | `-` |
-| `PowerView.pdf` | `pdf` | [[knowledge/trained_powerview]] | [[commands/trained_powerview]] | `24` | `-` |
-| `PsService CMDs.txt` | `text` | [[knowledge/trained_psservice_cmds]] | [[commands/trained_psservice_cmds]] | `12` | `-` |
-| `RAN Infrstructure 2G and 3G with MPLS.jpg` | `image_diagram` | [[knowledge/trained_ran_infrstructure_2g_and_3g_with_mpls]] | - | `0` | `-` |
-| `README.md` | `text` | [[knowledge/trained_readme]] | [[commands/trained_readme]] | `2` | `-` |
-| `Registry CMDs.txt` | `text` | [[knowledge/trained_registry_cmds]] | [[commands/trained_registry_cmds]] | `8` | `-` |
-| `SD-WAN ATT.pdf` | `pdf` | [[knowledge/trained_sd-wan_att]] | - | `0` | `-` |
-| `SQL Injection Cheat Sheet by Netsparker.pdf` | `pdf` | [[knowledge/trained_sql_injection_cheat_sheet_by_netsparker]] | - | `0` | `-` |
-| `SQL Injection Cheat Sheet by Netsparker.pdf` | `pdf` | [[knowledge/trained_sql_injection_cheat_sheet_by_netsparker]] | [[commands/trained_sql_injection_cheat_sheet_by_netsparker]] | `6` | `-` |
-| `Shells_and_Scripting.pdf` | `pdf` | [[knowledge/trained_shells_and_scripting]] | [[commands/trained_shells_and_scripting]] | `8` | `-` |
-| `Software Defined Wide Area Network (SD-WAN).pdf` | `pdf` | [[knowledge/trained_software_defined_wide_area_network_sd-wan]] | - | `0` | `1.2.3.4, 5.6.7.8, vlan1` |
-| `Solaris-Network-Enum-Script.txt` | `text` | [[knowledge/trained_solaris-network-enum-script]] | [[commands/trained_solaris-network-enum-script]] | `4` | `-` |
-| `Solaris-Survey.txt` | `text` | [[knowledge/trained_solaris-survey]] | [[commands/trained_solaris-survey]] | `71` | `-` |
-| `Spectrum-GSMA-Spectrum-Handbook-2012.pdf` | `pdf` | [[knowledge/trained_spectrum-gsma-spectrum-handbook-2012]] | - | `0` | `-` |
-| `Survey CMDs -2.txt` | `text` | [[knowledge/trained_survey_cmds_-2]] | [[commands/trained_survey_cmds_-2]] | `190` | `10.10.10.10/24, 10.18.80.64/26, 172.24.11.0/24, eth0, eth1` |
-| `Survey CMDs.pdf` | `pdf` | [[knowledge/trained_survey_cmds]] | [[commands/trained_survey_cmds]] | `88` | `1.0.0.1, 126.255.255.254, 128.1.0.1` |
-| `Survey CMDs.txt` | `text` | [[knowledge/trained_survey_cmds]] | [[commands/trained_survey_cmds]] | `89` | `1.0.0.1, 126.255.255.254, 128.1.0.1` |
-| `Systeminfo.pdf` | `pdf` | [[knowledge/trained_systeminfo]] | [[commands/trained_systeminfo]] | `4` | `-` |
-| `Tasklist.pdf` | `pdf` | [[knowledge/trained_tasklist]] | [[commands/trained_tasklist]] | `7` | `-` |
-| `Triage-Scripts.txt` | `text` | [[knowledge/trained_triage-scripts]] | [[commands/trained_triage-scripts]] | `40` | `-` |
-| `Type.pdf` | `pdf` | [[knowledge/trained_type]] | [[commands/trained_type]] | `3` | `-` |
-| `UNIX Study Notes.txt` | `text` | [[knowledge/trained_unix_study_notes]] | - | `0` | `-` |
-| `UNIX and Linux System Administration Handbook.pdf` | `pdf` | [[knowledge/trained_unix_and_linux_system_administration_handbook]] | [[commands/trained_unix_and_linux_system_administration_handbook]] | `636` | `0.0.0.0, 0.0.0.0/8, 0.0.0.255, eth0, eth1, lo` |
-| `Upgrading shells to fully interactive TTYs.pdf` | `pdf` | [[knowledge/trained_upgrading_shells_to_fully_interactive_ttys]] | [[commands/trained_upgrading_shells_to_fully_interactive_ttys]] | `15` | `10.0.3.4, 10.0.3.7` |
-| `UsersAndPermissions.txt` | `text` | [[knowledge/trained_usersandpermissions]] | [[commands/trained_usersandpermissions]] | `39` | `-` |
-| `Using Netsh.pdf` | `pdf` | [[knowledge/trained_using_netsh]] | [[commands/trained_using_netsh]] | `12` | `10.0.0.1, 10.0.0.9, 255.0.0.0` |
-| `WMIC QuickStart.txt` | `text` | [[knowledge/trained_wmic_quickstart]] | [[commands/trained_wmic_quickstart]] | `12` | `-` |
-| `WMIC-Setx CMDs.txt` | `text` | [[knowledge/trained_wmic-setx_cmds]] | [[commands/trained_wmic-setx_cmds]] | `15` | `172.24.11.11, 172.24.11.12` |
-| `WiFi_Handbook_1.pdf` | `pdf` | [[knowledge/trained_wifi_handbook_1]] | - | `0` | `-` |
-| `Win Local CMDs.txt` | `text` | [[knowledge/trained_win_local_cmds]] | [[commands/trained_win_local_cmds]] | `56` | `172.17.10.71, 172.17.10.78` |
-| `Win32_ComputerSystem class (Windows).pdf` | `pdf` | [[knowledge/trained_win32_computersystem_class_windows]] | - | `0` | `-` |
-| `Windows XP_ Explaining the Startup Process.pdf` | `pdf` | [[knowledge/trained_windows_xp__explaining_the_startup_process]] | - | `0` | `-` |
-| `Windows+PowerShell+Logging+Cheat+Sheet+ver+June+2016+v2.pdf` | `pdf` | [[knowledge/trained_windows_powershell_logging_cheat_sheet_ver_june_2016_v2]] | [[commands/trained_windows_powershell_logging_cheat_sheet_ver_june_2016_v2]] | `16` | `-` |
-| `_OS Internals__Kernel & Hardware.pdf` | `pdf` | [[knowledge/trained_os_internals__kernel_hardware]] | [[commands/trained_os_internals__kernel_hardware]] | `1` | `0.0.1.33, 0.0.100.4, 0.15.0.2` |
-| `capture.sh.txt` | `text` | [[knowledge/trained_capture_sh]] | - | `0` | `eth1` |
-| `credential_dumping.pdf` | `pdf` | [[knowledge/trained_credential_dumping]] | [[commands/trained_credential_dumping]] | `81` | `172.24.0.102, 172.24.1.103, 172.24.1.105` |
-| `informix-sql-injection-cheat-sheet.html` | `html` | [[knowledge/trained_informix-sql-injection-cheat-sheet]] | [[commands/trained_informix-sql-injection-cheat-sheet]] | `1` | `10.0.0.1` |
-| `kerberos_attacks_cheatsheet.md` | `text` | [[knowledge/trained_kerberos_attacks_cheatsheet]] | [[commands/trained_kerberos_attacks_cheatsheet]] | `35` | `-` |
-| `l-linux-kernel-pdf.pdf` | `pdf` | [[knowledge/trained_l-linux-kernel-pdf]] | - | `0` | `-` |
-| `linux-user.pdf` | `pdf` | [[knowledge/trained_linux-user]] | [[commands/trained_linux-user]] | `136` | `0.0.0.0/0, 127.0.0.1, 172.24.0.0/16, eth0, ttyACM0, ttyACM1` |
-| `metro case studies.pdf` | `pdf` | [[knowledge/trained_metro_case_studies]] | [[commands/trained_metro_case_studies]] | `1` | `LO` |
-| `ptrkrysik_camppp.pdf` | `pdf` | [[knowledge/trained_ptrkrysik_camppp]] | [[commands/trained_ptrkrysik_camppp]] | `2` | `-` |
-| `recognizing-suspicious-network-connections-python_12515.pdf` | `pdf` | [[knowledge/trained_recognizing-suspicious-network-connections-python_12515]] | [[commands/trained_recognizing-suspicious-network-connections-python_12515]] | `3` | `-` |
-| `tdoct1933b_eng.pdf` | `pdf` | [[knowledge/trained_tdoct1933b_eng]] | - | `0` | `1.2.3.1, 1.2.3.2, 1.2.3.3` |
-| `us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent Asynchronous-And-Fileless-Backdoor-wp.pdf` | `pdf` | [[knowledge/trained_us-15-graeber-abusing-windows-management-instrumentation-wmi-to-]] | [[commands/trained_us-15-graeber-abusing-windows-management-instrumentation-wmi-to-]] | `47` | `172.24.72.131, 172.24.72.134, 172.24.72.135` |
-| `windows_command_line_Administration.pdf` | `pdf` | [[knowledge/trained_windows_command_line_administration]] | [[commands/trained_windows_command_line_administration]] | `332` | `127.0.0.1, 172.24.0.244` |
-| `wp-windows-management-instrumentation.pdf` | `pdf` | [[knowledge/trained_wp-windows-management-instrumentation]] | [[commands/trained_wp-windows-management-instrumentation]] | `50` | `1.5.0.7, 127.0.0.1, 172.24.72.131, Lo` |
+| **Hub 01** | [[knowledge/01_windows_system_process_and_sysinternals\|Domain Hub 01: Windows Live Response, Processes, Services, Kernel & Sysinternals Suite]] | `windows` | `Passive_Enum` | `25` | Apply when performing initial Windows host triage (s_init_unknown), investigating running processes/PPIDs, mapping svchost.exe services, hunting unsigned/injected DLLs, searching files by timestamp/content, or executing Sysinternals live response. |
+| **Hub 02** | [[knowledge/02_windows_registry_boot_and_persistence\|Domain Hub 02: Windows Registry Architecture, Boot Configuration (bcdedit), Startup & Persistence]] | `windows` | `Passive_Enum` | `10` | Apply when auditing Windows persistence mechanisms, inspecting Registry hives (`HKLM`/`HKCU`/`HKU`), analyzing boot sequences (`SMSS` -> `CSRSS` -> `Wininit` -> `Services` -> `LSASS` -> `Winlogon`), or checking `bcdedit` DEP/signing settings. |
+| **Hub 03** | [[knowledge/03_windows_security_acls_auditing_and_logs\|Domain Hub 03: Windows Security, SIDs, DACLs/ACLs (icacls), Audit Policy (auditpol), Event Logs (wevtutil) & Mitigations (ASLR/DEP)]] | `windows` | `Defense_Evasion_Firewall` | `19` | Apply when inspecting or modifying Windows file/directory/service ACLs (`icacls`/`takeown`), mapping Well-Known SIDs, configuring or auditing Windows Security audit policy (`auditpol`), querying Windows Event Logs (`wevtutil`/`Get-WinEvent`/`psloglist`), or evaluating exploit mitigations (ASLR/DEP) and local privilege escalation vectors. |
+| **Hub 04** | [[knowledge/04_windows_powershell_wmi_cim_and_active_directory\|Domain Hub 04: Windows PowerShell, WMI/CIM, WinRM Remoting, Active Directory (dsquery), Kerberos & Post-Exploitation]] | `windows` | `Active_Enum` | `28` | Apply when automating Windows enumeration with PowerShell or WMI/CIM (`Get-CimInstance`/`wmic`), executing commands remotely via WinRM/WMI, enumerating Active Directory users/groups/computers/trusts/GPOs (`dsquery`/`nltest`/`net`), or auditing Kerberos tickets (`klist`) and SPNs (`setspn`). |
+| **Hub 05** | [[knowledge/05_windows_and_linux_networking_routing_and_firewalls\|Domain Hub 05: Cross-Platform L2/L3/L4 Networking, Routing, DNS, Host Firewalls (netsh / iptables / nftables) & IDS (Snort)]] | `cross-platform` | `L2_L3_Pivot_Routing` | `21` | Apply whenever diagnosing network unreachability (`Network is unreachable`, `No route to host`, `Connection timed out`), mapping local/remote subnets (`Engine 2`), configuring cross-subnet static routes/IP forwarding/NAT masquerading (`Engine 6/15/19`), inspecting listening ports (`ss`/`netstat`), or unlocking `iptables`/`nftables`/`netsh advfirewall` rules. |
+| **Hub 06** | [[knowledge/06_linux_unix_administration_processes_and_logging\|Domain Hub 06: Linux, UNIX & Solaris Administration, Kernel (/proc & sysctl), Filesystems, Boot/systemd, Processes, Permissions/SUID & Logging]] | `linux` | `Passive_Enum` | `23` | Apply when enumerating a Linux/UNIX/Solaris host, inspecting `/proc/<PID>` or kernel modules, auditing mounted filesystems (`findmnt`/`lsblk`), managing `systemd` services or signals, hunting SUID/SGID/Capabilities/sudo privilege escalation vectors, reviewing `/var/log`/`journalctl` logs, or upgrading a dumb shell to a full interactive TTY. |
+| **Hub 07** | [[knowledge/07_packet_capture_bpf_wireshark_and_passive_fingerprinting\|Domain Hub 07: Packet Capture (tcpdump / tshark / pktmon), BPF Syntax, Wireshark Filters, RFC792/IPv4/TCP/ARP/STP Headers & Passive Fingerprinting (p0f / DHCP)]] | `cross-platform` | `Passive_Enum` | `17` | Apply when capturing live network traffic (`tcpdump`/`tshark`/`pktmon`), writing BPF byte-offset filters (`tcp[13]`, `icmp[0]`), analyzing `.pcap` files with Wireshark/tshark display filters, decoding IPv4/TCP/ICMP/ARP/STP headers, or passively fingerprinting remote OS types via `p0f` or DHCP options without transmitting active packets. |
+| **Hub 08** | [[knowledge/08_web_api_sql_injection_and_active_reconnaissance\|Domain Hub 08: Active Reconnaissance (nmap), Web/API/mTLS Probing (curl / openssl), SQL Injection Cheat Sheets & Operator Playbooks]] | `cross-platform` | `Active_Enum` | `12` | Apply when scanning a reachable target IP/subnet (`nmap`), probing web servers or appliance management ports (`curl`/`openssl s_client`), extracting TLS certificate hardware serials and HTTP `Last-Modified` firmware dates, testing SQL injection vectors (`UNION`, error-based, time-based blind), or establishing SSH/socat port forwards. |
+| **Hub 09** | [[knowledge/09_hardware_uart_serial_oob_and_telecom_wan\|Domain Hub 09: Hardware UART Serial OOB (tio /dev/ttyUSB0 & COM1), Metro Ethernet, MPLS/GMPLS, OTN, PON/GPON, SD-WAN, Wi-Fi & 2G/3G/4G/5G/SDR Cellular]] | `cross-platform` | `OOB_Serial_Access` | `27` | Apply whenever network connections to an appliance fail (`Exit 7` Connection Refused or `Exit 28` Timeout) and a hardware serial console (`/dev/ttyUSB0` or `COM1`) is available (`C1_OOB_SERIAL_LOOPBACK_APPLIANCE`), or when analyzing Carrier Metro Ethernet, MPLS/GMPLS labels, OTN/GPON optical links, SD-WAN tunnels, Wi-Fi 802.11, or 2G/3G/4G/5G cellular RAN protocols. |
+| **Hub 10** | [[knowledge/10_digital_forensics_pe_reversing_and_threat_intel\|Domain Hub 10: Digital Forensics (Autopsy / EnCase), NTFS Internals (MFT / ADS / Slack Space / Oplocks), PE Reverse Engineering & Threat Intel (APT28)]] | `cross-platform` | `Passive_Enum` | `14` | Apply when performing disk/image forensics (Autopsy, EnCase, SleuthKit), analyzing NTFS `$MFT` records, Alternate Data Streams (`dir /r`), or slack space, reverse-engineering Windows PE (`.exe`/`.dll`/`.sys`) or Linux ELF binaries, or hunting APT28 / Fancy Bear IOCs and TTPs. |
+
+---
+
+## 2. Domain Hub 01: Windows Live Response, Processes, Services, Kernel & Sysinternals Suite ([[knowledge/01_windows_system_process_and_sysinternals]] — 25 Notes)
+> **When to Apply:** Apply when performing initial Windows host triage (s_init_unknown), investigating running processes/PPIDs, mapping svchost.exe services, hunting unsigned/injected DLLs, searching files by timestamp/content, or executing Sysinternals live response.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `Basic Survey Commands` | [[knowledge/trained_basic_survey_commands]] | [[commands/trained_basic_survey_commands]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Basic Survey Commands: Wind |
+| `BCF Windows Live Response` | [[knowledge/trained_bcf_windows_live_response]] | [[commands/trained_bcf_windows_live_response]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Windows Live Response:  |
+| `BCF Windows Process Investigation` | [[knowledge/trained_bcf_windows_process_investigation]] | [[commands/trained_bcf_windows_process_investigation]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Windows Process Investi |
+| `CQC001 E020 M010 Kernel Functions` | [[knowledge/trained_cqc001_e020_m010_kernel_functions]] | [[commands/windows_master_command_playbook]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M010 Kernel Fun |
+| `CQC001 E020 M010 Kernel Mode Components` | [[knowledge/trained_cqc001_e020_m010_kernel_mode_components]] | [[commands/windows_master_command_playbook]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M010 Kernel Mod |
+| `CQC001 E020 M010 Sysinternals Tools` | [[knowledge/trained_cqc001_e020_m010_sysinternals_tools]] | [[commands/trained_cqc001_e020_m010_sysinternals_tools]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M010 Sysinterna |
+| `CQC001 E020 M040 transcript` | [[knowledge/trained_cqc001_e020_m040_transcript]] | [[commands/trained_cqc001_e020_m040_transcript]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M040 transcript |
+| `CQC001 E020 M040 Windows Processes` | [[knowledge/trained_cqc001_e020_m040_windows_processes]] | [[commands/trained_cqc001_e020_m040_windows_processes]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M040 Windows Pr |
+| `CQC001 E020 M050 S040 I030 Exer X010 C010 transcript` | [[knowledge/trained_cqc001_e020_m050_s040_i030_exer_x010_c010_transcript]] | [[commands/trained_cqc001_e020_m050_s040_i030_exer_x010_c010_transcript]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M050 S040 I030  |
+| `Find` | [[knowledge/trained_find]] | [[commands/trained_find]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Find: Windows live incident |
+| `Findstr` | [[knowledge/trained_findstr]] | [[commands/trained_findstr]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Findstr: Windows live incid |
+| `FORFILES` | [[knowledge/trained_forfiles]] | [[commands/trained_forfiles]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for FORFILES: Windows live inci |
+| `Net-SC CMDs` | [[knowledge/trained_net-sc_cmds]] | [[commands/trained_net-sc_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Net-SC CMDs: Windows live i |
+| `Net CMDs 1` | [[knowledge/trained_net_cmds_1]] | [[commands/trained_net_cmds_1]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Net CMDs 1: Windows live in |
+| `OS Internals  Kernel & Hardware` | [[knowledge/trained_os_internals__kernel_hardware]] | [[commands/trained_os_internals__kernel_hardware]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for OS Internals  Kernel & Hard |
+| `PsService CMDs` | [[knowledge/trained_psservice_cmds]] | [[commands/trained_psservice_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PsService CMDs: Windows liv |
+| `Survey CMDs` | [[knowledge/trained_survey_cmds]] | [[commands/trained_survey_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Survey CMDs: Windows live i |
+| `Survey CMDs -2` | [[knowledge/trained_survey_cmds_-2]] | [[commands/trained_survey_cmds_-2]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Survey CMDs -2: Windows liv |
+| `Systeminfo` | [[knowledge/trained_systeminfo]] | [[commands/trained_systeminfo]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Systeminfo: Windows live in |
+| `Tasklist` | [[knowledge/trained_tasklist]] | [[commands/trained_tasklist]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Tasklist: Windows live inci |
+| `Triage-Scripts` | [[knowledge/trained_triage-scripts]] | [[commands/trained_triage-scripts]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Triage-Scripts: Windows liv |
+| `Type` | [[knowledge/trained_type]] | [[commands/trained_type]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Type: Windows live incident |
+| `Win Local CMDs` | [[knowledge/trained_win_local_cmds]] | [[commands/trained_win_local_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Win Local CMDs: Windows liv |
+| `windows command line Administration` | [[knowledge/trained_windows_command_line_administration]] | [[commands/trained_windows_command_line_administration]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for windows command line Admini |
+| `wp-windows-management-instrumentation` | [[knowledge/trained_wp-windows-management-instrumentation]] | [[commands/trained_wp-windows-management-instrumentation]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for wp-windows-management-instr |
+
+---
+
+## 3. Domain Hub 02: Windows Registry Architecture, Boot Configuration (bcdedit), Startup & Persistence ([[knowledge/02_windows_registry_boot_and_persistence]] — 10 Notes)
+> **When to Apply:** Apply when auditing Windows persistence mechanisms, inspecting Registry hives (`HKLM`/`HKCU`/`HKU`), analyzing boot sequences (`SMSS` -> `CSRSS` -> `Wininit` -> `Services` -> `LSASS` -> `Winlogon`), or checking `bcdedit` DEP/signing settings.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `BcdEdit CMDs` | [[knowledge/trained_bcdedit_cmds]] | [[commands/trained_bcdedit_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BcdEdit CMDs: Windows Regis |
+| `Change System Files CMDs` | [[knowledge/trained_change_system_files_cmds]] | [[commands/trained_change_system_files_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Change System Files CMDs: W |
+| `CQC001 E020 M010 Root Keys and Registry Types` | [[knowledge/trained_cqc001_e020_m010_root_keys_and_registry_types]] | [[commands/trained_cqc001_e020_m010_root_keys_and_registry_types]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M010 Root Keys  |
+| `CQC001 E020 M030 Boot and Logon Resource - Windows 7 - 2008` | [[knowledge/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_7_-_2008]] | [[commands/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_7_-_2008]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M030 Boot and L |
+| `CQC001 E020 M030 Boot and Logon Resource - Windows XP - 2003` | [[knowledge/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_xp_-_2003]] | [[commands/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_xp_-_2003]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M030 Boot and L |
+| `CQC001 E040 M010 transcript` | [[knowledge/trained_cqc001_e040_m010_transcript]] | [[commands/trained_cqc001_e040_m010_transcript]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M010 transcript |
+| `CQC001 E040 M010 Windows Forensics` | [[knowledge/trained_cqc001_e040_m010_windows_forensics]] | [[commands/trained_cqc001_e040_m010_windows_forensics]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M010 Windows Fo |
+| `CQC001 E040 M010 Windows Startup Locations` | [[knowledge/trained_cqc001_e040_m010_windows_startup_locations]] | [[commands/windows_master_command_playbook]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M010 Windows St |
+| `Registry CMDs` | [[knowledge/trained_registry_cmds]] | [[commands/trained_registry_cmds]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Registry CMDs: Windows Regi |
+| `Windows XP  Explaining the Startup Process` | [[knowledge/trained_windows_xp__explaining_the_startup_process]] | [[commands/windows_master_command_playbook]] | `windows` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Windows XP  Explaining the  |
+
+---
+
+## 4. Domain Hub 03: Windows Security, SIDs, DACLs/ACLs (icacls), Audit Policy (auditpol), Event Logs (wevtutil) & Mitigations (ASLR/DEP) ([[knowledge/03_windows_security_acls_auditing_and_logs]] — 19 Notes)
+> **When to Apply:** Apply when inspecting or modifying Windows file/directory/service ACLs (`icacls`/`takeown`), mapping Well-Known SIDs, configuring or auditing Windows Security audit policy (`auditpol`), querying Windows Event Logs (`wevtutil`/`Get-WinEvent`/`psloglist`), or evaluating exploit mitigations (ASLR/DEP) and local privilege escalation vectors.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `Address Space Layout Randomization` | [[knowledge/trained_address_space_layout_randomization]] | [[commands/trained_address_space_layout_randomization]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for Address Space Layout Random |
+| `AuditPol CMDs` | [[knowledge/trained_auditpol_cmds]] | [[commands/trained_auditpol_cmds]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for AuditPol CMDs: Windows Secu |
+| `Cacls - Icacls CMDs` | [[knowledge/trained_cacls_-_icacls_cmds]] | [[commands/trained_cacls_-_icacls_cmds]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for Cacls - Icacls CMDs: Window |
+| `Cacls - Icacls CMDs 2` | [[knowledge/trained_cacls_-_icacls_cmds_2]] | [[commands/trained_cacls_-_icacls_cmds_2]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for Cacls - Icacls CMDs 2: Wind |
+| `CQC001 E030 M010 Well Known SIDs` | [[knowledge/trained_cqc001_e030_m010_well_known_sids]] | [[commands/windows_master_command_playbook]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M010 Well Known |
+| `CQC001 E030 M020 transcript` | [[knowledge/trained_cqc001_e030_m020_transcript]] | [[commands/trained_cqc001_e030_m020_transcript]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M020 transcript |
+| `CQC001 E030 M030 ACE Flags and Inheritance Rules` | [[knowledge/trained_cqc001_e030_m030_ace_flags_and_inheritance_rules]] | [[commands/windows_master_command_playbook]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M030 ACE Flags  |
+| `CQC001 E030 M030 Permissions and ACL Commands` | [[knowledge/trained_cqc001_e030_m030_permissions_and_acl_commands]] | [[commands/trained_cqc001_e030_m030_permissions_and_acl_commands]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M030 Permission |
+| `CQC001 E030 M030 S040 I020 ModExam X030 C010 transcript` | [[knowledge/trained_cqc001_e030_m030_s040_i020_modexam_x030_c010_transcript]] | [[commands/trained_cqc001_e030_m030_s040_i020_modexam_x030_c010_transcript]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M030 S040 I020  |
+| `CQC001 E030 M030 transcript` | [[knowledge/trained_cqc001_e030_m030_transcript]] | [[commands/trained_cqc001_e030_m030_transcript]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M030 transcript |
+| `CQC001 E030 M050 Auditing Policy Settings` | [[knowledge/trained_cqc001_e030_m050_auditing_policy_settings]] | [[commands/windows_master_command_playbook]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M050 Auditing P |
+| `CQC001 E030 M050 Auditing Tools` | [[knowledge/trained_cqc001_e030_m050_auditing_tools]] | [[commands/trained_cqc001_e030_m050_auditing_tools]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M050 Auditing T |
+| `CQC001 E030 M050 Event IDs` | [[knowledge/trained_cqc001_e030_m050_event_ids]] | [[commands/windows_master_command_playbook]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M050 Event IDs: |
+| `CQC001 E030 M050 transcript` | [[knowledge/trained_cqc001_e030_m050_transcript]] | [[commands/trained_cqc001_e030_m050_transcript]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M050 transcript |
+| `CQC001 E030 M060 transcript` | [[knowledge/trained_cqc001_e030_m060_transcript]] | [[commands/trained_cqc001_e030_m060_transcript]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M060 transcript |
+| `CQC001 E030 M060 Windows Protection Mechanisms` | [[knowledge/trained_cqc001_e030_m060_windows_protection_mechanisms]] | [[commands/windows_master_command_playbook]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M060 Windows Pr |
+| `Hot Potato – Windows Privilege Escalation` | [[knowledge/trained_hot_potato_windows_privilege_escalation]] | [[commands/windows_master_command_playbook]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for Hot Potato – Windows Privil |
+| `UsersAndPermissions` | [[knowledge/trained_usersandpermissions]] | [[commands/trained_usersandpermissions]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for UsersAndPermissions: Window |
+| `Windows+PowerShell+Logging+Cheat+Sheet+ver+June+2016+v2` | [[knowledge/trained_windows_powershell_logging_cheat_sheet_ver_june_2016_v2]] | [[commands/trained_windows_powershell_logging_cheat_sheet_ver_june_2016_v2]] | `windows` | `Defense_Evasion_Firewall` | Operational architecture, decision workflows & Windows/Linux command reference for Windows+PowerShell+Logging+ |
+
+---
+
+## 5. Domain Hub 04: Windows PowerShell, WMI/CIM, WinRM Remoting, Active Directory (dsquery), Kerberos & Post-Exploitation ([[knowledge/04_windows_powershell_wmi_cim_and_active_directory]] — 28 Notes)
+> **When to Apply:** Apply when automating Windows enumeration with PowerShell or WMI/CIM (`Get-CimInstance`/`wmic`), executing commands remotely via WinRM/WMI, enumerating Active Directory users/groups/computers/trusts/GPOs (`dsquery`/`nltest`/`net`), or auditing Kerberos tickets (`klist`) and SPNs (`setspn`).
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `CQC001 E040 M005 PowerShell Basic Cheat` | [[knowledge/trained_cqc001_e040_m005_powershell_basic_cheat]] | [[commands/trained_cqc001_e040_m005_powershell_basic_cheat]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 PowerShell |
+| `CQC001 E040 M005 PowerShell Comparison` | [[knowledge/trained_cqc001_e040_m005_powershell_comparison]] | [[commands/trained_cqc001_e040_m005_powershell_comparison]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 PowerShell |
+| `CQC001 E040 M005 PowerShell Examples 4.0` | [[knowledge/trained_cqc001_e040_m005_powershell_examples_4_0]] | [[commands/trained_cqc001_e040_m005_powershell_examples_4_0]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 PowerShell |
+| `CQC001 E040 M005 PowerShell Remoting Technologies` | [[knowledge/trained_cqc001_e040_m005_powershell_remoting_technologies]] | [[commands/trained_cqc001_e040_m005_powershell_remoting_technologies]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 PowerShell |
+| `CQC001 E040 M005 PowerShell Security BSides Charm 2016` | [[knowledge/trained_cqc001_e040_m005_powershell_security_bsides_charm_2016]] | [[commands/trained_cqc001_e040_m005_powershell_security_bsides_charm_2016]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 PowerShell |
+| `CQC001 E040 M005 PowerShell Versions` | [[knowledge/trained_cqc001_e040_m005_powershell_versions]] | [[commands/trained_cqc001_e040_m005_powershell_versions]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 PowerShell |
+| `CQC001 E040 M005 S030 I020 Exer X010 C010 Firewall Fun.ps1` | [[knowledge/trained_cqc001_e040_m005_s030_i020_exer_x010_c010_firewall_fun_ps1]] | [[commands/trained_cqc001_e040_m005_s030_i020_exer_x010_c010_firewall_fun_ps1]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 S030 I020  |
+| `CQC001 E040 M005 S070 I020 ModExam X020 C010 LogScript` | [[knowledge/trained_cqc001_e040_m005_s070_i020_modexam_x020_c010_logscript]] | [[commands/trained_cqc001_e040_m005_s070_i020_modexam_x020_c010_logscript]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 S070 I020  |
+| `CQC001 E040 M005 transcript` | [[knowledge/trained_cqc001_e040_m005_transcript]] | [[commands/trained_cqc001_e040_m005_transcript]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 transcript |
+| `CQC001 E040 M005 WMI QR PowerShell 4.0` | [[knowledge/trained_cqc001_e040_m005_wmi_qr_powershell_4_0]] | [[commands/trained_cqc001_e040_m005_wmi_qr_powershell_4_0]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M005 WMI QR Pow |
+| `credential dumping` | [[knowledge/trained_credential_dumping]] | [[commands/trained_credential_dumping]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for credential dumping: PowerSh |
+| `DEFCON-21-Bialek-PowerPwning-Post-Exploiting-by-Overpowering-Powershell` | [[knowledge/trained_defcon-21-bialek-powerpwning-post-exploiting-by-overpowering-pow]] | [[commands/trained_defcon-21-bialek-powerpwning-post-exploiting-by-overpowering-pow]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for DEFCON-21-Bialek-PowerPwnin |
+| `Domain Service Tools` | [[knowledge/trained_domain_service_tools]] | [[commands/trained_domain_service_tools]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Domain Service Tools: Power |
+| `DS CMDs` | [[knowledge/trained_ds_cmds]] | [[commands/trained_ds_cmds]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for DS CMDs: PowerShell 2.0-7+  |
+| `Empire` | [[knowledge/trained_empire]] | [[commands/trained_empire]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Empire: PowerShell 2.0-7+ c |
+| `kerberos attacks cheatsheet` | [[knowledge/trained_kerberos_attacks_cheatsheet]] | [[commands/trained_kerberos_attacks_cheatsheet]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for kerberos attacks cheatsheet |
+| `Movelatr-SourceCode` | [[knowledge/trained_movelatr-sourcecode]] | [[commands/trained_movelatr-sourcecode]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Movelatr-SourceCode: PowerS |
+| `PowerShell-1` | [[knowledge/trained_powershell-1]] | [[commands/trained_powershell-1]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PowerShell-1: PowerShell 2. |
+| `PowerShell-Remoting` | [[knowledge/trained_powershell-remoting]] | [[commands/trained_powershell-remoting]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PowerShell-Remoting: PowerS |
+| `PowerShell CMDs` | [[knowledge/trained_powershell_cmds]] | [[commands/trained_powershell_cmds]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PowerShell CMDs: PowerShell |
+| `PowerSploit` | [[knowledge/trained_powersploit]] | [[commands/trained_powersploit]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PowerSploit: PowerShell 2.0 |
+| `PowerUp` | [[knowledge/trained_powerup]] | [[commands/trained_powerup]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PowerUp: PowerShell 2.0-7+  |
+| `PowerView` | [[knowledge/trained_powerview]] | [[commands/trained_powerview]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PowerView: PowerShell 2.0-7 |
+| `PS Get-CIM` | [[knowledge/trained_ps_get-cim]] | [[commands/trained_ps_get-cim]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for PS Get-CIM: PowerShell 2.0- |
+| `us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent Asynchronous-And-Fileless-Backdoor-wp` | [[knowledge/trained_us-15-graeber-abusing-windows-management-instrumentation-wmi-to-]] | [[commands/trained_us-15-graeber-abusing-windows-management-instrumentation-wmi-to-]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for us-15-Graeber-Abusing-Windo |
+| `Win32 ComputerSystem class (Windows)` | [[knowledge/trained_win32_computersystem_class_windows]] | [[commands/trained_win32_computersystem_class_windows]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Win32 ComputerSystem class  |
+| `WMIC-Setx CMDs` | [[knowledge/trained_wmic-setx_cmds]] | [[commands/trained_wmic-setx_cmds]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for WMIC-Setx CMDs: PowerShell  |
+| `WMIC QuickStart` | [[knowledge/trained_wmic_quickstart]] | [[commands/trained_wmic_quickstart]] | `windows` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for WMIC QuickStart: PowerShell |
+
+---
+
+## 6. Domain Hub 05: Cross-Platform L2/L3/L4 Networking, Routing, DNS, Host Firewalls (netsh / iptables / nftables) & IDS (Snort) ([[knowledge/05_windows_and_linux_networking_routing_and_firewalls]] — 21 Notes)
+> **When to Apply:** Apply whenever diagnosing network unreachability (`Network is unreachable`, `No route to host`, `Connection timed out`), mapping local/remote subnets (`Engine 2`), configuring cross-subnet static routes/IP forwarding/NAT masquerading (`Engine 6/15/19`), inspecting listening ports (`ss`/`netstat`), or unlocking `iptables`/`nftables`/`netsh advfirewall` rules.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `CQC001 E010 M040 Netstat` | [[knowledge/trained_cqc001_e010_m040_netstat]] | [[commands/trained_cqc001_e010_m040_netstat]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M040 Netstat: S |
+| `CQC001 E010 M040 S060 I020 ModExam X020 C010 netstat` | [[knowledge/trained_cqc001_e010_m040_s060_i020_modexam_x020_c010_netstat]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M040 S060 I020  |
+| `CQC001 E020 M060 Networking and Name Resolution` | [[knowledge/trained_cqc001_e020_m060_networking_and_name_resolution]] | [[commands/trained_cqc001_e020_m060_networking_and_name_resolution]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 Networking |
+| `CQC001 E020 M060 S010 I020 BypassExam X040 C010 transcript` | [[knowledge/trained_cqc001_e020_m060_s010_i020_bypassexam_x040_c010_transcript]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 S010 I020  |
+| `CQC001 E020 M060 S010 I020 BypassExam X060 C010 exhibit1` | [[knowledge/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]] | [[commands/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 S010 I020  |
+| `CQC001 E020 M060 S010 I020 BypassExam X060 C010 exhibit2` | [[knowledge/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit2]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 S010 I020  |
+| `CQC001 E020 M060 S040 I020 ModExam X040 C010 transcript` | [[knowledge/trained_cqc001_e020_m060_s040_i020_modexam_x040_c010_transcript]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 S040 I020  |
+| `CQC001 E020 M060 S040 I020 ModExam X060 C010 exhibit1` | [[knowledge/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit1]] | [[commands/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit1]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 S040 I020  |
+| `CQC001 E020 M060 S040 I020 ModExam X060 C010 exhibit2` | [[knowledge/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit2]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M060 S040 I020  |
+| `CQC001 E030 M040 transcript` | [[knowledge/trained_cqc001_e030_m040_transcript]] | [[commands/trained_cqc001_e030_m040_transcript]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M040 transcript |
+| `CQC001 E030 M040 Windows Firewall` | [[knowledge/trained_cqc001_e030_m040_windows_firewall]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E030 M040 Windows Fi |
+| `CQC001 E050 M060 Network and Name Resolution` | [[knowledge/trained_cqc001_e050_m060_network_and_name_resolution]] | [[commands/trained_cqc001_e050_m060_network_and_name_resolution]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M060 Network an |
+| `CQC001 E050 M060 transcript` | [[knowledge/trained_cqc001_e050_m060_transcript]] | [[commands/trained_cqc001_e050_m060_transcript]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M060 transcript |
+| `CQC001 E060 M030 iptables and Snort` | [[knowledge/trained_cqc001_e060_m030_iptables_and_snort]] | [[commands/trained_cqc001_e060_m030_iptables_and_snort]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E060 M030 iptables a |
+| `CQC001 E060 M030 transcript` | [[knowledge/trained_cqc001_e060_m030_transcript]] | [[commands/trained_cqc001_e060_m030_transcript]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E060 M030 transcript |
+| `IPtables-Snort-CMDs` | [[knowledge/trained_iptables-snort-cmds]] | [[commands/trained_iptables-snort-cmds]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for IPtables-Snort-CMDs: Side-b |
+| `Netsh commands for DHCP` | [[knowledge/trained_netsh_commands_for_dhcp]] | [[commands/trained_netsh_commands_for_dhcp]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for Netsh commands for DHCP: Si |
+| `Netsh commands for Routing` | [[knowledge/trained_netsh_commands_for_routing]] | [[commands/trained_netsh_commands_for_routing]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for Netsh commands for Routing: |
+| `Netsh FW CMDs` | [[knowledge/trained_netsh_fw_cmds]] | [[commands/trained_netsh_fw_cmds]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for Netsh FW CMDs: Side-by-side |
+| `recognizing-suspicious-network-connections-python 12515` | [[knowledge/trained_recognizing-suspicious-network-connections-python_12515]] | [[commands/trained_recognizing-suspicious-network-connections-python_12515]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for recognizing-suspicious-netw |
+| `Using Netsh` | [[knowledge/trained_using_netsh]] | [[commands/trained_using_netsh]] | `cross-platform` | `L2_L3_Pivot_Routing` | Operational architecture, decision workflows & Windows/Linux command reference for Using Netsh: Side-by-side W |
+
+---
+
+## 7. Domain Hub 06: Linux, UNIX & Solaris Administration, Kernel (/proc & sysctl), Filesystems, Boot/systemd, Processes, Permissions/SUID & Logging ([[knowledge/06_linux_unix_administration_processes_and_logging]] — 23 Notes)
+> **When to Apply:** Apply when enumerating a Linux/UNIX/Solaris host, inspecting `/proc/<PID>` or kernel modules, auditing mounted filesystems (`findmnt`/`lsblk`), managing `systemd` services or signals, hunting SUID/SGID/Capabilities/sudo privilege escalation vectors, reviewing `/var/log`/`journalctl` logs, or upgrading a dumb shell to a full interactive TTY.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `CentOS-Debian-Survey` | [[knowledge/trained_centos-debian-survey]] | [[commands/trained_centos-debian-survey]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CentOS-Debian-Survey: Linux |
+| `CQC001 E050 M010 Kernel Basics Configuration Files` | [[knowledge/trained_cqc001_e050_m010_kernel_basics_configuration_files]] | [[commands/windows_master_command_playbook]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M010 Kernel Bas |
+| `CQC001 E050 M010 transcript` | [[knowledge/trained_cqc001_e050_m010_transcript]] | [[commands/trained_cqc001_e050_m010_transcript]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M010 transcript |
+| `CQC001 E050 M020 transcript` | [[knowledge/trained_cqc001_e050_m020_transcript]] | [[commands/trained_cqc001_e050_m020_transcript]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M020 transcript |
+| `CQC001 E050 M030 Filesystems` | [[knowledge/trained_cqc001_e050_m030_filesystems]] | [[commands/windows_master_command_playbook]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M030 Filesystem |
+| `CQC001 E050 M030 transcript` | [[knowledge/trained_cqc001_e050_m030_transcript]] | [[commands/trained_cqc001_e050_m030_transcript]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M030 transcript |
+| `CQC001 E050 M040 Boot Init Login` | [[knowledge/trained_cqc001_e050_m040_boot_init_login]] | [[commands/trained_cqc001_e050_m040_boot_init_login]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M040 Boot Init  |
+| `CQC001 E050 M040 transcript` | [[knowledge/trained_cqc001_e050_m040_transcript]] | [[commands/trained_cqc001_e050_m040_transcript]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M040 transcript |
+| `CQC001 E050 M050 Process and Signals` | [[knowledge/trained_cqc001_e050_m050_process_and_signals]] | [[commands/trained_cqc001_e050_m050_process_and_signals]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M050 Process an |
+| `CQC001 E050 M050 transcript` | [[knowledge/trained_cqc001_e050_m050_transcript]] | [[commands/trained_cqc001_e050_m050_transcript]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E050 M050 transcript |
+| `CQC001 E060 M010 transcript` | [[knowledge/trained_cqc001_e060_m010_transcript]] | [[commands/trained_cqc001_e060_m010_transcript]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E060 M010 transcript |
+| `CQC001 E060 M010 Users and Permissions` | [[knowledge/trained_cqc001_e060_m010_users_and_permissions]] | [[commands/trained_cqc001_e060_m010_users_and_permissions]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E060 M010 Users and  |
+| `CQC001 E060 M020 transcript` | [[knowledge/trained_cqc001_e060_m020_transcript]] | [[commands/windows_master_command_playbook]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E060 M020 transcript |
+| `CQC001 E060 M020 UNIX Logging` | [[knowledge/trained_cqc001_e060_m020_unix_logging]] | [[commands/trained_cqc001_e060_m020_unix_logging]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E060 M020 UNIX Loggi |
+| `l-linux-kernel-pdf` | [[knowledge/trained_l-linux-kernel-pdf]] | [[commands/windows_master_command_playbook]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for l-linux-kernel-pdf: Linux ( |
+| `linux-user` | [[knowledge/trained_linux-user]] | [[commands/trained_linux-user]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for linux-user: Linux (Debian/U |
+| `Logging-CMDs` | [[knowledge/trained_logging-cmds]] | [[commands/trained_logging-cmds]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Logging-CMDs: Linux (Debian |
+| `Shells and Scripting` | [[knowledge/trained_shells_and_scripting]] | [[commands/trained_shells_and_scripting]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Shells and Scripting: Linux |
+| `Solaris-Network-Enum-Script` | [[knowledge/trained_solaris-network-enum-script]] | [[commands/trained_solaris-network-enum-script]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Solaris-Network-Enum-Script |
+| `Solaris-Survey` | [[knowledge/trained_solaris-survey]] | [[commands/trained_solaris-survey]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Solaris-Survey: Linux (Debi |
+| `UNIX and Linux System Administration Handbook` | [[knowledge/trained_unix_and_linux_system_administration_handbook]] | [[commands/trained_unix_and_linux_system_administration_handbook]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for UNIX and Linux System Admin |
+| `UNIX Study Notes` | [[knowledge/trained_unix_study_notes]] | [[commands/windows_master_command_playbook]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for UNIX Study Notes: Linux (De |
+| `Upgrading shells to fully interactive TTYs` | [[knowledge/trained_upgrading_shells_to_fully_interactive_ttys]] | [[commands/trained_upgrading_shells_to_fully_interactive_ttys]] | `linux` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Upgrading shells to fully i |
+
+---
+
+## 8. Domain Hub 07: Packet Capture (tcpdump / tshark / pktmon), BPF Syntax, Wireshark Filters, RFC792/IPv4/TCP/ARP/STP Headers & Passive Fingerprinting (p0f / DHCP) ([[knowledge/07_packet_capture_bpf_wireshark_and_passive_fingerprinting]] — 17 Notes)
+> **When to Apply:** Apply when capturing live network traffic (`tcpdump`/`tshark`/`pktmon`), writing BPF byte-offset filters (`tcp[13]`, `icmp[0]`), analyzing `.pcap` files with Wireshark/tshark display filters, decoding IPv4/TCP/ICMP/ARP/STP headers, or passively fingerprinting remote OS types via `p0f` or DHCP options without transmitting active packets.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `BPF syntax` | [[knowledge/trained_bpf_syntax]] | [[commands/trained_bpf_syntax]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BPF syntax: Berkeley Packet |
+| `capture.sh` | [[knowledge/trained_capture_sh]] | [[commands/trained_capture_sh]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for capture.sh: Berkeley Packet |
+| `Conversion Worksheet` | [[knowledge/trained_conversion_worksheet]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Conversion Worksheet: Berke |
+| `CQC001 E010 M010 Network Traffic Monitoring` | [[knowledge/trained_cqc001_e010_m010_network_traffic_monitoring]] | [[commands/trained_cqc001_e010_m010_network_traffic_monitoring]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M010 Network Tr |
+| `CQC001 E010 M030 IP Header Diagram` | [[knowledge/trained_cqc001_e010_m030_ip_header_diagram]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M030 IP Header  |
+| `CQC001 E010 M030 transcript` | [[knowledge/trained_cqc001_e010_m030_transcript]] | [[commands/trained_cqc001_e010_m030_transcript]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M030 transcript |
+| `CQC001 E010 M040 p0f` | [[knowledge/trained_cqc001_e010_m040_p0f]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M040 p0f: Berke |
+| `CQC001 E010 M040 TCP Header` | [[knowledge/trained_cqc001_e010_m040_tcp_header]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M040 TCP Header |
+| `CQC001 E010 M040 Traffic Analysis and Passive OS Fingerprinting` | [[knowledge/trained_cqc001_e010_m040_traffic_analysis_and_passive_os_fingerprinting]] | [[commands/trained_cqc001_e010_m040_traffic_analysis_and_passive_os_fingerprinting]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M040 Traffic An |
+| `CQC001 E010 M050 ARP Packet` | [[knowledge/trained_cqc001_e010_m050_arp_packet]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M050 ARP Packet |
+| `CQC001 E010 M050 DHCP Fingerprints` | [[knowledge/trained_cqc001_e010_m050_dhcp_fingerprints]] | [[commands/trained_cqc001_e010_m050_dhcp_fingerprints]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M050 DHCP Finge |
+| `CQC001 E010 M050 Network Helper Protocols SupplementalMaterials` | [[knowledge/trained_cqc001_e010_m050_network_helper_protocols_supplementalmaterials]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M050 Network He |
+| `CQC001 E010 M050 RFC792` | [[knowledge/trained_cqc001_e010_m050_rfc792]] | [[commands/trained_cqc001_e010_m050_rfc792]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M050 RFC792: Be |
+| `CQC001 E010 M060 Network Diagram Legend` | [[knowledge/trained_cqc001_e010_m060_network_diagram_legend]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M060 Network Di |
+| `CQC001 E010 M060 Spanning Tree Protocol` | [[knowledge/trained_cqc001_e010_m060_spanning_tree_protocol]] | [[commands/trained_cqc001_e010_m060_spanning_tree_protocol]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M060 Spanning T |
+| `DM4 OctalandHexadecimalNumberSystems BP 9 22 14` | [[knowledge/trained_dm4_octalandhexadecimalnumbersystems_bp_9_22_14]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for DM4 OctalandHexadecimalNumb |
+| `JStebelton BPF-Syntax` | [[knowledge/trained_jstebelton_bpf-syntax]] | [[commands/trained_jstebelton_bpf-syntax]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for JStebelton BPF-Syntax: Berk |
+
+---
+
+## 9. Domain Hub 08: Active Reconnaissance (nmap), Web/API/mTLS Probing (curl / openssl), SQL Injection Cheat Sheets & Operator Playbooks ([[knowledge/08_web_api_sql_injection_and_active_reconnaissance]] — 12 Notes)
+> **When to Apply:** Apply when scanning a reachable target IP/subnet (`nmap`), probing web servers or appliance management ports (`curl`/`openssl s_client`), extracting TLS certificate hardware serials and HTTP `Last-Modified` firmware dates, testing SQL injection vectors (`UNION`, error-based, time-based blind), or establishing SSH/socat port forwards.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `BCF CNE Basics` | [[knowledge/trained_bcf_cne_basics]] | [[commands/trained_bcf_cne_basics]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF CNE Basics: Active netw |
+| `Beacon` | [[knowledge/trained_beacon]] | [[commands/trained_beacon]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Beacon: Active network & po |
+| `CQC001 E040 M020 Network Enumeration Tools` | [[knowledge/trained_cqc001_e040_m020_network_enumeration_tools]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M020 Network En |
+| `CQC001 E040 M020 transcript` | [[knowledge/trained_cqc001_e040_m020_transcript]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E040 M020 transcript |
+| `Hadoop README` | [[knowledge/trained_hadoop_readme]] | [[commands/trained_hadoop_readme]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Hadoop README: Active netwo |
+| `HadoopMappingInfra ReadMe` | [[knowledge/trained_hadoopmappinginfra_readme]] | [[commands/trained_hadoopmappinginfra_readme]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for HadoopMappingInfra ReadMe:  |
+| `informix-sql-injection-cheat-sheet.html` | [[knowledge/trained_informix-sql-injection-cheat-sheet]] | [[commands/trained_informix-sql-injection-cheat-sheet]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for informix-sql-injection-chea |
+| `Notes` | [[knowledge/trained_notes]] | [[commands/trained_notes]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Notes: Active network & por |
+| `Operator-handbook-Search.Copy.Paste` | [[knowledge/trained_operator-handbook-search_copy_paste]] | [[commands/trained_operator-handbook-search_copy_paste]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Operator-handbook-Search.Co |
+| `Penetration Testing Tools Cheat Sheet.html` | [[knowledge/trained_penetration_testing_tools_cheat_sheet]] | [[commands/trained_penetration_testing_tools_cheat_sheet]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Penetration Testing Tools C |
+| `README` | [[knowledge/trained_readme]] | [[commands/trained_readme]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for README: Active network & po |
+| `SQL Injection Cheat Sheet by Netsparker` | [[knowledge/trained_sql_injection_cheat_sheet_by_netsparker]] | [[commands/trained_sql_injection_cheat_sheet_by_netsparker]] | `cross-platform` | `Active_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for SQL Injection Cheat Sheet b |
+
+---
+
+## 10. Domain Hub 09: Hardware UART Serial OOB (tio /dev/ttyUSB0 & COM1), Metro Ethernet, MPLS/GMPLS, OTN, PON/GPON, SD-WAN, Wi-Fi & 2G/3G/4G/5G/SDR Cellular ([[knowledge/09_hardware_uart_serial_oob_and_telecom_wan]] — 27 Notes)
+> **When to Apply:** Apply whenever network connections to an appliance fail (`Exit 7` Connection Refused or `Exit 28` Timeout) and a hardware serial console (`/dev/ttyUSB0` or `COM1`) is available (`C1_OOB_SERIAL_LOOPBACK_APPLIANCE`), or when analyzing Carrier Metro Ethernet, MPLS/GMPLS labels, OTN/GPON optical links, SD-WAN tunnels, Wi-Fi 802.11, or 2G/3G/4G/5G cellular RAN protocols.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `BEC703  -CELLULAR MOBILE COMMUNICATION` | [[knowledge/trained_bec703_-cellular_mobile_communication]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for BEC703  -CELLULAR MOBILE CO |
+| `BFP-Fexible Packet Filtering` | [[knowledge/trained_bfp-fexible_packet_filtering]] | [[commands/trained_bfp-fexible_packet_filtering]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for BFP-Fexible Packet Filterin |
+| `CQC001 E010 M030 Wireshark Display Filters` | [[knowledge/trained_cqc001_e010_m030_wireshark_display_filters]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E010 M030 Wireshark  |
+| `HandbookAcoustics` | [[knowledge/trained_handbookacoustics]] | [[commands/trained_handbookacoustics]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for HandbookAcoustics: Non-inte |
+| `Intro to GMPLS` | [[knowledge/trained_intro_to_gmpls]] | [[commands/trained_intro_to_gmpls]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Intro to GMPLS: Non-interac |
+| `Introduction to OTN` | [[knowledge/trained_introduction_to_otn]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Introduction to OTN: Non-in |
+| `LTE mobile optimization-a definitive guide wp en 5216-2018-52 v0100` | [[knowledge/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]] | [[commands/trained_lte_mobile_optimization-a_definitive_guide_wp_en_5216-2018-52_v0]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for LTE mobile optimization-a d |
+| `LTEPTCLOVWWP` | [[knowledge/trained_lteptclovwwp]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for LTEPTCLOVWWP: Non-interacti |
+| `metro case studies` | [[knowledge/trained_metro_case_studies]] | [[commands/trained_metro_case_studies]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for metro case studies: Non-int |
+| `Metro Ethernet CenturyLink` | [[knowledge/trained_metro_ethernet_centurylink]] | [[commands/trained_metro_ethernet_centurylink]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Metro Ethernet CenturyLink: |
+| `Metro Ethernet Training Day 2 MPLS` | [[knowledge/trained_metro_ethernet_training_day_2_mpls]] | [[commands/trained_metro_ethernet_training_day_2_mpls]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Metro Ethernet Training Day |
+| `Metro Ethernet Training Day 2 Optical` | [[knowledge/trained_metro_ethernet_training_day_2_optical]] | [[commands/trained_metro_ethernet_training_day_2_optical]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Metro Ethernet Training Day |
+| `Metro Ethernet Training Part 1` | [[knowledge/trained_metro_ethernet_training_part_1]] | [[commands/trained_metro_ethernet_training_part_1]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Metro Ethernet Training Par |
+| `MobileHacking with SDR-2G-part` | [[knowledge/trained_mobilehacking_with_sdr-2g-part]] | [[commands/trained_mobilehacking_with_sdr-2g-part]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for MobileHacking with SDR-2G-p |
+| `MobileHacking with SDR-3Gand5G` | [[knowledge/trained_mobilehacking_with_sdr-3gand5g]] | [[commands/trained_mobilehacking_with_sdr-3gand5g]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for MobileHacking with SDR-3Gan |
+| `MobileHacking with SDR-4Gand5G-final` | [[knowledge/trained_mobilehacking_with_sdr-4gand5g-final]] | [[commands/trained_mobilehacking_with_sdr-4gand5g-final]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for MobileHacking with SDR-4Gan |
+| `Mod 14` | [[knowledge/trained_mod_14]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Mod 14: Non-interactive tio |
+| `Overview of GSM GPRS and UMTS Mobile Communications by CISCO` | [[knowledge/trained_overview_of_gsm_gprs_and_umts_mobile_communications_by_cisco]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Overview of GSM GPRS and UM |
+| `PolAdtEv Structure en rev2` | [[knowledge/trained_poladtev_structure_en_rev2]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for PolAdtEv Structure en rev2: |
+| `PON-GPON` | [[knowledge/trained_pon-gpon]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for PON-GPON: Non-interactive t |
+| `ptrkrysik camppp` | [[knowledge/trained_ptrkrysik_camppp]] | [[commands/trained_ptrkrysik_camppp]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for ptrkrysik camppp: Non-inter |
+| `RAN Infrstructure 2G and 3G with MPLS.jpg` | [[knowledge/trained_ran_infrstructure_2g_and_3g_with_mpls]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for RAN Infrstructure 2G and 3G |
+| `SD-WAN ATT` | [[knowledge/trained_sd-wan_att]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for SD-WAN ATT: Non-interactive |
+| `Software Defined Wide Area Network (SD-WAN)` | [[knowledge/trained_software_defined_wide_area_network_sd-wan]] | [[commands/trained_software_defined_wide_area_network_sd-wan]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Software Defined Wide Area  |
+| `Spectrum-GSMA-Spectrum-Handbook-2012` | [[knowledge/trained_spectrum-gsma-spectrum-handbook-2012]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for Spectrum-GSMA-Spectrum-Hand |
+| `tdoct1933b eng` | [[knowledge/trained_tdoct1933b_eng]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for tdoct1933b eng: Non-interac |
+| `WiFi Handbook 1` | [[knowledge/trained_wifi_handbook_1]] | [[commands/trained_wifi_handbook_1]] | `cross-platform` | `OOB_Serial_Access` | Operational architecture, decision workflows & Windows/Linux command reference for WiFi Handbook 1: Non-intera |
+
+---
+
+## 11. Domain Hub 10: Digital Forensics (Autopsy / EnCase), NTFS Internals (MFT / ADS / Slack Space / Oplocks), PE Reverse Engineering & Threat Intel (APT28) ([[knowledge/10_digital_forensics_pe_reversing_and_threat_intel]] — 14 Notes)
+> **When to Apply:** Apply when performing disk/image forensics (Autopsy, EnCase, SleuthKit), analyzing NTFS `$MFT` records, Alternate Data Streams (`dir /r`), or slack space, reverse-engineering Windows PE (`.exe`/`.dll`/`.sys`) or Linux ELF binaries, or hunting APT28 / Fancy Bear IOCs and TTPs.
+
+| Topic | Knowledge Note | Command Playbook | OS | Tactic | Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `APT28-Center-of-Storm-2017 MANDIANT` | [[knowledge/trained_apt28-center-of-storm-2017_mandiant]] | [[commands/trained_apt28-center-of-storm-2017_mandiant]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for APT28-Center-of-Storm-2017  |
+| `APT28-FANCYBEAR-REPORT` | [[knowledge/trained_apt28-fancybear-report]] | [[commands/trained_apt28-fancybear-report]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for APT28-FANCYBEAR-REPORT: Dig |
+| `BCF Autopsy Configuration and Setup` | [[knowledge/trained_bcf_autopsy_configuration_and_setup]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Autopsy Configuration a |
+| `BCF Autopsy Internet Artifacts` | [[knowledge/trained_bcf_autopsy_internet_artifacts]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Autopsy Internet Artifa |
+| `BCF Autopsy Navigation and Analysis` | [[knowledge/trained_bcf_autopsy_navigation_and_analysis]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Autopsy Navigation and  |
+| `BCF Autopsy Registry Examination` | [[knowledge/trained_bcf_autopsy_registry_examination]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Autopsy Registry Examin |
+| `BCF EnCase Configuration and Basics` | [[knowledge/trained_bcf_encase_configuration_and_basics]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF EnCase Configuration an |
+| `BCF EnCase Navigation` | [[knowledge/trained_bcf_encase_navigation]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF EnCase Navigation: Digi |
+| `BCF EnCase Searching` | [[knowledge/trained_bcf_encase_searching]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF EnCase Searching: Digit |
+| `BCF Slack Space and Deleted Files` | [[knowledge/trained_bcf_slack_space_and_deleted_files]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for BCF Slack Space and Deleted |
+| `CBM 1 2 2006 Goppit PE Format Reverse Engineer View` | [[knowledge/trained_cbm_1_2_2006_goppit_pe_format_reverse_engineer_view]] | [[commands/trained_cbm_1_2_2006_goppit_pe_format_reverse_engineer_view]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CBM 1 2 2006 Goppit PE Form |
+| `CQC001 E020 M020 NTFS Cheat Sheets` | [[knowledge/trained_cqc001_e020_m020_ntfs_cheat_sheets]] | [[commands/trained_cqc001_e020_m020_ntfs_cheat_sheets]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M020 NTFS Cheat |
+| `CQC001 E020 M020 OPLOCKS` | [[knowledge/trained_cqc001_e020_m020_oplocks]] | [[commands/windows_master_command_playbook]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for CQC001 E020 M020 OPLOCKS: D |
+| `Cyber Forensics Intro Guide updated table` | [[knowledge/trained_cyber_forensics_intro_guide_updated_table]] | [[commands/trained_cyber_forensics_intro_guide_updated_table]] | `cross-platform` | `Passive_Enum` | Operational architecture, decision workflows & Windows/Linux command reference for Cyber Forensics Intro Guide |

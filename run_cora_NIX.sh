@@ -792,10 +792,37 @@ detect_hardware_and_tune() {
   fi
 
   GPU_HEADROOM_MIB=$(( GPU_TOTAL_MIB - MODEL_SIZE_MIB ))
+  local is_hybrid_offload=0
+  if (( GPU_DETECTED == 1 && GPU_TOTAL_MIB > 0 && MODEL_SIZE_MIB > GPU_TOTAL_MIB )); then
+    is_hybrid_offload=1
+  fi
+  if (( is_hybrid_offload == 1 )); then
+    if (( PHYSICAL_CORES >= 6 )); then
+      AUTO_THREADS=$(( PHYSICAL_CORES - 2 ))
+      (( AUTO_THREADS < 2 )) && AUTO_THREADS=2
+    else
+      AUTO_THREADS=$(( PHYSICAL_CORES - 1 ))
+      (( AUTO_THREADS < 1 )) && AUTO_THREADS=1
+    fi
+    AUTO_THREADS_BATCH=$PHYSICAL_CORES
+    THREADS="${THREADS:-$AUTO_THREADS}"
+    THREADS_BATCH="${THREADS_BATCH:-$AUTO_THREADS_BATCH}"
+  fi
+
   if (( GPU_DETECTED == 1 && GPU_TOTAL_MIB >= 24000 && GPU_HEADROOM_MIB >= 10000 )); then
     KV_CACHE_TYPE="${KV_CACHE_TYPE:-f16}"
+  elif (( is_hybrid_offload == 1 && GPU_TOTAL_MIB <= 12288 )); then
+    KV_CACHE_TYPE="${KV_CACHE_TYPE:-q4_0}"
   else
     KV_CACHE_TYPE="${KV_CACHE_TYPE:-q8_0}"
+  fi
+  HARDWARE_BALANCE_WARNING=""
+  if (( is_hybrid_offload == 1 )) && (( MODEL_SIZE_MIB * 2 > GPU_TOTAL_MIB * 5 || MODEL_SIZE_MIB * 100 > TOTAL_RAM_MIB * 72 )); then
+    local est_gpu_pct=$(( ( (GPU_TOTAL_MIB - 1400) * 100 ) / (MODEL_SIZE_MIB > 0 ? MODEL_SIZE_MIB : 1) ))
+    (( est_gpu_pct < 8 )) && est_gpu_pct=8
+    (( est_gpu_pct > 95 )) && est_gpu_pct=95
+    local est_cpu_pct=$(( 100 - est_gpu_pct ))
+    HARDWARE_BALANCE_WARNING="[WARN: CPU BOTTLENECK] ${MODEL_ALIAS} (${MODEL_SIZE_MIB} MiB) exceeds balanced capacity for ${GPU_TOTAL_MIB} MiB VRAM / ${TOTAL_RAM_MIB} MiB RAM (~${est_gpu_pct}% GPU / ~${est_cpu_pct}% CPU layers -> GPU stalls waiting on system RAM). Use '-m 3.8' (Qwen3.8-27B Q3_K_M, ~50% GPU offload) or '-m 3.5' (Qwen3.5-9B Q4_K_M, 100% GPU offload) for balanced CPU+GPU performance."
   fi
   GPU_ARGS=()
 
@@ -803,16 +830,21 @@ detect_hardware_and_tune() {
     if (( MODEL_SIZE_MIB <= GPU_TOTAL_MIB )); then
       AUTO_FIT_TARGET=256
     elif (( GPU_TOTAL_MIB <= 8192 )); then
-      AUTO_FIT_TARGET=384
+      AUTO_FIT_TARGET=192
+    elif (( GPU_TOTAL_MIB <= 12288 )); then
+      AUTO_FIT_TARGET=256
     elif (( GPU_TOTAL_MIB <= 16384 )); then
-      AUTO_FIT_TARGET=512
+      AUTO_FIT_TARGET=384
     else
-      AUTO_FIT_TARGET=768
+      AUTO_FIT_TARGET=512
     fi
     FIT_TARGET="${FIT_TARGET:-$AUTO_FIT_TARGET}"
     if (( GPU_TOTAL_MIB >= 24000 )); then
       BATCH_SIZE="${BATCH_SIZE:-4096}"
       UBATCH_SIZE="${UBATCH_SIZE:-2048}"
+    elif (( is_hybrid_offload == 1 && GPU_TOTAL_MIB <= 12288 )); then
+      BATCH_SIZE="${BATCH_SIZE:-512}"
+      UBATCH_SIZE="${UBATCH_SIZE:-256}"
     else
       BATCH_SIZE="${BATCH_SIZE:-2048}"
       UBATCH_SIZE="${UBATCH_SIZE:-512}"
@@ -821,10 +853,15 @@ detect_hardware_and_tune() {
       --fit on
       --fit-target "$FIT_TARGET"
       --flash-attn on
+      --kv-offload
+      --op-offload
       --cache-type-k "$KV_CACHE_TYPE"
       --cache-type-v "$KV_CACHE_TYPE"
     )
-    if (( GPU_HEADROOM_MIB >= 4096 )); then
+    if (( is_hybrid_offload == 1 )); then
+      GPU_ARGS+=(--poll 0 --poll-batch 0)
+    fi
+    if (( GPU_HEADROOM_MIB >= 4096 || (MODEL_SIZE_MIB + 1536 <= GPU_TOTAL_MIB) )); then
       GPU_ARGS+=(--n-gpu-layers 999)
     fi
   else
@@ -873,11 +910,11 @@ detect_hardware_and_tune() {
     FEATURE_ARGS+=(--numa distribute)
   fi
 
-  if (( TOTAL_RAM_MIB >= 120000 || GPU_TOTAL_MIB >= 24000 || LOGICAL_CPUS >= 36 )); then
+  if (( TOTAL_RAM_MIB >= 120000 || GPU_TOTAL_MIB >= 24000 || PHYSICAL_CORES >= 24 || LOGICAL_CPUS >= 36 )); then
     REASONING_HW_TIER="ULTRA_SERVER_DATACENTER (15 Core Engines: 1,024-D VSA, 80x H-MDP, 1,200 RL eps, 32x K-Means++)"
-  elif (( TOTAL_RAM_MIB >= 24000 && LOGICAL_CPUS >= 16 )); then
+  elif (( (TOTAL_RAM_MIB >= 48000 && PHYSICAL_CORES >= 12) || (GPU_TOTAL_MIB >= 16000 && TOTAL_RAM_MIB >= 32000 && PHYSICAL_CORES >= 10) )); then
     REASONING_HW_TIER="EXTREME_WORKSTATION (15 Core Engines: 1,024-D VSA, 80x H-MDP, 600 RL eps, 20x K-Means++)"
-  elif (( TOTAL_RAM_MIB >= 12000 && LOGICAL_CPUS >= 8 )); then
+  elif (( TOTAL_RAM_MIB >= 12000 && (PHYSICAL_CORES >= 6 || LOGICAL_CPUS >= 8) )); then
     REASONING_HW_TIER="HIGH_PERFORMANCE (15 Core Engines: 1,024-D VSA, 60x H-MDP, 400 RL eps, 12x K-Means++)"
   else
     REASONING_HW_TIER="PORTABLE_CONSERVATIVE (15 Core Engines: 1,024-D VSA, 40x H-MDP, 200 RL eps, 8x K-Means++)"
@@ -923,6 +960,9 @@ print_hardware_profile() {
   fi
   printf '  15-Engine Tier: %s\n' "$REASONING_HW_TIER"
   printf '  Selected Model: %s (%d MiB -> %s)\n' "$MODEL_ALIAS" "$MODEL_SIZE_MIB" "$(basename "$MODEL_PATH")"
+  if [[ -n "${HARDWARE_BALANCE_WARNING:-}" ]]; then
+    printf '  Balance Alert:  %s\n' "$HARDWARE_BALANCE_WARNING"
+  fi
   printf '  Reasoning Mode: %s (default: off for instant answers; pass --think to enable <think>)\n' "$REASONING_MODE"
   printf '  Agent Tools:    %s (read_file, write_file, edit_file, exec_shell_command, grep_search, ...)\n' "$AGENT_MODE"
   printf '  Tuned Settings: --ctx-size %s --reasoning %s --threads %s --threads-batch %s --batch-size %s --ubatch-size %s --spec-type %s' \
@@ -931,8 +971,12 @@ print_hardware_profile() {
     printf ' --numa distribute'
   fi
   if (( GPU_DETECTED == 1 )); then
-    printf ' --fit on --fit-target %s --flash-attn on -ctk %s -ctv %s\n' \
+    printf ' --fit on --fit-target %s --flash-attn on --kv-offload --op-offload -ctk %s -ctv %s' \
       "$FIT_TARGET" "$KV_CACHE_TYPE" "$KV_CACHE_TYPE"
+    if (( MODEL_SIZE_MIB > GPU_TOTAL_MIB )); then
+      printf ' --poll 0 --poll-batch 0'
+    fi
+    printf '\n'
   else
     printf ' --n-gpu-layers 0 --flash-attn on -ctk %s -ctv %s\n' \
       "$KV_CACHE_TYPE" "$KV_CACHE_TYPE"

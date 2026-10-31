@@ -1,105 +1,79 @@
-# Obsidian Memory Index (CORA Knowledge Vault)
+# Obsidian Memory Index (CORA Knowledge Vault — `00_MEMORY_INDEX`)
 
-> Auto-maintained by `agent-cli.py`. Loaded into the LLM system prompt at startup so the agent remembers prior targets, commands, and facts across sessions.
+> **Tier-1 Hot Memory:** Automatically loaded into the LLM system prompt and indexed by Engine 5 (`associative.py` Bipartite Graph) so the LLM and all 15 Neuro-Symbolic Engines immediately select the right Windows & Linux commands, playbooks, and domain knowledge.
 
-## Scanned Targets & APIs
-- *(None recorded yet)*
+## 1. Master Cross-Platform Command Playbooks (`commands/`)
+- [[commands/windows_master_command_playbook]] — **[WINDOWS MASTER]** Comprehensive Windows CMD, PowerShell, WMI/CIM, Sysinternals (`pslist`, `listdlls`, `autorunsc`, `handle`, `sigcheck`, `accesschk`, `procdump`), Registry, `netsh advfirewall`/`portproxy`, `icacls`/`takeown`, `auditpol`, `wevtutil` Event IDs, `bcdedit`, and Active Directory (`dsquery`/`nltest`/`klist`) commands with When-to-Apply rules.
+- [[commands/linux_master_command_playbook]] — **[LINUX/UNIX MASTER]** Comprehensive Linux `iproute2` (`ip addr`, `ip route`, `ip neigh`), `ss -tulpn`, `iptables`/`nftables`, `sysctl` forwarding/NAT, `systemd`/`journalctl`, `/proc` forensics, SUID/Capabilities (`getcap`/`find`), `tcpdump`/BPF, `tshark`, `p0f`, `nmap`, and interactive TTY upgrade commands with When-to-Apply rules.
+- [[commands/windows_digital_forensics_playbook]] — **[WINDOWS DIGITAL FORENSICS (DFIR)]** Native Windows Order-of-Volatility acquisition (`reg save`, `BAM`/`ShimCache`/`Amcache`/`ShellBags`/`UserAssist`, `$MFT`/`$UsnJrnl`/VSS/Prefetch, `.evtx`, `SRUDB.dat`) + Open-Source GitHub tools (`Velociraptor`, `Hayabusa`, `Chainsaw`, `Eric Zimmerman Tools`, `Volatility 3`, `MemProcFS`, `WinPmem`, `HollowsHunter`).
+- [[commands/linux_digital_forensics_playbook]] — **[LINUX DIGITAL FORENSICS (DFIR)]** Native Linux Order-of-Volatility acquisition (`/proc/*/exe (deleted)` & `memfd:` recovery, `rwxp` memory, `/proc/net/tcp` vs `ss` rootkit diff, `bpftool`, `ld.so.preload`, `ext4` `debugfs` `crtime`/`dtime`, `journalctl --verify`, `ausearch`, `utmpdump`) + Open-Source GitHub tools (`UAC`, `AVML`, `LiME`, `Volatility 3`, `dwarf2json`, `Velociraptor`, `SleuthKit`, `Plaso`, `Tracee`, `Unhide-NG`, `Zeek`).
+- [[commands/revengai_and_binary_reversing_playbook]] — **[REVENG.AI & BINARY REVERSING]** Complete installation, setup, and CLI/SDK commands for **RevEng.AI** (`https://github.com/orgs/RevEngAI/repositories`: `reait`, `sdk-python`, `creait`, `plugin-ghidra`, `plugin-ida`, `plugin-binary-ninja`, `reai-r2`, `reai-rz`) + Windows PE & Linux ELF static/headless reversing (`sigcheck64`, `dumpbin`, `strings64`, `readelf`, `objdump`, `r2`, `rizin`, `analyzeHeadless`).
+- [[commands/curl_playbook]] — **[CROSS-PLATFORM WEB/API/TLS]** Non-hanging `curl -sS -k -L -i --max-time 15`, `openssl s_client` X.509 certificate serial/SAN extraction, mTLS client certs, reverse-proxy `X-Forwarded-For` bypass headers, and PowerShell `Invoke-WebRequest` patterns.
+- [[commands/tio_serial_playbook]] — **[HARDWARE UART SERIAL OOB]** Non-interactive `tio 3.9` Lua `--script` patterns with `-o 15 -O 120` anti-drop pacing for `/dev/ttyUSB0` & Windows `COM` port OOB appliance access.
 
-## Verified Commands & Playbooks
-- [[commands/curl_playbook]] — curl playbook
-- [[commands/tio_serial_playbook]] — Non-interactive tio 3.9 Lua --script patterns for logging into and running commands on /dev/ttyUSB0 without Python scripts
-- [[commands/trained_address_space_layout_randomization]] — trained address space layout randomization
-- [[commands/trained_apt28-center-of-storm-2017_mandiant]] — trained apt28-center-of-storm-2017 mandiant
-- [[commands/trained_apt28-fancybear-report]] — trained apt28-fancybear-report
-- [[commands/trained_auditpol_cmds]] — trained auditpol cmds
-- [[commands/trained_basic_survey_commands]] — trained basic survey commands
-- [[commands/trained_bcdedit_cmds]] — trained bcdedit cmds
-- [[commands/trained_bcf_cne_basics]] — trained bcf cne basics
-- [[commands/trained_bcf_windows_live_response]] — trained bcf windows live response
-- [[commands/trained_bcf_windows_process_investigation]] — trained bcf windows process investigation
-- [[commands/trained_beacon]] — trained beacon
-- [[commands/trained_bfp-fexible_packet_filtering]] — trained bfp-fexible packet filtering
-- [[commands/trained_bpf_syntax]] — trained bpf syntax
-- [[commands/trained_cacls_-_icacls_cmds]] — trained cacls - icacls cmds
-- [[commands/trained_cacls_-_icacls_cmds_2]] — trained cacls - icacls cmds 2
-- [[commands/trained_capture_sh]] — trained capture sh
-- [[commands/trained_cbm_1_2_2006_goppit_pe_format_reverse_engineer_view]] — trained cbm 1 2 2006 goppit pe format reverse engineer view
-- [[commands/trained_centos-debian-survey]] — trained centos-debian-survey
-- [[commands/trained_change_system_files_cmds]] — trained change system files cmds
-- [[commands/trained_cqc001_e010_m010_network_traffic_monitoring]] — trained cqc001 e010 m010 network traffic monitoring
-- [[commands/trained_cqc001_e010_m030_transcript]] — trained cqc001 e010 m030 transcript
-- [[commands/trained_cqc001_e010_m040_netstat]] — trained cqc001 e010 m040 netstat
-- [[commands/trained_cqc001_e010_m040_traffic_analysis_and_passive_os_fingerprinting]] — trained cqc001 e010 m040 traffic analysis and passive os fingerprinting
-- [[commands/trained_cqc001_e010_m050_dhcp_fingerprints]] — trained cqc001 e010 m050 dhcp fingerprints
-- [[commands/trained_cqc001_e010_m050_rfc792]] — trained cqc001 e010 m050 rfc792
-- [[commands/trained_cqc001_e010_m060_spanning_tree_protocol]] — trained cqc001 e010 m060 spanning tree protocol
-- [[commands/trained_cqc001_e020_m010_root_keys_and_registry_types]] — trained cqc001 e020 m010 root keys and registry types
-- [[commands/trained_cqc001_e020_m010_sysinternals_tools]] — trained cqc001 e020 m010 sysinternals tools
-- [[commands/trained_cqc001_e020_m020_ntfs_cheat_sheets]] — trained cqc001 e020 m020 ntfs cheat sheets
-- [[commands/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_7_-_2008]] — trained cqc001 e020 m030 boot and logon resource - windows 7 - 2008
-- [[commands/trained_cqc001_e020_m030_boot_and_logon_resource_-_windows_xp_-_2003]] — trained cqc001 e020 m030 boot and logon resource - windows xp - 2003
-- [[commands/trained_cqc001_e020_m040_transcript]] — trained cqc001 e020 m040 transcript
-- [[commands/trained_cqc001_e020_m040_windows_processes]] — trained cqc001 e020 m040 windows processes
-- [[commands/trained_cqc001_e020_m050_s040_i030_exer_x010_c010_transcript]] — trained cqc001 e020 m050 s040 i030 exer x010 c010 transcript
-- [[commands/trained_cqc001_e020_m060_networking_and_name_resolution]] — trained cqc001 e020 m060 networking and name resolution
-- [[commands/trained_cqc001_e020_m060_s010_i020_bypassexam_x060_c010_exhibit1]] — trained cqc001 e020 m060 s010 i020 bypassexam x060 c010 exhibit1
-- [[commands/trained_cqc001_e020_m060_s040_i020_modexam_x060_c010_exhibit1]] — trained cqc001 e020 m060 s040 i020 modexam x060 c010 exhibit1
-- [[commands/trained_cqc001_e030_m020_transcript]] — trained cqc001 e030 m020 transcript
-- *(+ 110 additional trained notes indexed in `[[00_TRAINED_INDEX]]`)*
+## 2. Organized Domain Knowledge Hubs (`knowledge/01_...` to `10_...`)
+- [[knowledge/01_windows_system_process_and_sysinternals]] (`WINDOWS` | `25 notes` | `Passive_Enum`) — Windows live incident response, process tree/PPID investigation, service binary auditing, kernel architecture, file searching (findstr/forfiles), and Sysinternals Suite (pslist, listdlls, autorunsc, handle, sigcheck, accesschk, procdump). **Apply when:** Apply when performing initial Windows host triage (s_init_unknown), investigating running processes/PPIDs, mapping svchost.exe services, hunting unsigned/injected DLLs, searching files by timestamp/content, or executing Sysinternals live response.
+- [[knowledge/02_windows_registry_boot_and_persistence]] (`WINDOWS` | `10 notes` | `Passive_Enum`) — Windows Registry root keys (HKLM, HKCU, HKU, HKCR, HKCC), data types (REG_SZ, REG_DWORD, REG_BINARY), Run/RunOnce/Winlogon/Session Manager persistence keys, Boot Configuration Data (bcdedit), and startup forensics. **Apply when:** Apply when auditing Windows persistence mechanisms, inspecting Registry hives (`HKLM`/`HKCU`/`HKU`), analyzing boot sequences (`SMSS` -> `CSRSS` -> `Wininit` -> `Services` -> `LSASS` -> `Winlogon`), or checking `bcdedit` DEP/signing settings.
+- [[knowledge/03_windows_security_acls_auditing_and_logs]] (`WINDOWS` | `19 notes` | `Defense_Evasion_Firewall`) — Windows Security Identifiers (Well-Known SIDs), ACE/DACL inheritance rules, icacls/cacls/takeown file permission management, auditpol subcategory configuration, wevtutil/Get-WinEvent Event ID analysis (4624, 4625, 4672, 4688, 4697, 4720, 7045, 1102, 4104), Hot Potato privilege escalation, and ASLR/DEP/SEHOP protection mechanisms. **Apply when:** Apply when inspecting or modifying Windows file/directory/service ACLs (`icacls`/`takeown`), mapping Well-Known SIDs, configuring or auditing Windows Security audit policy (`auditpol`), querying Windows Event Logs (`wevtutil`/`Get-WinEvent`/`psloglist`), or evaluating exploit mitigations (ASLR/DEP) and local privilege escalation vectors.
+- [[knowledge/04_windows_powershell_wmi_cim_and_active_directory]] (`WINDOWS` | `28 notes` | `Active_Enum`) — PowerShell 2.0-7+ cmdlets, Get-CimInstance/Get-WmiObject/wmic queries, WinRM/PSRemoting (Invoke-Command, Enter-PSSession), Active Directory enumeration (dsquery, dsget, nltest, net, PowerView), local privilege checks (PowerUp), Kerberos SPNs/tickets (setspn, klist), and WMI permanent event subscriptions. **Apply when:** Apply when automating Windows enumeration with PowerShell or WMI/CIM (`Get-CimInstance`/`wmic`), executing commands remotely via WinRM/WMI, enumerating Active Directory users/groups/computers/trusts/GPOs (`dsquery`/`nltest`/`net`), or auditing Kerberos tickets (`klist`) and SPNs (`setspn`).
+- [[knowledge/05_windows_and_linux_networking_routing_and_firewalls]] (`CROSS-PLATFORM` | `21 notes` | `L2_L3_Pivot_Routing`) — Side-by-side Windows and Linux networking reference covering L2 ARP/neighbors (arp vs ip neigh), L3 routing & forwarding (route/netsh vs ip route/sysctl), L4 sockets (netstat/Get-NetTCPConnection vs ss/lsof), DNS resolution, host firewalls (netsh advfirewall vs iptables/nftables), NAT masquerading/portproxy, and Snort IDS. **Apply when:** Apply whenever diagnosing network unreachability (`Network is unreachable`, `No route to host`, `Connection timed out`), mapping local/remote subnets (`Engine 2`), configuring cross-subnet static routes/IP forwarding/NAT masquerading (`Engine 6/15/19`), inspecting listening ports (`ss`/`netstat`), or unlocking `iptables`/`nftables`/`netsh advfirewall` rules.
+- [[knowledge/06_linux_unix_administration_processes_and_logging]] (`LINUX` | `23 notes` | `Passive_Enum`) — Linux (Debian/Ubuntu/CentOS/RHEL) and UNIX/Solaris system administration, kernel /proc & sysctl internals, ext4/xfs/procfs filesystems, boot/init/systemd lifecycle, process signals & /proc/<PID> forensics, users/groups/chmod/SUID/SGID/capabilities, rsyslog/journalctl/auditd logging, and interactive TTY shell upgrading. **Apply when:** Apply when enumerating a Linux/UNIX/Solaris host, inspecting `/proc/<PID>` or kernel modules, auditing mounted filesystems (`findmnt`/`lsblk`), managing `systemd` services or signals, hunting SUID/SGID/Capabilities/sudo privilege escalation vectors, reviewing `/var/log`/`journalctl` logs, or upgrading a dumb shell to a full interactive TTY.
+- [[knowledge/07_packet_capture_bpf_wireshark_and_passive_fingerprinting]] (`CROSS-PLATFORM` | `17 notes` | `Passive_Enum`) — Berkeley Packet Filter (BPF) byte-offset syntax, tcpdump and tshark CLI packet capture, Windows pktmon/netsh trace capture, Wireshark display filters, IPv4/TCP/ARP/ICMP (RFC792) & Spanning Tree Protocol (STP) header structures, passive OS fingerprinting (p0f), and DHCP Option 55 fingerprinting. **Apply when:** Apply when capturing live network traffic (`tcpdump`/`tshark`/`pktmon`), writing BPF byte-offset filters (`tcp[13]`, `icmp[0]`), analyzing `.pcap` files with Wireshark/tshark display filters, decoding IPv4/TCP/ICMP/ARP/STP headers, or passively fingerprinting remote OS types via `p0f` or DHCP options without transmitting active packets.
+- [[knowledge/08_web_api_sql_injection_and_active_reconnaissance]] (`CROSS-PLATFORM` | `12 notes` | `Active_Enum`) — Active network & port reconnaissance (nmap, Test-NetConnection), HTTP/HTTPS/REST/GraphQL/mTLS probing (curl, openssl s_client, Invoke-WebRequest), appliance firmware build-date & TLS serial extraction, SQL Injection syntax (MySQL, MSSQL, Oracle, PostgreSQL, Informix), and SSH/socat/chisel pivoting. **Apply when:** Apply when scanning a reachable target IP/subnet (`nmap`), probing web servers or appliance management ports (`curl`/`openssl s_client`), extracting TLS certificate hardware serials and HTTP `Last-Modified` firmware dates, testing SQL injection vectors (`UNION`, error-based, time-based blind), or establishing SSH/socat port forwards.
+- [[knowledge/09_hardware_uart_serial_oob_and_telecom_wan]] (`CROSS-PLATFORM` | `27 notes` | `OOB_Serial_Access`) — Non-interactive tio 3.9 Lua --script UART serial console automation (/dev/ttyUSB0, -o 15 -O 120 pacing), Windows COM port OOB access, Carrier Metro Ethernet (MEF E-Line/E-LAN/E-Tree, 802.1ad Q-in-Q), MPLS/GMPLS label switching, Optical Transport Network (OTN/DWDM), PON/GPON fiber, SD-WAN overlays, 802.11 Wi-Fi, and 2G/3G/4G/5G/LTE/GSM/UMTS RAN & SDR analysis. **Apply when:** Apply whenever network connections to an appliance fail (`Exit 7` Connection Refused or `Exit 28` Timeout) and a hardware serial console (`/dev/ttyUSB0` or `COM1`) is available (`C1_OOB_SERIAL_LOOPBACK_APPLIANCE`), or when analyzing Carrier Metro Ethernet, MPLS/GMPLS labels, OTN/GPON optical links, SD-WAN tunnels, Wi-Fi 802.11, or 2G/3G/4G/5G cellular RAN protocols.
+- [[knowledge/10_digital_forensics_pe_reversing_and_threat_intel]] (`CROSS-PLATFORM` | `20 notes` | `Passive_Enum`) — Windows & Linux Digital Forensics (DFIR) workflows (`[[reasoning/windows_digital_forensics_strategy_playbook]]`, `[[reasoning/linux_digital_forensics_strategy_playbook]]`), open-source GitHub DFIR tools (`Velociraptor`, `Hayabusa`, `Chainsaw`, `Eric Zimmerman Tools`, `Volatility 3`, `MemProcFS`, `WinPmem`, `HollowsHunter`, `UAC`, `AVML`, `LiME`, `SleuthKit/Autopsy`, `Plaso`), NTFS (`$MFT`/`$UsnJrnl`/VSS/Prefetch/ADS) & `ext4` (`debugfs` MACB) internals, RevEng.AI binary reversing, and APT28 threat intelligence.
 
-## System & Domain Knowledge
-- [[knowledge/trained_address_space_layout_randomization]] — trained address space layout randomization
-- [[knowledge/trained_apt28-center-of-storm-2017_mandiant]] — trained apt28-center-of-storm-2017 mandiant
-- [[knowledge/trained_apt28-fancybear-report]] — trained apt28-fancybear-report
-- [[knowledge/trained_auditpol_cmds]] — trained auditpol cmds
-- [[knowledge/trained_basic_survey_commands]] — trained basic survey commands
-- [[knowledge/trained_bcdedit_cmds]] — trained bcdedit cmds
-- [[knowledge/trained_bcf_autopsy_configuration_and_setup]] — trained bcf autopsy configuration and setup
-- [[knowledge/trained_bcf_autopsy_internet_artifacts]] — trained bcf autopsy internet artifacts
-- [[knowledge/trained_bcf_autopsy_navigation_and_analysis]] — trained bcf autopsy navigation and analysis
-- [[knowledge/trained_bcf_autopsy_registry_examination]] — trained bcf autopsy registry examination
-- [[knowledge/trained_bcf_cne_basics]] — trained bcf cne basics
-- [[knowledge/trained_bcf_encase_configuration_and_basics]] — trained bcf encase configuration and basics
-- [[knowledge/trained_bcf_encase_navigation]] — trained bcf encase navigation
-- [[knowledge/trained_bcf_encase_searching]] — trained bcf encase searching
-- [[knowledge/trained_bcf_slack_space_and_deleted_files]] — trained bcf slack space and deleted files
-- [[knowledge/trained_bcf_windows_live_response]] — trained bcf windows live response
-- [[knowledge/trained_bcf_windows_process_investigation]] — trained bcf windows process investigation
-- [[knowledge/trained_beacon]] — trained beacon
-- [[knowledge/trained_bec703_-cellular_mobile_communication]] — trained bec703 -cellular mobile communication
-- [[knowledge/trained_bfp-fexible_packet_filtering]] — trained bfp-fexible packet filtering
-- [[knowledge/trained_bpf_syntax]] — trained bpf syntax
-- [[knowledge/trained_cacls_-_icacls_cmds]] — trained cacls - icacls cmds
-- [[knowledge/trained_cacls_-_icacls_cmds_2]] — trained cacls - icacls cmds 2
-- [[knowledge/trained_capture_sh]] — trained capture sh
-- [[knowledge/trained_cbm_1_2_2006_goppit_pe_format_reverse_engineer_view]] — trained cbm 1 2 2006 goppit pe format reverse engineer view
-- [[knowledge/trained_centos-debian-survey]] — trained centos-debian-survey
-- [[knowledge/trained_change_system_files_cmds]] — trained change system files cmds
-- [[knowledge/trained_conversion_worksheet]] — trained conversion worksheet
-- [[knowledge/trained_cqc001_e010_m010_network_traffic_monitoring]] — trained cqc001 e010 m010 network traffic monitoring
-- [[knowledge/trained_cqc001_e010_m030_ip_header_diagram]] — trained cqc001 e010 m030 ip header diagram
-- [[knowledge/trained_cqc001_e010_m030_transcript]] — trained cqc001 e010 m030 transcript
-- [[knowledge/trained_cqc001_e010_m030_wireshark_display_filters]] — trained cqc001 e010 m030 wireshark display filters
-- [[knowledge/trained_cqc001_e010_m040_netstat]] — trained cqc001 e010 m040 netstat
-- [[knowledge/trained_cqc001_e010_m040_p0f]] — trained cqc001 e010 m040 p0f
-- [[knowledge/trained_cqc001_e010_m040_s060_i020_modexam_x020_c010_netstat]] — trained cqc001 e010 m040 s060 i020 modexam x020 c010 netstat
-- [[knowledge/trained_cqc001_e010_m040_tcp_header]] — trained cqc001 e010 m040 tcp header
-- [[knowledge/trained_cqc001_e010_m040_traffic_analysis_and_passive_os_fingerprinting]] — trained cqc001 e010 m040 traffic analysis and passive os fingerprinting
-- [[knowledge/trained_cqc001_e010_m050_arp_packet]] — trained cqc001 e010 m050 arp packet
-- [[knowledge/trained_cqc001_e010_m050_dhcp_fingerprints]] — trained cqc001 e010 m050 dhcp fingerprints
-- *(+ 165 additional trained notes indexed in `[[00_TRAINED_INDEX]]`)*
+## 3. Quick-Reference Windows vs. Linux Tactical Command Matrix (By H-MDP Tactic)
+| Tactic (`Engine 15`) | Windows Command (`CMD` / `PowerShell` / `Sysinternals`) | Linux Command (`Bash` / `iproute2`) | When to Apply |
+| :--- | :--- | :--- | :--- |
+| **`Passive_Enum` (L2/L3)** | `ipconfig /all & route print -4 & arp -a` | `ip -4 -br addr show; ip route show; ip neigh show` | First passive probe (`s_init_unknown`) to map interfaces, subnets, routes & ARP cache |
+| **`Passive_Enum` (L4/Proc)** | `netstat -abno & tasklist /svc & wmic process get ProcessId,ParentProcessId,CommandLine` | `ss -tulpn; ps auxef; ls -la /proc/<PID>/exe` | Map listening ports (`127.0.0.1` vs `0.0.0.0`), owning PIDs, and process command lines |
+| **`L2_L3_Pivot_Routing`** | `route add <REMOTE_SUBNET> mask 255.255.255.0 <GW_IP>` | `sudo ip route replace <REMOTE_SUBNET> via <GW_IP> && sudo sysctl -w net.ipv4.ip_forward=1` | Target is in a disjoint subnet (`Engine 2` `C2_CROSS_SUBNET_L3_PIVOT`) |
+| **`Active_Enum` (Ports/Web)** | `Test-NetConnection <IP> -Port 443` / `curl.exe -sS -k -L -i --max-time 15 https://<IP>/` | `nmap -sV -sC -Pn <IP>` / `curl -sS -k -L -i --max-time 15 https://<IP>/` | L2/L3 verified (`s_l2_l3_verified`); enumerate services, TLS certs & firmware build dates |
+| **`OOB_Serial_Access`** | `reg query HKLM\HARDWARE\DEVICEMAP\SERIALCOMM` | `tio -b 115200 -o 15 -O 120 --mute --script-run once --script 'write("\r"); msleep(400); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0` | TCP/HTTP refused (`Exit 7`) or timed out (`Exit 28`) & local UART `/dev/ttyUSB0`/`COM1` present |
+| **`Defense_Evasion_Firewall`** | `netsh advfirewall show allprofiles` / `icacls <Path>` / `auditpol /get /category:*` | `sudo iptables -L -n -v` / `sudo nft list ruleset` / `sudo iptables -t nat -A POSTROUTING -j MASQUERADE` | Inspect/unlock host firewall drops, NAT masquerade return routes, or file ACLs |
+| **`Privilege_Escalation`** | `whoami /all & accesschk -accepteula -uwcqv * & sc qc <Svc>` | `sudo -l; find / -perm -4000 -type f 2>/dev/null; getcap -r / 2>/dev/null` | Escalate from initial shell (`s_initial_shell_or_api_access`) via privileges, services, SUID, or capabilities |
+| **`Credential_Access` & Logs** | `wevtutil qe Security /q:"*[System[(EventID=4624 or EventID=4625 or EventID=4688)]]" /c:15 /f:text` | `journalctl -xe -n 50; grep -rnI -iE 'password|bearer' /etc /var/www 2>/dev/null` | Inspect security event logs, Kerberos SPNs (`setspn -Q */*`), and configuration secrets |
+| **`Digital_Forensics` (`DFIR`)** | `reg save HKLM\SYSTEM C:\Temp\SYS.hiv /y & hayabusa.exe csv-timeline -d C:\Windows\System32\winevt\Logs -o timeline.csv & MFTECmd.exe -f $MFT --csv C:\Temp` | `ls -la /proc/[0-9]*/exe \| grep '(deleted)'; sudo ./avml --compress /tmp/ram.lime; sudo ./uac -p ir_triage /tmp; fls -r -m / /dev/sda1 > bodyfile` | Live & offline Windows/Linux DFIR acquisition, RAM analysis (`Volatility 3`), and timeline correlation |
+| **`Reverse_Engineering` (`RevEng.AI`)** | `sigcheck64.exe -a -h -i -m "<BIN>" & strings64.exe -a -u -n 6 "<BIN>" & reait -b "<BIN>" -a -M` | `sha256sum '<BIN>' && readelf -h -S -l '<BIN>' && r2 -q -c 'aaa; afl' '<BIN>' && reait -b '<BIN>' -a -M` | Static binary triage, stripped symbol recovery (`reait -M`), and function embedding extraction (`reait -x`) |
 
-## Projects & Tasks
-- *(None recorded yet)*
+## 4. Scanned Targets & APIs
+- *(Isolated per-project inside `Projects/<active_project>/targets/` and `Projects/<active_project>/memory.md`)*
 
-## Neuro-Symbolic Reasoning & Causal Models
-- [[reasoning/pipeline15_target_ip_http_api_unreachable]] — 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `tio -b 115200 --mute --script-run once --script 'write("ip -4 addr; ss -tulpn; iptables -L -n\r"); while read(4096, 500) > 0 do end; exit(0)' /dev/ttyUSB0`, RL Next `tio --script 'write("id\r\nip -br addr\r\nss -tulpn\r\n"); while read(4096, 600) > 0 do end; exit(0)' /dev/ttyUSB0` (Q*=+30.4), K-Means Cluster `C1_OOB_SERIAL_LOOPBACK_APPLIANCE`, Top Cause `service_on_nonstandard_port_or_tls` (30%)
-- [[reasoning/pipeline15_target_ip_l2_l3_routing_blackhole]] — 15-Engine Neuro-Symbolic Synthesis for <TARGET_IP>: Consensus `ip neigh show <TARGET_IP>`, RL Next `sudo ip route replace <REMOTE_SUBNET> via <GATEWAY_IP> && sudo sysctl -w net.ipv4.ip_forward=1` (Q*=+36.8), K-Means Cluster `C2_CROSS_SUBNET_L3_PIVOT`, Top Cause `asymmetric_missing_return_route_or_nat` (28%)
-- [[reasoning/rl_network_policy_playbooks]] — Engine 19 TD(lambda) RL Policy (5200 eps, Avg Return +40.1, 34.86 ms)
-- [[reasoning/spectral_pca_kmeans_manifold]] — Engine 20 PCA (68.6% var) & K-Means++ Cluster `C1_OOB_SERIAL_LOOPBACK_APPLIANCE` (Chokepoint: `Node:<TARGET_IP>`)
+## 5. High-Frequency Trained Command & Knowledge Playbooks (Full 196-Note Directory in `[[00_TRAINED_INDEX]]`)
+- [[commands/trained_basic_survey_commands]] / [[knowledge/trained_basic_survey_commands]] — `[WINDOWS]` Host, process, network, registry (`Run`/`RunOnce`/`Winlogon`), and `autorunsc` survey commands.
+- [[commands/trained_auditpol_cmds]] / [[knowledge/trained_auditpol_cmds]] — `[WINDOWS]` `auditpol` subcategory enumeration/enforcement, `wevtutil` Event Log queries, and `psloglist` SID filtering.
+- [[commands/trained_cacls_-_icacls_cmds]] / [[knowledge/trained_cacls_-_icacls_cmds]] — `[WINDOWS]` `icacls`, `cacls`, `takeown` DACL permission auditing, SDDL backup/restore, and ACE inheritance rules.
+- [[commands/trained_bcdedit_cmds]] / [[knowledge/trained_bcdedit_cmds]] — `[WINDOWS]` `bcdedit` boot loader enumeration and DEP (`nx AlwaysOn`/`OptIn`) configuration.
+- [[commands/trained_netsh_fw_cmds]] / [[commands/trained_netsh_commands_for_routing]] — `[WINDOWS]` `netsh advfirewall`, `netsh interface ipv4`, `portproxy`, and DHCP management.
+- [[commands/trained_ps_get-cim]] / [[commands/trained_wmic_quickstart]] — `[WINDOWS]` PowerShell `Get-CimInstance` and `wmic` process, service, OS, hotfix, and startup enumeration.
+- [[commands/trained_ds_cmds]] / [[commands/trained_domain_service_tools]] — `[WINDOWS AD]` Active Directory `dsquery`, `dsget`, `nltest`, `net group`, and Kerberos SPN enumeration.
+- [[commands/trained_centos-debian-survey]] / [[knowledge/trained_unix_and_linux_system_administration_handbook]] — `[LINUX]` Comprehensive Debian/Ubuntu/CentOS/RHEL host, kernel, service, network, and log survey.
+- [[commands/trained_iptables-snort-cmds]] / [[knowledge/trained_cqc001_e060_m030_iptables_and_snort]] — `[LINUX]` `iptables` filter/NAT rules, chains, packet counters, and `snort` IDS rule inspection.
+- [[commands/trained_bpf_syntax]] / [[knowledge/trained_cqc001_e010_m030_wireshark_display_filters]] — `[CROSS-PLATFORM]` `tcpdump` BPF byte-offset filters, `tshark` CLI extraction, Wireshark filters, and `p0f` passive OS fingerprinting.
+
+## 6. Strategic Playbooks (`Blue`, `Red`, `Hunt`, `Reverse Engineering`, `Windows & Linux Forensics`) & Neuro-Symbolic Reasoning (`reasoning/`)
+- [[reasoning/blue_team_strategy_playbook]] — **[BLUE TEAM STRATEGY]** Defensive security, attack-surface baseline, firewall/ACL lockdown (`netsh advfirewall`, `nft`, `iptables`, `icacls`), audit policy enforcement (`auditpol`, `auditctl`), and incident containment/eradication across Windows & Linux.
+- [[reasoning/red_team_strategy_playbook]] — **[RED TEAM STRATEGY]** Authorized offensive operations, multi-layer reconnaissance (`L1 UART -> L2 ARP -> L3 Routing -> L4 TCP/UDP -> L7 HTTP/API`), OOB serial unlock (`tio`), privilege escalation, credential harvesting, and cross-subnet routing/portproxy pivots across Windows & Linux.
+- [[reasoning/hunt_team_strategy_playbook]] — **[HUNT TEAM STRATEGY]** Hypothesis-driven threat hunting, assumed-breach anomaly detection, process/memory hollowing & `/proc` forensics, stealth persistence & LOLBin hunting (`autorunsc64`, WMI subscriptions, `ld.so.preload`), NTFS ADS/timestomp discovery, Event ID/journalctl correlation, and BPF/PCAP C2 beacon analysis (`tcpdump`, `tshark`, `p0f`).
+- [[reasoning/windows_digital_forensics_strategy_playbook]] — **[WINDOWS DIGITAL FORENSICS (DFIR) STRATEGY]** Complete native Windows forensic breakdown (`PowerShell`, `CMD`, Registry `BAM`/`ShimCache`/`Amcache`/`ShellBags`/`UserAssist`, NTFS `$MFT`/`$UsnJrnl`/VSS/Prefetch/LNK/JumpLists, `.evtx`, `SRUM`) + open-source GitHub tools (`Velociraptor`, `Hayabusa`, `Chainsaw`, `Zimmerman Tools`, `Volatility 3`, `MemProcFS`, `WinPmem`, `HollowsHunter`).
+- [[reasoning/linux_digital_forensics_strategy_playbook]] — **[LINUX DIGITAL FORENSICS (DFIR) STRATEGY]** Complete native Linux forensic breakdown (`/proc` deleted binary & `memfd:` recovery, `rwxp` memory, `/proc/net/tcp` vs `ss` rootkit diff, `bpftool` eBPF, `systemd`/`cron`/`ld.so.preload`/`PAM`, `ext4` `debugfs` MACB, `journalctl`/`auditd`/`wtmp`) + open-source GitHub tools (`UAC`, `AVML`, `LiME`, `Volatility 3` + `dwarf2json`, `Velociraptor`, `SleuthKit`, `Plaso`, `Tracee`, `Unhide-NG`, `Zeek`).
+- [[reasoning/reverse_engineering_strategy_playbook]] — **[REVERSE ENGINEERING & REVENG.AI STRATEGY]** Setup, installation, and binary intelligence workflows for **RevEng.AI** (`https://github.com/orgs/RevEngAI/repositories`: `reait`, `sdk-python`, `creait`, `plugin-ghidra`, `plugin-ida`, `plugin-binary-ninja`, `reai-r2`, `reai-rz`), AI auto-unstripping, BinNet function embeddings, and Windows PE / Linux ELF static & headless decompilation.
+- [[reasoning/rl_network_policy_playbooks]] — Engine 19 TD(lambda) RL Policy & 3-Step Next-Action Playbooks
+- [[reasoning/spectral_pca_kmeans_manifold]] — Engine 20 SVD PCA, K-Means++ Regime Clustering & Spectral Chokepoints
+- [[00_SUGGESTED_IMPROVEMENTS_INDEX]] — Engine 17 Meta-Learning Calibration & Suggested Improvements Index
 
 ## Indexed Vault Notes
 <!-- AUTO-INDEX-START -->
+- [[reasoning/windows_digital_forensics_strategy_playbook]] — Windows Digital Forensics (DFIR) Strategy & Open-Source GitHub Tools Playbook (#reasoning #windows_forensics #dfir #mft #usnjrnl #prefetch #amcache #shimcache #srum #velociraptor #hayabusa #chainsaw #zimmerman #volatility3 #memprocfs)
+- [[commands/windows_digital_forensics_playbook]] — Master Windows Digital Forensics (DFIR) Native & Open-Source Command Reference (#commands #windows_forensics #dfir #mft #prefetch #velociraptor #hayabusa #chainsaw #zimmerman #volatility3)
+- [[reasoning/linux_digital_forensics_strategy_playbook]] — Linux Digital Forensics (DFIR) Strategy & Open-Source GitHub Tools Playbook (#reasoning #linux_forensics #dfir #procfs #memfd #ebpf #debugfs #uac #avml #lime #volatility3 #sleuthkit #plaso #tracee #unhide)
+- [[commands/linux_digital_forensics_playbook]] — Master Linux Digital Forensics (DFIR) Native & Open-Source Command Reference (#commands #linux_forensics #dfir #procfs #uac #avml #lime #volatility3 #sleuthkit #plaso)
+- [[reasoning/reverse_engineering_strategy_playbook]] — Reverse Engineering & RevEng.AI Binary Intelligence Strategy Playbook (#reasoning #reverse_engineering #revengai #reait #sdk-python #creait #ghidra #ida #binary-ninja #radare2 #rizin #pe #elf)
+- [[commands/revengai_and_binary_reversing_playbook]] — Master CLI & SDK command playbook for RevEng.AI and cross-platform Windows PE / Linux ELF reverse engineering (#commands #reverse_engineering #revengai #reait #ghidra #ida #radare2)
+- [[reasoning/blue_team_strategy_playbook]] — Blue Team Defensive Strategy & Incident Containment Playbook (#reasoning #blue_team #defensive-security #hardening #incident-response #firewall #acl)
+- [[reasoning/red_team_strategy_playbook]] — Red Team Offensive Strategy & Adversary Emulation Playbook (#reasoning #red_team #offensive-security #reconnaissance #exploitation #privilege-escalation #lateral-movement)
+- [[reasoning/hunt_team_strategy_playbook]] — Hunt Team Hypothesis-Driven Threat Hunting & Forensics Playbook (#reasoning #hunt_team #threat-hunting #dfir #forensics #anomaly-detection #persistence)
 - [[reasoning/spectral_pca_kmeans_manifold]] — Engine 20 PCA (74.3% var) & K-Means++ Cluster `C0_LOCAL_LAN_DISCOVERY` (Chokepoint: `Node:<TARGET_IP>`) (#reasoning #spectral_pca_kmeans #pca #kmeans #spectral-laplacian #manifold #clustering)
 - [[reasoning/rl_network_policy_playbooks]] — Engine 19 TD(lambda) RL Policy (1200 eps, Avg Return +40.2, 55.54 ms) (#reasoning #rl_network_policy #reinforcement-learning #td-lambda #network-topology #next-step-policy)
 <!-- AUTO-INDEX-END -->
